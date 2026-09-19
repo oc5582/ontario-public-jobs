@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://oc5582.github.io/ontario-public-jobs/sitemap.xml

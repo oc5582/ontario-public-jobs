@@ -9,6 +9,7 @@
   }
 
   function fillSelect(select, options, placeholder) {
+    if (!select) return;
     select.innerHTML = "";
     const ph = document.createElement("option");
     ph.value = "";
@@ -25,19 +26,24 @@
   }
 
   function initCopy() {
-    $("#product-name").textContent = C.productName;
-    document.title = C.productName;
-    $("#who-its-for").textContent = C.whoItsFor;
-    $("#promise").textContent = C.promise;
-    $("#casl-label").textContent = C.caslConsent;
-    $("#soft-pay-ask").textContent = C.softPayAsk;
-    $("#email-label").textContent = C.form.emailLabel;
-    $("#region-label").textContent = C.form.regionLabel;
-    $("#employer-type-label").textContent = C.form.employerTypeLabel;
-    $("#keyword-label").textContent = C.form.keywordLabel;
-    $("#keyword").placeholder = C.form.keywordPlaceholder;
-    $("#submit-btn").textContent = C.form.submit;
-    $("#listings-heading").textContent = C.listings.heading;
+    if (!C) return;
+
+    const casl = $("#casl-label");
+    if (casl && !casl.textContent.trim()) casl.textContent = C.caslConsent;
+    const payAsk = $("#soft-pay-ask");
+    if (payAsk && !payAsk.textContent.trim()) payAsk.textContent = C.softPayAsk;
+    const emailLabel = $("#email-label");
+    if (emailLabel) emailLabel.textContent = C.form.emailLabel;
+    const regionLabel = $("#region-label");
+    if (regionLabel) regionLabel.textContent = C.form.regionLabel;
+    const employerLabel = $("#employer-type-label");
+    if (employerLabel) employerLabel.textContent = C.form.employerTypeLabel;
+    const keywordLabel = $("#keyword-label");
+    if (keywordLabel) keywordLabel.textContent = C.form.keywordLabel;
+    const keyword = $("#keyword");
+    if (keyword) keyword.placeholder = C.form.keywordPlaceholder;
+    const submit = $("#submit-btn");
+    if (submit) submit.textContent = C.form.submit;
 
     fillSelect($("#region"), C.regionOptions, C.form.selectPlaceholder);
     fillSelect(
@@ -47,6 +53,7 @@
     );
 
     const payBox = $("#pay-options");
+    if (!payBox) return;
     payBox.innerHTML = "";
     C.softPayOptions.forEach(function (opt) {
       const id = "pay-" + opt.value;
@@ -79,90 +86,6 @@
     el.className = "status " + (ok ? "ok" : "err");
   }
 
-  function parseClosingDate(s) {
-    if (!s || !String(s).trim()) return null;
-    const t = Date.parse(s);
-    return Number.isNaN(t) ? null : t;
-  }
-
-  function sortListings(items) {
-    return items.slice().sort(function (a, b) {
-      const da = parseClosingDate(a.closing_date);
-      const db = parseClosingDate(b.closing_date);
-      if (da === null && db === null) return 0;
-      if (da === null) return 1;
-      if (db === null) return -1;
-      return da - db;
-    });
-  }
-
-  function renderListings(items) {
-    const meta = $("#listings-meta");
-    const tbody = $("#listings-body");
-    const sorted = sortListings(items);
-    meta.textContent = C.listings.count(sorted.length);
-    tbody.innerHTML = "";
-
-    if (!sorted.length) {
-      meta.textContent = C.listings.empty;
-      return;
-    }
-
-    sorted.forEach(function (row) {
-      const tr = document.createElement("tr");
-
-      const tdTitle = document.createElement("td");
-      if (row.apply_url) {
-        const a = document.createElement("a");
-        a.href = row.apply_url;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.textContent = row.title || "Untitled";
-        tdTitle.appendChild(a);
-      } else {
-        tdTitle.textContent = row.title || "Untitled";
-      }
-      tr.appendChild(tdTitle);
-
-      const tdEmp = document.createElement("td");
-      tdEmp.textContent = row.employer || "";
-      tr.appendChild(tdEmp);
-
-      const tdLoc = document.createElement("td");
-      tdLoc.textContent = row.location || "";
-      tr.appendChild(tdLoc);
-
-      const tdClose = document.createElement("td");
-      const close = (row.closing_date || "").trim();
-      if (close) {
-        tdClose.textContent = close;
-      } else {
-        tdClose.textContent = "";
-        tdClose.setAttribute("aria-hidden", "true");
-      }
-      tr.appendChild(tdClose);
-
-      tbody.appendChild(tr);
-    });
-  }
-
-  function loadListings() {
-    const meta = $("#listings-meta");
-    meta.textContent = C.listings.loading;
-    fetch("./data/listings.json")
-      .then(function (r) {
-        if (!r.ok) throw new Error("bad status");
-        return r.json();
-      })
-      .then(function (data) {
-        const items = Array.isArray(data) ? data : [];
-        renderListings(items);
-      })
-      .catch(function () {
-        meta.textContent = C.listings.error;
-      });
-  }
-
   function getSignupEndpoint() {
     if (typeof window.__SIGNUP_ENDPOINT__ === "string" && window.__SIGNUP_ENDPOINT__) {
       return window.__SIGNUP_ENDPOINT__;
@@ -177,7 +100,6 @@
 
   function onSubmit(e) {
     e.preventDefault();
-    const form = e.target;
     const status = $("#signup-status");
     const email = $("#email").value.trim();
     const region = $("#region").value;
@@ -195,7 +117,12 @@
       if (pay) localStorage.setItem(PAY_KEY, pay.value);
     } catch (_) {}
 
-    const payload = { email: email, region: region, employer_type: employer_type, keyword: keyword };
+    const payload = {
+      email: email,
+      region: region,
+      employer_type: employer_type,
+      keyword: keyword,
+    };
 
     const endpoint = getSignupEndpoint();
     const btn = $("#submit-btn");
@@ -226,7 +153,7 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     initCopy();
-    $("#signup-form").addEventListener("submit", onSubmit);
-    loadListings();
+    const form = $("#signup-form");
+    if (form) form.addEventListener("submit", onSubmit);
   });
 })();

@@ -4,7 +4,7 @@ window.COPY = {
   whoItsFor:
     "Job seekers watching government-owned corporations and agencies hiring in Toronto, the GTA, or hybrid-Toronto",
   promise:
-    "Matching Crown and agency openings in Toronto / GTA / hybrid-Toronto with real apply links, delivered when they fit your filters — not another generic board",
+    "Matching Crown and agency openings in Toronto / GTA / hybrid-Toronto with real apply links and full job descriptions on this site — not another generic board",
   caslConsent:
     "I agree to receive job-match emails at this address. I can unsubscribe anytime.",
   softPayAsk:
@@ -33,12 +33,12 @@ window.COPY = {
     regionLabel: "Region",
     employerTypeLabel: "Employer type",
     keywordLabel: "Keyword (optional)",
-    keywordPlaceholder: "e.g. analyst, nurse, clerk",
+    keywordPlaceholder: "e.g. analyst, hybrid, finance",
     submit: "Get matches",
     selectPlaceholder: "Select…",
   },
   listings: {
-    heading: "Current openings",
+    heading: "Current Crown and agency openings",
     loading: "Loading listings…",
     empty: "No listings to show.",
     error: "Could not load listings.",

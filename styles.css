@@ -17,6 +17,7 @@
   --radius: 8px;
   --max: 720px;
   --listings-max: 960px;
+  --job-max: 800px;
 }
 
 html {
@@ -37,9 +38,32 @@ main {
   padding: 1.5rem 1rem 3rem;
 }
 
+.site-header {
+  max-width: var(--job-max);
+  margin: 0 auto;
+  padding: 1.25rem 1rem 0;
+}
+
+.site-name {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.site-name:hover {
+  text-decoration: underline;
+}
+
+.site-tag {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .hero,
 .signup,
-.listings {
+.listings,
+.job-page {
   max-width: var(--max);
   margin: 0 auto 2rem;
 }
@@ -236,14 +260,112 @@ td a:hover {
   text-decoration: underline;
 }
 
+.job-extra {
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.job-page {
+  max-width: var(--job-max);
+}
+
+.crumb {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+}
+
+.crumb a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.crumb a:hover {
+  text-decoration: underline;
+}
+
+.job-page h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+}
+
+.job-page .employer {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.job-meta {
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.meta-row {
+  display: grid;
+  grid-template-columns: 10rem 1fr;
+  gap: 0.5rem 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.meta-row:last-child {
+  border-bottom: none;
+}
+
+.job-meta dt {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.job-meta dd {
+  margin: 0;
+}
+
+.apply-btn {
+  display: inline-block;
+  margin: 0 0 1.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.apply-btn:hover {
+  background: var(--accent-hover);
+}
+
+.description h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.2rem;
+}
+
+.description p {
+  margin: 0 0 0.9rem;
+  white-space: pre-wrap;
+}
+
+.description .unavailable {
+  color: var(--muted);
+  font-style: italic;
+}
+
 @media (max-width: 640px) {
-  .hero h1 {
+  .hero h1,
+  .job-page h1 {
     font-size: 1.5rem;
   }
 
-  th:nth-child(3),
-  td:nth-child(3) {
-    /* keep location visible but allow wrap */
+  .meta-row {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
   }
 
   .pay-options {
