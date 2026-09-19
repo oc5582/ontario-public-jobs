@@ -2,9 +2,9 @@
 window.COPY = {
   productName: "Ontario Public Jobs",
   whoItsFor:
-    "Job seekers watching government-owned corporations and agencies hiring in Toronto, the GTA, or hybrid-Toronto roles",
+    "Job seekers watching government-owned corporations and agencies hiring in Toronto, the GTA, or hybrid-Toronto",
   promise:
-    "Matching crown and agency openings with real apply links, delivered when they fit your filters — not another generic board",
+    "Matching Crown and agency openings in Toronto / GTA / hybrid-Toronto with real apply links, delivered when they fit your filters — not another generic board",
   caslConsent:
     "I agree to receive job-match emails at this address. I can unsubscribe anytime.",
   softPayAsk:
