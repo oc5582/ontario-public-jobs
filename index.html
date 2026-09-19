@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ontario Public Jobs</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main>
+      <section class="hero" aria-labelledby="product-name">
+        <h1 id="product-name">Ontario Public Jobs</h1>
+        <p class="who" id="who-its-for"></p>
+        <p class="promise" id="promise"></p>
+      </section>
+
+      <section class="signup" aria-labelledby="signup-heading">
+        <div class="card">
+          <h2 id="signup-heading">Get job matches</h2>
+          <form id="signup-form" novalidate>
+            <div class="field">
+              <label id="email-label" for="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                autocomplete="email"
+              />
+            </div>
+
+            <div class="field">
+              <label id="region-label" for="region">Region</label>
+              <select id="region" name="region" required></select>
+            </div>
+
+            <div class="field">
+              <label id="employer-type-label" for="employer_type"
+                >Employer type</label
+              >
+              <select id="employer_type" name="employer_type" required></select>
+            </div>
+
+            <div class="field">
+              <label id="keyword-label" for="keyword">Keyword (optional)</label>
+              <input type="text" id="keyword" name="keyword" />
+            </div>
+
+            <div class="field">
+              <label class="checkbox" for="consent">
+                <input type="checkbox" id="consent" name="consent" required />
+                <span id="casl-label"></span>
+              </label>
+            </div>
+
+            <div class="pay-ask">
+              <p id="soft-pay-ask"></p>
+              <div class="pay-options" id="pay-options"></div>
+            </div>
+
+            <button type="submit" id="submit-btn">Get matches</button>
+            <div id="signup-status" class="status" hidden></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="listings" aria-labelledby="listings-heading">
+        <h2 id="listings-heading">Current openings</h2>
+        <p class="listings-meta" id="listings-meta"></p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Employer</th>
+                <th scope="col">Location</th>
+                <th scope="col">Closes</th>
+              </tr>
+            </thead>
+            <tbody id="listings-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="./copy.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
