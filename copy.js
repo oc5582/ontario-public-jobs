@@ -2,9 +2,9 @@
 window.COPY = {
   productName: "Ontario Public Jobs",
   whoItsFor:
-    "Job seekers watching Ontario public-sector roles (provincial, municipal, agencies)",
+    "Job seekers watching government-owned corporations and agencies hiring in Toronto, the GTA, or hybrid-Toronto roles",
   promise:
-    "Matching openings with real apply links, delivered when they fit your filters — not another generic board",
+    "Matching crown and agency openings with real apply links, delivered when they fit your filters — not another generic board",
   caslConsent:
     "I agree to receive job-match emails at this address. I can unsubscribe anytime.",
   softPayAsk:
@@ -24,12 +24,9 @@ window.COPY = {
     "Other / Remote",
   ],
   employerTypeOptions: [
-    "Provincial government",
-    "Municipal",
-    "Agency / Crown corp",
-    "Healthcare",
-    "Education",
-    "Other public sector",
+    "Federal Crown",
+    "Ontario Crown or agency",
+    "City corporation or agency",
   ],
   form: {
     emailLabel: "Email",
