@@ -23,11 +23,13 @@ WHO_ITS_FOR = (
     "in Toronto, the GTA, or hybrid-Toronto"
 )
 PROMISE = (
-    "Matching Crown and agency openings in Toronto / GTA / hybrid-Toronto "
-    "with real apply links and full job descriptions on this site — "
+    "A Workday-source sample of Crown and agency Toronto jobs — "
+    "real apply links and full job descriptions on this site, "
     "not another generic board"
 )
 LISTINGS_HEADING = "Current Crown and agency openings"
+LISTINGS_NOTE = "Workday-source sample of Crown and agency jobs in Toronto."
+SITE_TAG = "Workday sample of Toronto Crown and agency roles"
 SIGNUP_HEADING = "Get Toronto Crown and agency matches"
 CASL = "I agree to receive job-match emails at this address. I can unsubscribe anytime."
 SOFT_PAY = "If this saved you time each week, would you pay a small monthly fee for it?"
@@ -114,7 +116,8 @@ def html_to_paragraphs(raw: str) -> list[str]:
     text = text.replace("\xa0", " ")
     text = re.sub(r"[ \t]+\n", "\n", text)
     text = re.sub(r"\n[ \t]+", "\n", text)
-    chunks = re.split(r"\n{2,}", text)
+    # Workday plaintext uses single newlines; HTML sources use blank lines.
+    chunks = re.split(r"\n+", text) if "\n\n" not in text else re.split(r"\n{2,}", text)
     paragraphs: list[str] = []
     for chunk in chunks:
         line = re.sub(r"[ \t]{2,}", " ", chunk)
@@ -148,7 +151,7 @@ def text(value) -> str:
 
 def format_date(value: str) -> str:
     raw = text(value)
-    if not raw:
+    if not raw or not re.search(r"\d", raw):
         return ""
     try:
         y, m, d = raw[:10].split("-")
@@ -240,7 +243,7 @@ def render_job_page(job: dict, slug: str) -> str:
   <body>
     <header class="site-header">
       <a class="site-name" href="../">{escape(PRODUCT_NAME)}</a>
-      <p class="site-tag">Toronto Crown and agency roles</p>
+      <p class="site-tag">{escape(SITE_TAG)}</p>
     </header>
     <main class="job-page">
       <article>
@@ -298,8 +301,8 @@ def render_index(jobs: list[dict]) -> str:
     count = len(jobs)
     count_label = f"{count} opening{'s' if count != 1 else ''}"
     description = (
-        "Crown corporation and public-agency jobs in Toronto, the GTA, "
-        "and hybrid-Toronto — full descriptions and apply links."
+        "Workday-source sample of Crown corporation and public-agency jobs "
+        "in Toronto — full descriptions and apply links."
     )
     return f"""{shared_head(PRODUCT_NAME, description, SITE_URL + "/", "./styles.css")}
   <body>
@@ -312,6 +315,7 @@ def render_index(jobs: list[dict]) -> str:
 
       <section class="listings" aria-labelledby="listings-heading">
         <h2 id="listings-heading">{escape(LISTINGS_HEADING)}</h2>
+        <p class="listings-note">{escape(LISTINGS_NOTE)}</p>
         <p class="listings-meta" id="listings-meta">{escape(count_label)}</p>
         <div class="table-wrap">
           <table>

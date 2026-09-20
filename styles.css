@@ -213,6 +213,12 @@ button[type="submit"]:disabled {
   display: none;
 }
 
+.listings-note {
+  margin: 0 0 0.35rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
 .listings-meta {
   margin: 0 0 0.75rem;
   color: var(--muted);
