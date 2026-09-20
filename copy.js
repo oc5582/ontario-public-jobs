@@ -4,7 +4,7 @@ window.COPY = {
   whoItsFor:
     "Job seekers watching government-owned corporations and agencies hiring in Toronto, the GTA, or hybrid-Toronto",
   promise:
-    "Workday-source Crown and agency Toronto jobs — real apply links and full job descriptions on this site, not another generic board",
+    "Matching Crown and agency openings in Toronto / GTA / hybrid-Toronto with real apply links and full job descriptions on this site — not another generic board",
   caslConsent:
     "I agree to receive job-match emails at this address. I can unsubscribe anytime.",
   softPayAsk:
@@ -39,7 +39,6 @@ window.COPY = {
   },
   listings: {
     heading: "Current Crown and agency openings",
-    note: "Workday-source Crown and agency Toronto jobs.",
     loading: "Loading listings…",
     empty: "No listings to show.",
     error: "Could not load listings.",
