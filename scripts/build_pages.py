@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections import Counter
 from datetime import date
 from html import escape, unescape
 from html.parser import HTMLParser
@@ -23,13 +24,13 @@ WHO_ITS_FOR = (
     "in Toronto, the GTA, or hybrid-Toronto"
 )
 PROMISE = (
-    "A Workday-source sample of Crown and agency Toronto jobs — "
+    "Workday-source Crown and agency Toronto jobs — "
     "real apply links and full job descriptions on this site, "
     "not another generic board"
 )
 LISTINGS_HEADING = "Current Crown and agency openings"
-LISTINGS_NOTE = "Workday-source sample of Crown and agency jobs in Toronto."
-SITE_TAG = "Workday sample of Toronto Crown and agency roles"
+LISTINGS_NOTE = "Workday-source Crown and agency Toronto jobs."
+SITE_TAG = "Workday-source Crown and agency Toronto jobs"
 SIGNUP_HEADING = "Get Toronto Crown and agency matches"
 CASL = "I agree to receive job-match emails at this address. I can unsubscribe anytime."
 SOFT_PAY = "If this saved you time each week, would you pay a small monthly fee for it?"
@@ -141,6 +142,34 @@ def job_slug(job: dict) -> str:
     title = slugify(job.get("title") or "untitled") or "untitled"
     slug = f"{source}-{title}"
     return slug[:90].rstrip("-")
+
+
+def requisition_id(job: dict) -> str:
+    url = text(job.get("apply_url"))
+    last = url.rstrip("/").split("/")[-1]
+    match = re.search(r"((?:JR|R)[-_]?\d+)$", last, re.I)
+    if match:
+        return slugify(match.group(1))
+    return slugify(last)[-16:]
+
+
+def assign_slugs(jobs: list[dict]) -> None:
+    bases = [job_slug(job) for job in jobs]
+    counts = Counter(bases)
+    used: set[str] = set()
+    for job, base in zip(jobs, bases):
+        slug = base
+        if counts[base] > 1:
+            req = requisition_id(job)
+            if req:
+                slug = f"{base}-{req}"[:90].rstrip("-")
+        n = 2
+        original = slug
+        while slug in used:
+            slug = f"{original}-{n}"[:90].rstrip("-")
+            n += 1
+        used.add(slug)
+        job["_slug"] = slug
 
 
 def text(value) -> str:
@@ -269,7 +298,7 @@ def render_job_page(job: dict, slug: str) -> str:
 def render_home_rows(jobs: list[dict]) -> str:
     rows = []
     for job in jobs:
-        slug = job_slug(job)
+        slug = job.get("_slug") or job_slug(job)
         title = text(job.get("title")) or "Untitled"
         employer = text(job.get("employer"))
         location = text(job.get("location"))
@@ -301,8 +330,8 @@ def render_index(jobs: list[dict]) -> str:
     count = len(jobs)
     count_label = f"{count} opening{'s' if count != 1 else ''}"
     description = (
-        "Workday-source sample of Crown corporation and public-agency jobs "
-        "in Toronto — full descriptions and apply links."
+        "Workday-source Crown and agency Toronto jobs — "
+        "full descriptions and apply links."
     )
     return f"""{shared_head(PRODUCT_NAME, description, SITE_URL + "/", "./styles.css")}
   <body>
@@ -420,6 +449,7 @@ def main() -> None:
     if not isinstance(raw, list):
         raise SystemExit("listings.json must be a JSON array")
     jobs = sort_jobs(raw)
+    assign_slugs(jobs)
     JOBS_DIR.mkdir(exist_ok=True)
     for stale in JOBS_DIR.glob("*.html"):
         stale.unlink()
@@ -427,7 +457,7 @@ def main() -> None:
     slugs: list[str] = []
     used: set[str] = set()
     for job in jobs:
-        slug = job_slug(job)
+        slug = job["_slug"]
         if slug in used:
             raise SystemExit(f"duplicate slug: {slug}")
         used.add(slug)
