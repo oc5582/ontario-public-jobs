@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from collections import Counter
@@ -19,18 +20,17 @@ SITE_BASE = "/ontario-public-jobs"
 SITE_URL = SITE_ORIGIN + SITE_BASE
 
 PRODUCT_NAME = "Ontario Public Jobs"
+BOARD_COPY = (
+    "Crown and agency jobs hiring in Toronto / GTA from official employer boards."
+)
 WHO_ITS_FOR = (
     "Job seekers watching government-owned corporations and agencies hiring "
     "in Toronto, the GTA, or hybrid-Toronto"
 )
-PROMISE = (
-    "Workday-source Crown and agency Toronto jobs — "
-    "real apply links and full job descriptions on this site, "
-    "not another generic board"
-)
+PROMISE = BOARD_COPY
 LISTINGS_HEADING = "Current Crown and agency openings"
-LISTINGS_NOTE = "Workday-source Crown and agency Toronto jobs."
-SITE_TAG = "Workday-source Crown and agency Toronto jobs"
+LISTINGS_NOTE = BOARD_COPY
+SITE_TAG = BOARD_COPY
 SIGNUP_HEADING = "Get Toronto Crown and agency matches"
 CASL = "I agree to receive job-match emails at this address. I can unsubscribe anytime."
 SOFT_PAY = "If this saved you time each week, would you pay a small monthly fee for it?"
@@ -117,7 +117,7 @@ def html_to_paragraphs(raw: str) -> list[str]:
     text = text.replace("\xa0", " ")
     text = re.sub(r"[ \t]+\n", "\n", text)
     text = re.sub(r"\n[ \t]+", "\n", text)
-    # Workday plaintext uses single newlines; HTML sources use blank lines.
+    # Board plaintext often uses single newlines; HTML sources use blank lines.
     chunks = re.split(r"\n+", text) if "\n\n" not in text else re.split(r"\n{2,}", text)
     paragraphs: list[str] = []
     for chunk in chunks:
@@ -137,20 +137,48 @@ def slugify(value: str) -> str:
     return value.strip("-")
 
 
+SLUG_LIMIT = 90
+
+
+def clip_slug(value: str, limit: int = SLUG_LIMIT) -> str:
+    return value[:limit].rstrip("-")
+
+
 def job_slug(job: dict) -> str:
-    source = slugify(job.get("source") or "job") or "job"
+    employer = slugify(job.get("employer") or "employer") or "employer"
     title = slugify(job.get("title") or "untitled") or "untitled"
-    slug = f"{source}-{title}"
-    return slug[:90].rstrip("-")
+    return clip_slug(f"{employer}-{title}")
 
 
-def requisition_id(job: dict) -> str:
+def unique_token(job: dict) -> str:
     url = text(job.get("apply_url"))
     last = url.rstrip("/").split("/")[-1]
     match = re.search(r"((?:JR|R)[-_]?\d+)$", last, re.I)
     if match:
         return slugify(match.group(1))
-    return slugify(last)[-16:]
+    digits = re.search(r"(\d{5,})", last)
+    if digits:
+        return digits.group(1)
+    query = re.search(
+        r"(?:career_job_req_id|gh_jid|requisitionid|jobid|job_id)=([A-Za-z0-9_-]+)",
+        url,
+        re.I,
+    )
+    if query:
+        return slugify(query.group(1))
+    token = slugify(last)
+    if len(token) >= 6:
+        return token[-20:]
+    return hashlib.sha1(url.encode("utf-8")).hexdigest()[:10]
+
+
+def with_suffix(base: str, suffix: str, limit: int = SLUG_LIMIT) -> str:
+    token = slugify(suffix) or suffix
+    room = limit - len(token) - 1
+    if room < 8:
+        token = token[: max(4, limit - 9)]
+        room = limit - len(token) - 1
+    return clip_slug(f"{clip_slug(base, room)}-{token}", limit)
 
 
 def assign_slugs(jobs: list[dict]) -> None:
@@ -160,13 +188,13 @@ def assign_slugs(jobs: list[dict]) -> None:
     for job, base in zip(jobs, bases):
         slug = base
         if counts[base] > 1:
-            req = requisition_id(job)
-            if req:
-                slug = f"{base}-{req}"[:90].rstrip("-")
+            token = unique_token(job)
+            if token:
+                slug = with_suffix(base, token)
         n = 2
         original = slug
         while slug in used:
-            slug = f"{original}-{n}"[:90].rstrip("-")
+            slug = with_suffix(original, str(n))
             n += 1
         used.add(slug)
         job["_slug"] = slug
@@ -329,10 +357,7 @@ def render_home_rows(jobs: list[dict]) -> str:
 def render_index(jobs: list[dict]) -> str:
     count = len(jobs)
     count_label = f"{count} opening{'s' if count != 1 else ''}"
-    description = (
-        "Workday-source Crown and agency Toronto jobs — "
-        "full descriptions and apply links."
-    )
+    description = BOARD_COPY
     return f"""{shared_head(PRODUCT_NAME, description, SITE_URL + "/", "./styles.css")}
   <body>
     <main>

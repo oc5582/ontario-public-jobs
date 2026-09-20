@@ -1,6 +1,6 @@
 # Ontario Public Jobs
 
-Static GitHub Pages site for Toronto Crown corporation and public-agency openings. Current listings are Workday-source Crown and agency Toronto jobs. Job descriptions are rendered as crawlable HTML (not fetched in the browser).
+Static GitHub Pages site for Toronto Crown corporation and public-agency openings. Crown and agency jobs hiring in Toronto / GTA from official employer boards. Job descriptions are rendered as crawlable HTML (not fetched in the browser).
 
 Live: https://oc5582.github.io/ontario-public-jobs/
 
@@ -28,7 +28,8 @@ This writes `index.html`, `jobs/<slug>.html`, `sitemap.xml`, and `robots.txt`.
 - `jobs/` — one static page per opening
 - `styles.css` — minimal layout
 - `copy.js` / `app.js` — signup form only (listings are already in HTML)
-- `data/listings.json` — enriched listing source
+- `data/listings.json` — enriched listing source (combined multi-ATS feed)
+- `data/combined-site-feed.json` — same 469-job Toronto/GTA feed used to rebuild pages
 - `sitemap.xml` — home + every job URL
 
 ## Signup endpoint (optional)
