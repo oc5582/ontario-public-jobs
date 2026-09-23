@@ -14,28 +14,9 @@ window.COPY = {
     { value: "maybe", label: "Maybe" },
     { value: "no", label: "No" },
   ],
-  regionOptions: [
-    "All Ontario",
-    "GTA",
-    "Ottawa",
-    "Southwestern Ontario",
-    "Eastern Ontario",
-    "Northern Ontario",
-    "Other / Remote",
-  ],
-  employerTypeOptions: [
-    "Federal Crown",
-    "Ontario Crown or agency",
-    "City corporation or agency",
-  ],
   form: {
     emailLabel: "Email",
-    regionLabel: "Region",
-    employerTypeLabel: "Employer type",
-    keywordLabel: "Keyword (optional)",
-    keywordPlaceholder: "e.g. analyst, hybrid, finance",
-    submit: "Get matches",
-    selectPlaceholder: "Select…",
+    submit: "Get the list",
   },
   listings: {
     heading: "Current Crown and agency openings",
@@ -52,9 +33,9 @@ window.COPY = {
   },
   signup: {
     successPreview:
-      "You’re on the list (preview mode — signup not sent yet).",
-    successSent: "You’re on the list. Watch your inbox for matches.",
+      "You’re on the list. We’ll email openings to this address.",
+    successSent: "You’re on the list. We’ll email openings to this address.",
     error: "Something went wrong. Please try again.",
-    validation: "Please fill in email, region, employer type, and consent.",
+    validation: "Please enter your email and agree to receive emails.",
   },
 };

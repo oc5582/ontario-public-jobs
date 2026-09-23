@@ -31,7 +31,7 @@ PROMISE = (
 LISTINGS_HEADING = "Current Crown and agency openings"
 LISTINGS_NOTE = "Workday-source Crown and agency Toronto jobs."
 SITE_TAG = "Workday-source Crown and agency Toronto jobs"
-SIGNUP_HEADING = "Get Toronto Crown and agency matches"
+SIGNUP_HEADING = "Get the list by email"
 CASL = "I agree to receive job-match emails at this address. I can unsubscribe anytime."
 SOFT_PAY = "If this saved you time each week, would you pay a small monthly fee for it?"
 UNAVAILABLE = (
@@ -379,23 +379,6 @@ def render_index(jobs: list[dict]) -> str:
             </div>
 
             <div class="field">
-              <label id="region-label" for="region">Region</label>
-              <select id="region" name="region" required></select>
-            </div>
-
-            <div class="field">
-              <label id="employer-type-label" for="employer_type"
-                >Employer type</label
-              >
-              <select id="employer_type" name="employer_type" required></select>
-            </div>
-
-            <div class="field">
-              <label id="keyword-label" for="keyword">Keyword (optional)</label>
-              <input type="text" id="keyword" name="keyword" />
-            </div>
-
-            <div class="field">
               <label class="checkbox" for="consent">
                 <input type="checkbox" id="consent" name="consent" required />
                 <span id="casl-label">{escape(CASL)}</span>
@@ -407,7 +390,7 @@ def render_index(jobs: list[dict]) -> str:
               <div class="pay-options" id="pay-options"></div>
             </div>
 
-            <button type="submit" id="submit-btn">Get matches</button>
+            <button type="submit" id="submit-btn">Get the list</button>
             <div id="signup-status" class="status" hidden></div>
           </form>
         </div>

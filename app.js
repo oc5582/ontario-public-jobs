@@ -8,23 +8,6 @@
     return (root || document).querySelector(sel);
   }
 
-  function fillSelect(select, options, placeholder) {
-    if (!select) return;
-    select.innerHTML = "";
-    const ph = document.createElement("option");
-    ph.value = "";
-    ph.textContent = placeholder;
-    ph.disabled = true;
-    ph.selected = true;
-    select.appendChild(ph);
-    options.forEach(function (opt) {
-      const o = document.createElement("option");
-      o.value = opt;
-      o.textContent = opt;
-      select.appendChild(o);
-    });
-  }
-
   function initCopy() {
     if (!C) return;
 
@@ -34,23 +17,8 @@
     if (payAsk && !payAsk.textContent.trim()) payAsk.textContent = C.softPayAsk;
     const emailLabel = $("#email-label");
     if (emailLabel) emailLabel.textContent = C.form.emailLabel;
-    const regionLabel = $("#region-label");
-    if (regionLabel) regionLabel.textContent = C.form.regionLabel;
-    const employerLabel = $("#employer-type-label");
-    if (employerLabel) employerLabel.textContent = C.form.employerTypeLabel;
-    const keywordLabel = $("#keyword-label");
-    if (keywordLabel) keywordLabel.textContent = C.form.keywordLabel;
-    const keyword = $("#keyword");
-    if (keyword) keyword.placeholder = C.form.keywordPlaceholder;
     const submit = $("#submit-btn");
     if (submit) submit.textContent = C.form.submit;
-
-    fillSelect($("#region"), C.regionOptions, C.form.selectPlaceholder);
-    fillSelect(
-      $("#employer_type"),
-      C.employerTypeOptions,
-      C.form.selectPlaceholder
-    );
 
     const payBox = $("#pay-options");
     if (!payBox) return;
@@ -102,12 +70,9 @@
     e.preventDefault();
     const status = $("#signup-status");
     const email = $("#email").value.trim();
-    const region = $("#region").value;
-    const employer_type = $("#employer_type").value;
-    const keyword = $("#keyword").value.trim();
     const consent = $("#consent").checked;
 
-    if (!email || !region || !employer_type || !consent) {
+    if (!email || !consent) {
       showStatus(status, C.signup.validation, false);
       return;
     }
@@ -119,10 +84,9 @@
 
     const payload = {
       email: email,
-      region: region,
-      employer_type: employer_type,
-      keyword: keyword,
+      consent: true,
     };
+    if (pay) payload.soft_pay = pay.value;
 
     const endpoint = getSignupEndpoint();
     const btn = $("#submit-btn");
