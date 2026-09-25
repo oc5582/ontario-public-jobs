@@ -6,9 +6,9 @@ window.COPY = {
   promise:
     "Matching Crown and agency openings in Toronto / GTA / hybrid-Toronto with real apply links and full job descriptions on this site — not another generic board",
   caslConsent:
-    "I agree to receive job-match emails at this address. I can unsubscribe anytime.",
+    "I agree to receive job alert emails from Ontario Public Jobs at this address. I can unsubscribe anytime.",
   softPayAsk:
-    "If this saved you time each week, would you pay a small monthly fee for it?",
+    "Optional. If this saved you time each week, would you pay a small monthly fee for it?",
   softPayOptions: [
     { value: "yes", label: "Yes" },
     { value: "maybe", label: "Maybe" },
@@ -16,7 +16,7 @@ window.COPY = {
   ],
   form: {
     emailLabel: "Email",
-    submit: "Get the list",
+    submit: "Email me new openings",
   },
   listings: {
     heading: "Current Crown and agency openings",
@@ -32,10 +32,11 @@ window.COPY = {
     },
   },
   signup: {
-    successPreview:
-      "You’re on the list. We’ll email openings to this address.",
-    successSent: "You’re on the list. We’ll email openings to this address.",
+    heading: "Get new Toronto Crown & agency openings by email — free.",
+    lead: "The job board stays public. This signs you up for email alerts only.",
+    successSent: "You’re on the list. We’ll email new openings to this address.",
     error: "Something went wrong. Please try again.",
-    validation: "Please enter your email and agree to receive emails.",
+    validation: "Enter your email and check the box to agree to job alert emails.",
+    notConfigured: "Email alerts are not turned on yet. Please try again later.",
   },
 };

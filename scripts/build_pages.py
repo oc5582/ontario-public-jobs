@@ -31,9 +31,17 @@ PROMISE = (
 LISTINGS_HEADING = "Current Crown and agency openings"
 LISTINGS_NOTE = "Workday-source Crown and agency Toronto jobs."
 SITE_TAG = "Workday-source Crown and agency Toronto jobs"
-SIGNUP_HEADING = "Get the list by email"
-CASL = "I agree to receive job-match emails at this address. I can unsubscribe anytime."
-SOFT_PAY = "If this saved you time each week, would you pay a small monthly fee for it?"
+SIGNUP_HEADING = "Get new Toronto Crown & agency openings by email — free."
+SIGNUP_LEAD = "The job board stays public. This signs you up for email alerts only."
+CASL = (
+    "I agree to receive job alert emails from Ontario Public Jobs at this address. "
+    "I can unsubscribe anytime."
+)
+SOFT_PAY = (
+    "Optional. If this saved you time each week, "
+    "would you pay a small monthly fee for it?"
+)
+SUBMIT_LABEL = "Email me new openings"
 UNAVAILABLE = (
     "A job description is not available for this posting. "
     "Use the Apply button to view details on the employer site."
@@ -366,7 +374,8 @@ def render_index(jobs: list[dict]) -> str:
       <section class="signup" aria-labelledby="signup-heading">
         <div class="card">
           <h2 id="signup-heading">{escape(SIGNUP_HEADING)}</h2>
-          <form id="signup-form" novalidate>
+          <p class="signup-lead" id="signup-lead">{escape(SIGNUP_LEAD)}</p>
+          <form id="signup-form" method="post" novalidate>
             <div class="field">
               <label id="email-label" for="email">Email</label>
               <input
@@ -375,14 +384,22 @@ def render_index(jobs: list[dict]) -> str:
                 name="email"
                 required
                 autocomplete="email"
+                inputmode="email"
+                maxlength="254"
+                placeholder="you@example.com"
               />
             </div>
 
             <div class="field">
               <label class="checkbox" for="consent">
-                <input type="checkbox" id="consent" name="consent" required />
+                <input type="checkbox" id="consent" name="casl_consent" value="yes" required />
                 <span id="casl-label">{escape(CASL)}</span>
               </label>
+            </div>
+
+            <div class="hp" aria-hidden="true">
+              <label for="gotcha">Leave this field blank</label>
+              <input type="text" id="gotcha" name="_gotcha" tabindex="-1" autocomplete="off" />
             </div>
 
             <div class="pay-ask">
@@ -390,13 +407,14 @@ def render_index(jobs: list[dict]) -> str:
               <div class="pay-options" id="pay-options"></div>
             </div>
 
-            <button type="submit" id="submit-btn">Get the list</button>
-            <div id="signup-status" class="status" hidden></div>
+            <button type="submit" id="submit-btn">{escape(SUBMIT_LABEL)}</button>
+            <div id="signup-status" class="status" role="status" aria-live="polite" hidden></div>
           </form>
         </div>
       </section>
     </main>
 
+    <script src="./signup.config.js"></script>
     <script src="./copy.js"></script>
     <script src="./app.js"></script>
   </body>
