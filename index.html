@@ -4258,8 +4258,9 @@
 
       <section class="signup" aria-labelledby="signup-heading">
         <div class="card">
-          <h2 id="signup-heading">Get the list by email</h2>
-          <form id="signup-form" novalidate>
+          <h2 id="signup-heading">Get new Toronto Crown &amp; agency openings by email — free.</h2>
+          <p class="signup-lead" id="signup-lead">The job board stays public. This signs you up for email alerts only.</p>
+          <form id="signup-form" method="post" novalidate>
             <div class="field">
               <label id="email-label" for="email">Email</label>
               <input
@@ -4268,28 +4269,37 @@
                 name="email"
                 required
                 autocomplete="email"
+                inputmode="email"
+                maxlength="254"
+                placeholder="you@example.com"
               />
             </div>
 
             <div class="field">
               <label class="checkbox" for="consent">
-                <input type="checkbox" id="consent" name="consent" required />
-                <span id="casl-label">I agree to receive job-match emails at this address. I can unsubscribe anytime.</span>
+                <input type="checkbox" id="consent" name="casl_consent" value="yes" required />
+                <span id="casl-label">I agree to receive job alert emails from Ontario Public Jobs at this address. I can unsubscribe anytime.</span>
               </label>
             </div>
 
+            <div class="hp" aria-hidden="true">
+              <label for="gotcha">Leave this field blank</label>
+              <input type="text" id="gotcha" name="_gotcha" tabindex="-1" autocomplete="off" />
+            </div>
+
             <div class="pay-ask">
-              <p id="soft-pay-ask">If this saved you time each week, would you pay a small monthly fee for it?</p>
+              <p id="soft-pay-ask">Optional. If this saved you time each week, would you pay a small monthly fee for it?</p>
               <div class="pay-options" id="pay-options"></div>
             </div>
 
-            <button type="submit" id="submit-btn">Get the list</button>
-            <div id="signup-status" class="status" hidden></div>
+            <button type="submit" id="submit-btn">Email me new openings</button>
+            <div id="signup-status" class="status" role="status" aria-live="polite" hidden></div>
           </form>
         </div>
       </section>
     </main>
 
+    <script src="./signup.config.js"></script>
     <script src="./copy.js"></script>
     <script src="./app.js"></script>
   </body>

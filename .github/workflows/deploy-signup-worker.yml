@@ -1,0 +1,28 @@
+name: Deploy signup worker
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy Worker and set RESEND_API_KEY
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          workingDirectory: worker
+          command: deploy
+          secrets: |
+            RESEND_API_KEY
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      - name: Print the signup URL
+        run: |
+          echo "Paste this into signup.config.js as window.SIGNUP_ENDPOINT:"
+          echo "${{ steps.deploy.outputs.deployment-url }}"

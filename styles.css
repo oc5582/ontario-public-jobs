@@ -103,6 +103,20 @@ main {
   font-size: 1.25rem;
 }
 
+.signup-lead {
+  margin: -0.35rem 0 1rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 label {
   display: block;
   margin-bottom: 0.25rem;

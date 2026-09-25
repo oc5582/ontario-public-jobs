@@ -11,10 +11,15 @@
   function initCopy() {
     if (!C) return;
 
+    const heading = $("#signup-heading");
+    if (heading && C.signup && C.signup.heading) heading.textContent = C.signup.heading;
+    const lead = $("#signup-lead");
+    if (lead && C.signup && C.signup.lead) lead.textContent = C.signup.lead;
+
     const casl = $("#casl-label");
-    if (casl && !casl.textContent.trim()) casl.textContent = C.caslConsent;
+    if (casl && C.caslConsent) casl.textContent = C.caslConsent;
     const payAsk = $("#soft-pay-ask");
-    if (payAsk && !payAsk.textContent.trim()) payAsk.textContent = C.softPayAsk;
+    if (payAsk && C.softPayAsk) payAsk.textContent = C.softPayAsk;
     const emailLabel = $("#email-label");
     if (emailLabel) emailLabel.textContent = C.form.emailLabel;
     const submit = $("#submit-btn");
@@ -54,25 +59,34 @@
     el.className = "status " + (ok ? "ok" : "err");
   }
 
+  function isEmail(value) {
+    if (value.length < 3 || value.length > 254) return false;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+
   function getSignupEndpoint() {
-    if (typeof window.__SIGNUP_ENDPOINT__ === "string" && window.__SIGNUP_ENDPOINT__) {
-      return window.__SIGNUP_ENDPOINT__;
-    }
-    if (typeof window.SIGNUP_ENDPOINT === "string" && window.SIGNUP_ENDPOINT) {
-      return window.SIGNUP_ENDPOINT;
-    }
+    const fromWindow =
+      typeof window.SIGNUP_ENDPOINT === "string" ? window.SIGNUP_ENDPOINT.trim() : "";
+    if (fromWindow) return fromWindow;
     const meta = document.querySelector('meta[name="signup-endpoint"]');
-    if (meta && meta.content) return meta.content;
-    return null;
+    if (meta && meta.content) return meta.content.trim();
+    return "";
   }
 
   function onSubmit(e) {
     e.preventDefault();
     const status = $("#signup-status");
-    const email = $("#email").value.trim();
+    const email = $("#email").value.trim().toLowerCase();
     const consent = $("#consent").checked;
+    const honeypot = $("#gotcha");
+    const btn = $("#submit-btn");
 
-    if (!email || !consent) {
+    if (honeypot && honeypot.value.trim()) {
+      showStatus(status, C.signup.successSent, true);
+      return;
+    }
+
+    if (!isEmail(email) || !consent) {
       showStatus(status, C.signup.validation, false);
       return;
     }
@@ -82,33 +96,50 @@
       if (pay) localStorage.setItem(PAY_KEY, pay.value);
     } catch (_) {}
 
-    const payload = {
-      email: email,
-      consent: true,
-    };
-    if (pay) payload.soft_pay = pay.value;
-
     const endpoint = getSignupEndpoint();
-    const btn = $("#submit-btn");
-    btn.disabled = true;
-
     if (!endpoint) {
-      showStatus(status, C.signup.successPreview, true);
-      btn.disabled = false;
+      showStatus(status, C.signup.notConfigured, false);
       return;
     }
 
+    const payload = {
+      email: email,
+      casl_consent: "yes",
+      _gotcha: "",
+    };
+    if (pay && /^(yes|maybe|no)$/.test(pay.value)) payload.soft_pay = pay.value;
+
+    const form = $("#signup-form");
+    form.action = endpoint;
+    form.method = "post";
+    btn.disabled = true;
+
     fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(payload),
+      mode: "cors",
+      credentials: "omit",
     })
       .then(function (r) {
-        if (!r.ok) throw new Error("fail");
-        showStatus(status, C.signup.successSent, true);
+        return r
+          .json()
+          .catch(function () {
+            return {};
+          })
+          .then(function (data) {
+            if (!r.ok) throw new Error(data.error || "fail");
+            showStatus(status, C.signup.successSent, true);
+            $("#email").value = "";
+            $("#consent").checked = false;
+          });
       })
-      .catch(function () {
-        showStatus(status, C.signup.error, false);
+      .catch(function (err) {
+        const known = err && err.message && err.message.indexOf("agree") !== -1;
+        showStatus(status, known ? err.message : C.signup.error, false);
       })
       .finally(function () {
         btn.disabled = false;
@@ -118,6 +149,11 @@
   document.addEventListener("DOMContentLoaded", function () {
     initCopy();
     const form = $("#signup-form");
+    const endpoint = getSignupEndpoint();
+    if (form && endpoint) {
+      form.action = endpoint;
+      form.method = "post";
+    }
     if (form) form.addEventListener("submit", onSubmit);
   });
 })();
