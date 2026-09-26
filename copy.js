@@ -9,7 +9,7 @@ window.COPY = {
   promise:
     "TTC, Metrolinx, Toronto Hydro, OLG, hospitals, school boards, Crown corporations — hundreds of public employers, each on its own website. All of them here, updated daily.",
   caslConsent:
-    "I agree to receive job alert emails from Ontario Public Jobs at this address. I can unsubscribe anytime.",
+    "I agree to receive job alert emails from PublicJobs.ca at this address. I can unsubscribe anytime.",
   softPayAsk:
     "Optional. If this saved you time each week, would you pay a small monthly fee for it?",
   softPayOptions: [

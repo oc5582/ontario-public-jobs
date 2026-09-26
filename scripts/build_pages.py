@@ -62,7 +62,7 @@ SEARCH_ALIASES = {
 SIGNUP_HEADING = "Get new Toronto Crown & agency openings by email — free."
 SIGNUP_LEAD = "The job board stays public. This signs you up for email alerts only."
 CASL = (
-    "I agree to receive job alert emails from Ontario Public Jobs at this address. "
+    "I agree to receive job alert emails from PublicJobs.ca at this address. "
     "I can unsubscribe anytime."
 )
 SOFT_PAY = (
