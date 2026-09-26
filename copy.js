@@ -3,11 +3,11 @@ window.COPY = {
   productName: "PublicJobs.ca",
   pageHeading: "Government Jobs in Toronto and the GTA",
   subhead:
-    "TTC, Metrolinx, Toronto Hydro, OLG, hospitals, school boards, Crown corporations — hundreds of public employers, each on its own website. All of them here, updated daily.",
+    "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other public employers in Toronto and the GTA, each hiring on its own website. Their openings, collected in one place.",
   whoItsFor:
-    "TTC, Metrolinx, Toronto Hydro, OLG, hospitals, school boards, Crown corporations — hundreds of public employers, each on its own website. All of them here, updated daily.",
+    "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other public employers in Toronto and the GTA, each hiring on its own website. Their openings, collected in one place.",
   promise:
-    "TTC, Metrolinx, Toronto Hydro, OLG, hospitals, school boards, Crown corporations — hundreds of public employers, each on its own website. All of them here, updated daily.",
+    "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other public employers in Toronto and the GTA, each hiring on its own website. Their openings, collected in one place.",
   caslConsent:
     "I agree to receive job alert emails from PublicJobs.ca at this address. I can unsubscribe anytime.",
   softPayAsk:
