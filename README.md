@@ -12,25 +12,6 @@ Formspree was not wired (there is no form id in the repo). Its free plan can sto
 
 After the contact is saved, the Worker sends the published Resend template `job-alerts-welcome` from `Public Jobs <alerts@publicjobs.ca>`. A failed welcome send does not undo the signup.
 
-### What Osama needs to do once
+The live signup endpoint is `https://ontario-public-jobs-signup.publicjobs.workers.dev`.
 
-1. Create a free [Cloudflare](https://dash.cloudflare.com/sign-up) account.
-2. Create an API token with **Account / Workers Scripts / Edit**.
-3. In the Resend dashboard, create an API key that can manage contacts (a send-only key cannot create contacts).
-4. In GitHub → Settings → Secrets and variables → Actions, add:
-   - `CLOUDFLARE_API_TOKEN`
-   - `RESEND_API_KEY`
-   - If the token can see more than one Cloudflare account, also add `CLOUDFLARE_ACCOUNT_ID` and set `accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}` on the deploy step.
-5. Run the **Deploy signup worker** workflow (Actions → Deploy signup worker → Run workflow).
-6. Copy the `https://ontario-public-jobs-signup.<account>.workers.dev` URL from the workflow log into `signup.config.js`:
-
-   ```javascript
-   window.SIGNUP_ENDPOINT = "https://ontario-public-jobs-signup.<account>.workers.dev";
-   ```
-
-7. Commit and push that one-line change to `main`.
-8. On the live site, submit a real address with the consent box checked. In Resend → Segments → Ontario Public Jobs subscribers, confirm the contact and the `casl_consent` property.
-
-Until step 7, the form stays visible and the listings stay public, but submit tells the visitor that email alerts are not turned on yet. It does not pretend the signup succeeded.
-
-To try the form on your machine without Cloudflare, run `node worker/dev-server.mjs` and temporarily point `SIGNUP_ENDPOINT` at `http://127.0.0.1:8787`. That local server does not call Resend.
+Pushes to `main` that change `worker/` or the deploy workflow publish that Worker. The Cloudflare token's account was discovered without `CLOUDFLARE_ACCOUNT_ID`. Its `workers.dev` subdomain is `publicjobs`.

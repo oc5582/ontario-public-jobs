@@ -186,7 +186,10 @@ test("homepage form is email plus consent and listings stay in the HTML", () => 
   assert.match(html, /href="jobs\/bdc-senior-business-advisor-business-strategy-toronto\.html"/);
 
   const config = readFileSync(join(root, "signup.config.js"), "utf8");
-  assert.match(config, /SIGNUP_ENDPOINT\s*=\s*""/);
+  assert.match(
+    config,
+    /SIGNUP_ENDPOINT\s*=\s*"https:\/\/ontario-public-jobs-signup\.publicjobs\.workers\.dev"/
+  );
   assert.doesNotMatch(config, /re_[A-Za-z0-9]/);
 
   for (const name of readdirSync(join(root, "jobs"))) {

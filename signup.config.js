@@ -1,6 +1,4 @@
 /**
- * Public URL of worker/signup.js after it is deployed.
- * Leave this empty until the Cloudflare Worker URL exists.
- * Example: "https://ontario-public-jobs-signup.example.workers.dev"
+ * Public URL of the deployed signup Worker. The API key stays in Worker secrets.
  */
-window.SIGNUP_ENDPOINT = "";
+window.SIGNUP_ENDPOINT = "https://ontario-public-jobs-signup.publicjobs.workers.dev";
