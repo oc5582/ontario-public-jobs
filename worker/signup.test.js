@@ -8,10 +8,11 @@ import {
   CONSENT_TEXT,
   SEGMENT_ID,
   handleSignup,
+  originAllowed,
 } from "./signup.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const origin = "https://oc5582.github.io";
+const origin = "https://publicjobs.ca";
 
 function post(body, headers = {}) {
   return new Request("https://signup.example/subscribe", {
@@ -116,6 +117,15 @@ test("honeypot submissions do not create a contact", async () => {
   );
   assert.equal(response.status, 200);
   assert.equal(called, false);
+});
+
+test("allows the custom domain and local dev only", () => {
+  assert.equal(originAllowed("https://publicjobs.ca"), true);
+  assert.equal(originAllowed("https://www.publicjobs.ca"), true);
+  assert.equal(originAllowed("http://localhost:8000"), true);
+  assert.equal(originAllowed("http://127.0.0.1:8787"), true);
+  assert.equal(originAllowed("https://oc5582.github.io"), false);
+  assert.equal(originAllowed("https://evil.example"), false);
 });
 
 test("blocks other websites", async () => {

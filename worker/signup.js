@@ -9,9 +9,13 @@ export const SEGMENT_ID = "e749c971-4701-4a99-9448-c315ff27a47b";
 export const CONSENT_TEXT =
   "I agree to receive job alert emails from Ontario Public Jobs at this address. I can unsubscribe anytime.";
 
-export const CONSENT_SOURCE = "https://oc5582.github.io/ontario-public-jobs/";
+export const CONSENT_SOURCE = "https://publicjobs.ca/";
 
 const SITE_URL = CONSENT_SOURCE;
+const ALLOWED_ORIGINS = new Set([
+  "https://publicjobs.ca",
+  "https://www.publicjobs.ca",
+]);
 const MAX_BODY = 10_000;
 const SOFT_PAY = new Set(["yes", "maybe", "no"]);
 
@@ -23,7 +27,7 @@ function isEmail(value) {
 }
 
 export function originAllowed(origin) {
-  if (origin === "https://oc5582.github.io") return true;
+  if (ALLOWED_ORIGINS.has(origin)) return true;
   try {
     const url = new URL(origin);
     return (
