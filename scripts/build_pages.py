@@ -28,9 +28,9 @@ SITE_URL = SITE_ORIGIN + SITE_BASE
 BRAND = "PublicJobs.ca"
 H1 = "Government Jobs in Toronto and the GTA"
 SUBHEAD = (
-    "TTC, Metrolinx, Toronto Hydro, OLG, hospitals, school boards, "
-    "Crown corporations — hundreds of public employers, each on its own website. "
-    "All of them here, updated daily."
+    "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other "
+    "public employers in Toronto and the GTA, each hiring on its own website. "
+    "Their openings, collected in one place."
 )
 LISTINGS_HEADING = "Current openings"
 FOOTER = "PublicJobs.ca is independent and not affiliated with any government."

@@ -176,14 +176,14 @@ test("blocks other websites", async () => {
 
 test("homepage form is email plus consent and listings stay in the HTML", () => {
   const html = readFileSync(join(root, "index.html"), "utf8");
-  const listingsAt = html.indexOf('id="listings-body"');
+  const listingsAt = html.indexOf('id="job-list"');
   const signupAt = html.indexOf('id="signup-form"');
-  assert.ok(listingsAt > 0 && signupAt > listingsAt);
+  assert.ok(signupAt > 0 && listingsAt > signupAt);
   assert.match(html, /Get new Toronto Crown &amp; agency openings by email — free\./);
   assert.match(html, /name="casl_consent"/);
   assert.match(html, /type="checkbox"/);
   assert.doesNotMatch(html.slice(signupAt, signupAt + 2500), /name="(region|keyword|employer)"/);
-  assert.match(html, /href="jobs\/bdc-senior-business-advisor-business-strategy-toronto\.html"/);
+  assert.match(html, /href="jobs\/[^"]+\/[^"]+\/"/);
 
   const config = readFileSync(join(root, "signup.config.js"), "utf8");
   assert.match(

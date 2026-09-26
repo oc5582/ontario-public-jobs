@@ -7,7 +7,7 @@
 export const SEGMENT_ID = "e749c971-4701-4a99-9448-c315ff27a47b";
 
 export const CONSENT_TEXT =
-  "I agree to receive job alert emails from Ontario Public Jobs at this address. I can unsubscribe anytime.";
+  "I agree to receive job alert emails from PublicJobs.ca at this address. I can unsubscribe anytime.";
 
 export const CONSENT_SOURCE = "https://publicjobs.ca/";
 
