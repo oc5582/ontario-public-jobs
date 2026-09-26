@@ -7,6 +7,8 @@ import {
   CONSENT_SOURCE,
   CONSENT_TEXT,
   SEGMENT_ID,
+  WELCOME_FROM,
+  WELCOME_TEMPLATE_ID,
   handleSignup,
   originAllowed,
 } from "./signup.js";
@@ -46,7 +48,7 @@ test("creates a consented contact on the Ontario Public Jobs segment", async () 
 
   assert.equal(response.status, 200);
   const payload = JSON.parse(seen[0].options.body);
-  assert.equal(seen.length, 1);
+  assert.equal(seen.length, 2);
   assert.equal(seen[0].url, "https://api.resend.com/contacts");
   assert.equal(seen[0].options.headers.Authorization, "Bearer test-key");
   assert.equal(payload.email, "reader@example.com");
@@ -58,6 +60,14 @@ test("creates a consented contact on the Ontario Public Jobs segment", async () 
   assert.equal(payload.properties.consented_at, "2026-09-24T12:00:00.000Z");
   assert.equal(payload.properties.soft_pay, "maybe");
   assert.equal(payload.properties.region, undefined);
+
+  const welcome = JSON.parse(seen[1].options.body);
+  assert.equal(seen[1].url, "https://api.resend.com/emails");
+  assert.equal(seen[1].options.headers["Idempotency-Key"], "welcome-email/reader@example.com");
+  assert.equal(welcome.from, WELCOME_FROM);
+  assert.deepEqual(welcome.to, ["reader@example.com"]);
+  assert.deepEqual(welcome.template, { id: WELCOME_TEMPLATE_ID });
+  assert.equal(welcome.html, undefined);
 });
 
 test("existing contacts are updated and added to the segment", async () => {
@@ -87,6 +97,25 @@ test("existing contacts are updated and added to the segment", async () => {
     seen[2].url,
     `https://api.resend.com/contacts/reader%40example.com/segments/${SEGMENT_ID}`
   );
+  assert.equal(seen[3].method, "POST");
+  assert.equal(seen[3].url, "https://api.resend.com/emails");
+});
+
+test("a failed welcome email still accepts the signup", async () => {
+  globalThis.fetch = async (url) => {
+    if (String(url).endsWith("/emails")) {
+      return new Response(JSON.stringify({ message: "domain not verified" }), {
+        status: 403,
+      });
+    }
+    return new Response(JSON.stringify({ id: "contact_1" }), { status: 200 });
+  };
+  const response = await handleSignup(
+    post({ email: "reader@example.com", casl_consent: "yes" }),
+    { RESEND_API_KEY: "test-key" }
+  );
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ok: true });
 });
 
 test("rejects missing consent and does not call Resend", async () => {

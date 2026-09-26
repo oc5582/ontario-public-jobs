@@ -2,6 +2,11 @@ name: Deploy signup worker
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "worker/**"
+      - ".github/workflows/deploy-signup-worker.yml"
 
 permissions:
   contents: read
