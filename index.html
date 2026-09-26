@@ -22,10 +22,6 @@
         <section class="hero" aria-labelledby="page-heading">
           <h1 id="page-heading">Government Jobs in Toronto and the GTA</h1>
           <p class="subhead">TTC, Metrolinx, Toronto Hydro, OLG, hospitals, school boards, Crown corporations — hundreds of public employers, each on its own website. All of them here, updated daily.</p>
-        </section>
-
-        <section class="listings" aria-labelledby="listings-heading">
-          <h2 id="listings-heading">Current openings</h2>
           <div class="listings-toolbar">
             <div class="count-block" aria-live="polite">
               <p class="count-number" id="listings-count">469</p>
@@ -42,6 +38,56 @@
               />
             </div>
           </div>
+        </section>
+
+        <section class="signup" aria-labelledby="signup-heading">
+          <div class="signup-panel">
+            <div class="signup-copy">
+              <h2 id="signup-heading">Get new Toronto Crown &amp; agency openings by email — free.</h2>
+              <p class="signup-lead" id="signup-lead">The job board stays public. This signs you up for email alerts only.</p>
+            </div>
+            <form id="signup-form" method="post" novalidate>
+              <div class="signup-fields">
+                <div class="field">
+                  <label id="email-label" for="email">Email</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    autocomplete="email"
+                    inputmode="email"
+                    maxlength="254"
+                    placeholder="you@example.com"
+                  />
+                </div>
+                <button type="submit" id="submit-btn">Email me new openings</button>
+              </div>
+
+              <div class="field consent-field">
+                <label class="checkbox" for="consent">
+                  <input type="checkbox" id="consent" name="casl_consent" value="yes" required />
+                  <span id="casl-label">I agree to receive job alert emails from Ontario Public Jobs at this address. I can unsubscribe anytime.</span>
+                </label>
+              </div>
+
+              <div class="hp" aria-hidden="true">
+                <label for="gotcha">Leave this field blank</label>
+                <input type="text" id="gotcha" name="_gotcha" tabindex="-1" autocomplete="off" />
+              </div>
+
+              <div class="pay-ask">
+                <p id="soft-pay-ask">Optional. If this saved you time each week, would you pay a small monthly fee for it?</p>
+                <div class="pay-options" id="pay-options"></div>
+              </div>
+
+              <div id="signup-status" class="status" role="status" aria-live="polite" hidden></div>
+            </form>
+          </div>
+        </section>
+
+        <section class="listings" aria-labelledby="listings-heading">
+          <h2 id="listings-heading">Current openings</h2>
           <p id="listings-empty" class="listings-empty" aria-live="polite" hidden>No openings match that search.</p>
           <ul class="job-list" id="job-list" tabindex="-1">
           <li>
@@ -203,48 +249,6 @@
           <noscript>
             <p class="listings-note">Showing the first 25 openings. Turn on JavaScript to search and move through the full list.</p>
           </noscript>
-        </section>
-
-        <section class="signup" aria-labelledby="signup-heading">
-          <div class="signup-panel">
-            <h2 id="signup-heading">Get new Toronto Crown &amp; agency openings by email — free.</h2>
-            <p class="signup-lead" id="signup-lead">The job board stays public. This signs you up for email alerts only.</p>
-            <form id="signup-form" method="post" novalidate>
-              <div class="field">
-                <label id="email-label" for="email">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  required
-                  autocomplete="email"
-                  inputmode="email"
-                  maxlength="254"
-                  placeholder="you@example.com"
-                />
-              </div>
-
-              <div class="field">
-                <label class="checkbox" for="consent">
-                  <input type="checkbox" id="consent" name="casl_consent" value="yes" required />
-                  <span id="casl-label">I agree to receive job alert emails from Ontario Public Jobs at this address. I can unsubscribe anytime.</span>
-                </label>
-              </div>
-
-              <div class="hp" aria-hidden="true">
-                <label for="gotcha">Leave this field blank</label>
-                <input type="text" id="gotcha" name="_gotcha" tabindex="-1" autocomplete="off" />
-              </div>
-
-              <div class="pay-ask">
-                <p id="soft-pay-ask">Optional. If this saved you time each week, would you pay a small monthly fee for it?</p>
-                <div class="pay-options" id="pay-options"></div>
-              </div>
-
-              <button type="submit" id="submit-btn">Email me new openings</button>
-              <div id="signup-status" class="status" role="status" aria-live="polite" hidden></div>
-            </form>
-          </div>
         </section>
       </div>
     </main>

@@ -451,10 +451,6 @@ def render_index(jobs: list[dict]) -> str:
         <section class="hero" aria-labelledby="page-heading">
           <h1 id="page-heading">{escape(H1)}</h1>
           <p class="subhead">{escape(SUBHEAD)}</p>
-        </section>
-
-        <section class="listings" aria-labelledby="listings-heading">
-          <h2 id="listings-heading">{escape(LISTINGS_HEADING)}</h2>
           <div class="listings-toolbar">
             <div class="count-block" aria-live="polite">
               <p class="count-number" id="listings-count">{count}</p>
@@ -471,40 +467,33 @@ def render_index(jobs: list[dict]) -> str:
               />
             </div>
           </div>
-          <p id="listings-empty" class="listings-empty" aria-live="polite" hidden>No openings match that search.</p>
-          <ul class="job-list" id="job-list" tabindex="-1">
-{first_rows}
-          </ul>
-          <nav class="pager" id="pager" aria-label="Pages of openings">
-            <button type="button" id="page-prev" disabled>Previous</button>
-            <p id="page-status">Page 1 of {pages}</p>
-            <button type="button" id="page-next"{next_disabled}>Next</button>
-          </nav>
-          <noscript>
-            <p class="listings-note">Showing the first {PAGE_SIZE} openings. Turn on JavaScript to search and move through the full list.</p>
-          </noscript>
         </section>
 
         <section class="signup" aria-labelledby="signup-heading">
           <div class="signup-panel">
-            <h2 id="signup-heading">{escape(SIGNUP_HEADING)}</h2>
-            <p class="signup-lead" id="signup-lead">{escape(SIGNUP_LEAD)}</p>
+            <div class="signup-copy">
+              <h2 id="signup-heading">{escape(SIGNUP_HEADING)}</h2>
+              <p class="signup-lead" id="signup-lead">{escape(SIGNUP_LEAD)}</p>
+            </div>
             <form id="signup-form" method="post" novalidate>
-              <div class="field">
-                <label id="email-label" for="email">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  required
-                  autocomplete="email"
-                  inputmode="email"
-                  maxlength="254"
-                  placeholder="you@example.com"
-                />
+              <div class="signup-fields">
+                <div class="field">
+                  <label id="email-label" for="email">Email</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    autocomplete="email"
+                    inputmode="email"
+                    maxlength="254"
+                    placeholder="you@example.com"
+                  />
+                </div>
+                <button type="submit" id="submit-btn">{escape(SUBMIT_LABEL)}</button>
               </div>
 
-              <div class="field">
+              <div class="field consent-field">
                 <label class="checkbox" for="consent">
                   <input type="checkbox" id="consent" name="casl_consent" value="yes" required />
                   <span id="casl-label">{escape(CASL)}</span>
@@ -521,10 +510,25 @@ def render_index(jobs: list[dict]) -> str:
                 <div class="pay-options" id="pay-options"></div>
               </div>
 
-              <button type="submit" id="submit-btn">{escape(SUBMIT_LABEL)}</button>
               <div id="signup-status" class="status" role="status" aria-live="polite" hidden></div>
             </form>
           </div>
+        </section>
+
+        <section class="listings" aria-labelledby="listings-heading">
+          <h2 id="listings-heading">{escape(LISTINGS_HEADING)}</h2>
+          <p id="listings-empty" class="listings-empty" aria-live="polite" hidden>No openings match that search.</p>
+          <ul class="job-list" id="job-list" tabindex="-1">
+{first_rows}
+          </ul>
+          <nav class="pager" id="pager" aria-label="Pages of openings">
+            <button type="button" id="page-prev" disabled>Previous</button>
+            <p id="page-status">Page 1 of {pages}</p>
+            <button type="button" id="page-next"{next_disabled}>Next</button>
+          </nav>
+          <noscript>
+            <p class="listings-note">Showing the first {PAGE_SIZE} openings. Turn on JavaScript to search and move through the full list.</p>
+          </noscript>
         </section>
       </div>
     </main>
