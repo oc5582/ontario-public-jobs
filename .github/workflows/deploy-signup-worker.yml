@@ -16,12 +16,45 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Register a workers.dev subdomain if the account has none
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -eu
+          ACCOUNT_ID=$(curl -fsS https://api.cloudflare.com/client/v4/accounts \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{const j=JSON.parse(s); if(!j.success||!j.result||!j.result[0]){console.error(JSON.stringify(j.errors||j)); process.exit(1)} process.stdout.write(j.result[0].id)})')
+          echo "Cloudflare account discovered: ${ACCOUNT_ID}"
+          CURRENT=$(curl -sS "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/subdomain" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
+          HAS=$(printf '%s' "$CURRENT" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{const j=JSON.parse(s); process.stdout.write(j.success && j.result && j.result.subdomain ? "yes" : "no")})')
+          if [ "$HAS" = "yes" ]; then
+            printf '%s' "$CURRENT" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{const j=JSON.parse(s); console.log("workers.dev subdomain already set: "+j.result.subdomain)})'
+            exit 0
+          fi
+          echo "No workers.dev subdomain yet. Registering one."
+          for name in publicjobs publicjobs-ca ontario-public-jobs; do
+            RESP=$(curl -sS -X PUT "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/subdomain" \
+              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              --data "{\"subdomain\":\"${name}\"}")
+            printf '%s' "$RESP" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{const j=JSON.parse(s); console.log(JSON.stringify({success:j.success, errors:j.errors||[], subdomain:j.result&&j.result.subdomain}))})'
+            OK=$(printf '%s' "$RESP" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{const j=JSON.parse(s); process.stdout.write(j.success?"yes":"no")})')
+            if [ "$OK" = "yes" ]; then
+              exit 0
+            fi
+          done
+          echo "The Workers token could not register a workers.dev subdomain."
+          echo "Open Workers onboarding for this account and choose a subdomain, then re-run Deploy signup worker."
+          echo "https://dash.cloudflare.com/${ACCOUNT_ID}/workers/onboarding"
+          exit 1
       - name: Deploy Worker and set RESEND_API_KEY
         id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           workingDirectory: worker
+          wranglerVersion: "4"
           command: deploy
           secrets: |
             RESEND_API_KEY
