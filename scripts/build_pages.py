@@ -14,8 +14,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "data" / "listings.json"
 JOBS_DIR = ROOT / "jobs"
-SITE_ORIGIN = "https://oc5582.github.io"
-SITE_BASE = "/ontario-public-jobs"
+# Apex custom domain. Pages are served from the domain root, not a project subpath.
+SITE_ORIGIN = "https://publicjobs.ca"
+SITE_BASE = ""
 SITE_URL = SITE_ORIGIN + SITE_BASE
 
 PRODUCT_NAME = "Ontario Public Jobs"
