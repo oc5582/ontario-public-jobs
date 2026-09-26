@@ -10,7 +10,7 @@ GitHub Pages cannot call Resend from the browser (the API blocks browser CORS, a
 
 Formspree was not wired (there is no form id in the repo). Its free plan can store a submission, but adding the address to Resend needs the paid submissions API or a paid webhook. The Worker is the free path that lands the contact on the segment.
 
-There is no custom sending domain yet, so this step only saves the contact. `onboarding@resend.dev` can deliver only to the Resend account address, so job-alert broadcasts wait until a domain is verified.
+After the contact is saved, the Worker sends the published Resend template `job-alerts-welcome` from `Public Jobs <alerts@publicjobs.ca>`. A failed welcome send does not undo the signup.
 
 ### What Osama needs to do once
 

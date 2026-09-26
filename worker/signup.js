@@ -11,6 +11,9 @@ export const CONSENT_TEXT =
 
 export const CONSENT_SOURCE = "https://publicjobs.ca/";
 
+export const WELCOME_TEMPLATE_ID = "job-alerts-welcome";
+export const WELCOME_FROM = "Public Jobs <alerts@publicjobs.ca>";
+
 const SITE_URL = CONSENT_SOURCE;
 const ALLOWED_ORIGINS = new Set([
   "https://publicjobs.ca",
@@ -197,6 +200,34 @@ async function saveContact(email, properties, env) {
   return { ok: false, status: added.status };
 }
 
+async function sendWelcome(email, env) {
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+        "Idempotency-Key": `welcome-email/${email}`,
+      },
+      body: JSON.stringify({
+        from: WELCOME_FROM,
+        to: [email],
+        template: { id: WELCOME_TEMPLATE_ID },
+      }),
+    });
+    if (!response.ok) {
+      const body = await readError(response);
+      console.error(
+        "Welcome email failed",
+        response.status,
+        body.message || body.name || ""
+      );
+    }
+  } catch (err) {
+    console.error("Welcome email failed", err && err.message ? err.message : "error");
+  }
+}
+
 export async function handleSignup(request, env, deps = {}) {
   const origin = request.headers.get("origin") || "";
 
@@ -263,6 +294,7 @@ export async function handleSignup(request, env, deps = {}) {
     console.error("Resend contact save failed", saved.status || "");
     return respond(request, origin, 502, "Something went wrong. Please try again.");
   }
+  await sendWelcome(email, env);
   return respond(request, origin, 200);
 }
 
