@@ -1,12 +1,15 @@
 /** All UI strings — Product Lead draft placeholders */
 window.COPY = {
-  productName: "Ontario Public Jobs",
+  productName: "PublicJobs.ca",
+  pageHeading: "Government Jobs in Toronto and the GTA",
+  subhead:
+    "TTC, Metrolinx, Toronto Hydro, OLG, hospitals, school boards, Crown corporations — hundreds of public employers, each on its own website. All of them here, updated daily.",
   whoItsFor:
-    "Job seekers watching government-owned corporations and agencies hiring in Toronto, the GTA, or hybrid-Toronto",
+    "TTC, Metrolinx, Toronto Hydro, OLG, hospitals, school boards, Crown corporations — hundreds of public employers, each on its own website. All of them here, updated daily.",
   promise:
-    "Matching Crown and agency openings in Toronto / GTA / hybrid-Toronto with real apply links and full job descriptions on this site — not another generic board",
+    "TTC, Metrolinx, Toronto Hydro, OLG, hospitals, school boards, Crown corporations — hundreds of public employers, each on its own website. All of them here, updated daily.",
   caslConsent:
-    "I agree to receive job alert emails from Ontario Public Jobs at this address. I can unsubscribe anytime.",
+    "I agree to receive job alert emails from PublicJobs.ca at this address. I can unsubscribe anytime.",
   softPayAsk:
     "Optional. If this saved you time each week, would you pay a small monthly fee for it?",
   softPayOptions: [
@@ -19,7 +22,7 @@ window.COPY = {
     submit: "Email me new openings",
   },
   listings: {
-    heading: "Current Crown and agency openings",
+    heading: "Current openings",
     loading: "Loading listings…",
     empty: "No listings to show.",
     error: "Could not load listings.",
