@@ -1,0 +1,13 @@
+/* Extra styles for /privacy/ and /about/ only. */
+.description a {
+  color: var(--civic);
+}
+
+.description ul {
+  margin: 0 0 0.9rem;
+  padding-left: 1.25rem;
+}
+
+.description li + li {
+  margin-top: 0.35rem;
+}
