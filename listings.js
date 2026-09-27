@@ -37,6 +37,14 @@
     };
   }
 
+  function isStillOpen(job, now) {
+    var match = /^(\d{4})-(\d{2})-(\d{2})$/.exec((job && job.closing) || "");
+    if (!match) return true;
+    var close = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return close.getTime() >= today.getTime();
+  }
+
   function countLabel(total, filtering) {
     if (filtering) return total === 1 ? "matching opening" : "matching openings";
     return total === 1 ? "opening" : "openings";
@@ -68,8 +76,10 @@
 
     function filtered() {
       var q = norm(query);
-      if (!q) return jobs;
+      var now = new Date();
       return jobs.filter(function (job) {
+        if (!isStillOpen(job, now)) return false;
+        if (!q) return true;
         var hay = norm([job.title, job.employer, job.alias].filter(Boolean).join(" "));
         return hay.indexOf(q) !== -1;
       });
