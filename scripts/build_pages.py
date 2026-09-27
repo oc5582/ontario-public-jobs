@@ -28,7 +28,7 @@ SITE_URL = SITE_ORIGIN + SITE_BASE
 BRAND = "PublicJobs.ca"
 # Leave [PIXEL_ID] in place until a real Meta Pixel id is set.
 # An empty value or that placeholder omits the pixel from every page.
-PIXEL_ID = "[PIXEL_ID]"
+PIXEL_ID = "4654096711502773"
 # An empty value or the [OG_IMAGE_URL] placeholder omits og:image.
 OG_IMAGE_URL = "https://publicjobs.ca/og-image.png"
 OG_IMAGE_ALT = "PublicJobs.ca: government jobs in Toronto and the GTA"
