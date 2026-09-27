@@ -30,6 +30,9 @@ BRAND = "PublicJobs.ca"
 # Leave [PIXEL_ID] in place until a real Meta Pixel id is set.
 # An empty value or that placeholder omits the pixel from every page.
 PIXEL_ID = "[PIXEL_ID]"
+# Leave [OG_IMAGE_URL] in place until an image URL is set.
+# An empty value or that placeholder omits og:image.
+OG_IMAGE_URL = "[OG_IMAGE_URL]"
 H1 = "Independent government job board for Toronto and the GTA"
 SUBHEAD = (
     "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other "
@@ -383,6 +386,22 @@ def apply_click_script() -> str:
     </script>"""
 
 
+def og_tags(title: str, description: str, url: str) -> str:
+    lines = [
+        f'    <meta property="og:title" content="{escape(title)}" />',
+        f'    <meta property="og:description" content="{escape(description)}" />',
+        f'    <meta property="og:url" content="{escape(url, quote=True)}" />',
+        '    <meta property="og:type" content="website" />',
+        f'    <meta property="og:site_name" content="{escape(BRAND)}" />',
+    ]
+    image = configured_value(OG_IMAGE_URL, "[OG_IMAGE_URL]")
+    if image:
+        lines.append(
+            f'    <meta property="og:image" content="{escape(image, quote=True)}" />'
+        )
+    return "\n".join(lines)
+
+
 def shared_head(
     title: str, description: str, canonical: str, css_href: str, extra_css: str = ""
 ) -> str:
@@ -399,6 +418,7 @@ def shared_head(
     <title>{escape(title)}</title>
     <meta name="description" content="{escape(description)}" />
     <link rel="canonical" href="{escape(canonical, quote=True)}" />
+{og_tags(title, description, canonical)}
 {FONT_LINKS}
     <link rel="stylesheet" href="{escape(css_href, quote=True)}" />{extra}{pixel_block}
   </head>"""
