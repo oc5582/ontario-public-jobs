@@ -132,6 +132,9 @@
           })
           .then(function (data) {
             if (!r.ok) throw new Error(data.error || "fail");
+            if (data && data.ok === true && typeof fbq === "function") {
+              fbq("track", "Lead");
+            }
             showStatus(status, C.signup.successSent, true);
             $("#email").value = "";
             $("#consent").checked = false;

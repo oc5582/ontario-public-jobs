@@ -334,6 +334,17 @@ input[type="search"] {
   margin: 0.65rem 0 0;
 }
 
+.privacy-link {
+  margin: 0.35rem 0 0;
+}
+
+.privacy-link a {
+  color: var(--civic);
+  font-size: 0.875rem;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
 .signup .checkbox {
   display: flex;
   font-size: 0.875rem;
@@ -604,6 +615,10 @@ button[type="submit"]:disabled {
   .signup .checkbox {
     font-size: 0.8125rem;
     line-height: 1.35;
+  }
+
+  .privacy-link a {
+    font-size: 0.8125rem;
   }
 
   .pay-ask {

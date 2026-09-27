@@ -26,7 +26,13 @@ SITE_BASE = ""
 SITE_URL = SITE_ORIGIN + SITE_BASE
 
 BRAND = "PublicJobs.ca"
-H1 = "Government Jobs in Toronto and the GTA"
+# Leave [PIXEL_ID] in place until a real Meta Pixel id is set.
+# An empty value or that placeholder omits the pixel from every page.
+PIXEL_ID = "[PIXEL_ID]"
+# An empty value or the [OG_IMAGE_URL] placeholder omits og:image.
+OG_IMAGE_URL = "https://publicjobs.ca/og-image.png"
+OG_IMAGE_ALT = "PublicJobs.ca: government jobs in Toronto and the GTA"
+H1 = "Independent job board for government jobs in Toronto and the GTA"
 SUBHEAD = (
     "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other "
     "public employers in Toronto and the GTA, each hiring on its own website. "
@@ -312,7 +318,91 @@ def apply_button(url: str, extra_class: str = "") -> str:
     )
 
 
-def shared_head(title: str, description: str, canonical: str, css_href: str) -> str:
+def configured_value(value: str, placeholder: str) -> str:
+    raw = (value or "").strip()
+    if not raw or raw == placeholder:
+        return ""
+    return raw
+
+
+def js_quote(value: str) -> str:
+    return (
+        value.replace("\\", "\\\\")
+        .replace("'", "\\'")
+        .replace("\r", "")
+        .replace("\n", "")
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+    )
+
+
+def pixel_snippet() -> str:
+    pixel_id = configured_value(PIXEL_ID, "[PIXEL_ID]")
+    if not pixel_id:
+        return ""
+    safe_js = js_quote(pixel_id)
+    safe_url = escape(pixel_id, quote=True)
+    return f"""    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {{if(f.fbq)return;n=f.fbq=function(){{n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)}};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '{safe_js}');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id={safe_url}&amp;ev=PageView&amp;noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->"""
+
+
+def apply_click_script() -> str:
+    if not configured_value(PIXEL_ID, "[PIXEL_ID]"):
+        return ""
+    return """    <script>
+    document.addEventListener("click", function (event) {
+      var el = event.target;
+      var link = el && el.closest ? el.closest("a.apply-btn") : null;
+      if (!link || typeof fbq !== "function") return;
+      fbq("trackCustom", "ApplyClick");
+    });
+    </script>"""
+
+
+def og_tags(title: str, description: str, url: str) -> str:
+    lines = [
+        f'    <meta property="og:title" content="{escape(title)}" />',
+        f'    <meta property="og:description" content="{escape(description)}" />',
+        f'    <meta property="og:url" content="{escape(url, quote=True)}" />',
+        '    <meta property="og:type" content="website" />',
+        f'    <meta property="og:site_name" content="{escape(BRAND)}" />',
+    ]
+    image = configured_value(OG_IMAGE_URL, "[OG_IMAGE_URL]")
+    if image:
+        lines.append(
+            f'    <meta property="og:image" content="{escape(image, quote=True)}" />'
+        )
+        lines.append('    <meta property="og:image:width" content="1200" />')
+        lines.append('    <meta property="og:image:height" content="630" />')
+        lines.append(
+            f'    <meta property="og:image:alt" content="{escape(OG_IMAGE_ALT)}" />'
+        )
+    return "\n".join(lines)
+
+
+def shared_head(
+    title: str, description: str, canonical: str, css_href: str, extra_css: str = ""
+) -> str:
+    extra = ""
+    if extra_css:
+        extra = f'\n    <link rel="stylesheet" href="{escape(extra_css, quote=True)}" />'
+    pixel = pixel_snippet()
+    pixel_block = f"\n{pixel}" if pixel else ""
     return f"""<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -321,8 +411,9 @@ def shared_head(title: str, description: str, canonical: str, css_href: str) -> 
     <title>{escape(title)}</title>
     <meta name="description" content="{escape(description)}" />
     <link rel="canonical" href="{escape(canonical, quote=True)}" />
+{og_tags(title, description, canonical)}
 {FONT_LINKS}
-    <link rel="stylesheet" href="{escape(css_href, quote=True)}" />
+    <link rel="stylesheet" href="{escape(css_href, quote=True)}" />{extra}{pixel_block}
   </head>"""
 
 
@@ -357,6 +448,8 @@ def render_job_page(job: dict) -> str:
         for label, value in job_meta_rows(job)
     )
     apply = apply_button(apply_url) if apply_url else ""
+    script = apply_click_script()
+    script_block = f"\n{script}" if script else ""
     return f"""{shared_head(page_title, meta_desc, canonical, "../../../styles.css")}
   <body>
 {site_header("../../../")}
@@ -376,7 +469,7 @@ def render_job_page(job: dict) -> str:
         {apply}
       </article>
     </main>
-{site_footer()}
+{site_footer()}{script_block}
   </body>
 </html>
 """
@@ -498,6 +591,7 @@ def render_index(jobs: list[dict]) -> str:
                   <input type="checkbox" id="consent" name="casl_consent" value="yes" required />
                   <span id="casl-label">{escape(CASL)}</span>
                 </label>
+                <p class="privacy-link"><a href="/privacy/">Privacy policy</a></p>
               </div>
 
               <div class="hp" aria-hidden="true">
@@ -544,8 +638,104 @@ def render_index(jobs: list[dict]) -> str:
 """
 
 
+PRIVACY_DESCRIPTION = (
+    "PublicJobs.ca is an independent job board. This page explains what "
+    "personal information we collect, why, and how you can control it."
+)
+ABOUT_DESCRIPTION = (
+    "PublicJobs.ca collects current job openings from public employers in "
+    "Toronto and the GTA and lists them in one place."
+)
+
+
+def render_info_page(title: str, heading: str, description: str, path: str, body: str) -> str:
+    canonical = f"{SITE_URL}/{path}"
+    return f"""{shared_head(title, description, canonical, "../styles.css", extra_css="../pages.css")}
+  <body>
+{site_header("../")}
+    <main>
+      <article class="job-page content">
+        <p class="crumb"><a href="../">All openings</a></p>
+        <h1>{escape(heading)}</h1>
+        <section class="description">
+{body}
+        </section>
+      </article>
+    </main>
+{site_footer()}
+  </body>
+</html>
+"""
+
+
+def render_privacy_page() -> str:
+    body = """          <p>Last updated: September 27, 2026</p>
+          <p>PublicJobs.ca is an independent job board. It is not affiliated with any government or with any employer listed on the site. This page explains what personal information we collect, why, and how you can control it.</p>
+          <h2>Who we are</h2>
+          <p>PublicJobs.ca is operated by Osama Chaudhary, 65 Thorncliffe Park Drive, Apartment 603, Toronto, Ontario M4H 1L2, Canada. Contact: <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>.</p>
+          <h2>Browsing the site</h2>
+          <p>You can browse and search job listings without an account. When you click "Apply on employer site", you leave PublicJobs.ca and go to the employer's own website. That employer's privacy policy applies there. We do not receive your application.</p>
+          <h2>Email alerts</h2>
+          <p>If you sign up for email alerts, we collect:</p>
+          <ul>
+            <li>your email address</li>
+            <li>a record that you ticked the consent box, including the consent wording you agreed to</li>
+            <li>the web page address where you signed up</li>
+            <li>your answer to the optional question about paying for alerts, if you choose to answer</li>
+          </ul>
+          <p>We use this only to send you job alert emails from PublicJobs.ca and to understand interest in the service. We do not sell or rent your information, and we do not share it with employers.</p>
+          <h2>Advertising and measurement</h2>
+          <p>We use the Meta Pixel, a tool from Meta Platforms, Inc., to measure how well our ads on Facebook and Instagram work. When you visit PublicJobs.ca, the Meta Pixel may use cookies and similar technology to collect information such as the pages you view, whether you signed up for alerts, whether you clicked through to an employer's site, and technical details about your browser and device. Meta may use this information as described in its own privacy policy (<a href="https://facebook.com/privacy/policy">facebook.com/privacy/policy</a>). We do not send your email address to Meta. You can control ad personalization in your Facebook and Instagram ad settings, and you can block or delete cookies in your browser settings.</p>
+          <h2>Service providers</h2>
+          <p>We use trusted service providers to run this site and our emails: Cloudflare (runs the signup form), Resend (stores the mailing list and sends the emails), and Meta (ad measurement, described above). These providers may store information outside Canada, including in the United States, where it may be subject to local laws.</p>
+          <h2>Unsubscribing</h2>
+          <p>Every alert email includes a one-click unsubscribe link. You can also email <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a> and we will remove you.</p>
+          <h2>How long we keep it</h2>
+          <p>We keep your email address while you are subscribed. If you unsubscribe, we stop sending emails and delete or suppress your address within a reasonable time, keeping only what we need to make sure you are not emailed again.</p>
+          <h2>Your rights</h2>
+          <p>You can ask to see the personal information we hold about you, ask us to correct it, or withdraw your consent at any time by emailing <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>. If you are not satisfied with our response, you can contact the Office of the Privacy Commissioner of Canada at <a href="https://priv.gc.ca">priv.gc.ca</a>.</p>
+          <h2>Changes to this policy</h2>
+          <p>If we change this policy, we will update the date at the top of this page.</p>"""
+    return render_info_page(
+        f"Privacy policy | {BRAND}",
+        "Privacy policy",
+        PRIVACY_DESCRIPTION,
+        "privacy/",
+        body,
+    )
+
+
+def render_about_page() -> str:
+    body = """          <p>PublicJobs.ca collects current job openings from public employers in Toronto and the GTA, such as Crown corporations, provincial and federal agencies, City of Toronto agencies, and some public-interest regulators, and lists them in one place.</p>
+          <p>We are independent. PublicJobs.ca is not a government website and is not affiliated with, endorsed by, or acting for any government or any employer listed on the site.</p>
+          <p>We do not hire and we do not take applications. Every job page links to the employer's own posting, and you apply there.</p>
+          <p>Job details come from employers' public careers pages. Always check the employer's posting for the latest information, including closing dates and pay.</p>
+          <p>Browsing is free and needs no account. Email alerts are optional.</p>
+          <p>Questions or corrections: <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>. See our privacy policy at <a href="/privacy/">/privacy/</a>.</p>"""
+    return render_info_page(
+        f"About | {BRAND}",
+        "About PublicJobs.ca",
+        ABOUT_DESCRIPTION,
+        "about/",
+        body,
+    )
+
+
+def write_info_pages() -> None:
+    privacy = ROOT / "privacy" / "index.html"
+    about = ROOT / "about" / "index.html"
+    privacy.parent.mkdir(parents=True, exist_ok=True)
+    about.parent.mkdir(parents=True, exist_ok=True)
+    privacy.write_text(render_privacy_page(), encoding="utf-8")
+    about.write_text(render_about_page(), encoding="utf-8")
+
+
 def write_sitemap(paths: list[str]) -> None:
-    urls = [f"{SITE_URL}/"] + [f"{SITE_URL}/{path}" for path in paths]
+    urls = [
+        f"{SITE_URL}/",
+        f"{SITE_URL}/privacy/",
+        f"{SITE_URL}/about/",
+    ] + [f"{SITE_URL}/{path}" for path in paths]
     items = "\n".join(f"  <url><loc>{escape(url, quote=True)}</loc></url>" for url in urls)
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -700,6 +890,7 @@ def main() -> None:
         written_redirects += 1
 
     (ROOT / "index.html").write_text(render_index(jobs), encoding="utf-8")
+    write_info_pages()
     write_sitemap(slugs)
     write_robots()
     (ROOT / ".nojekyll").write_text("", encoding="utf-8")

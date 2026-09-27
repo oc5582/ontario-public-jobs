@@ -1,6 +1,6 @@
 /**
  * GitHub Pages signup endpoint.
- * Creates a Resend contact on the Ontario Public Jobs subscribers segment.
+ * Creates a Resend contact on the PublicJobs.ca subscribers segment.
  * RESEND_API_KEY is a Worker secret — never put it in the static site.
  */
 
@@ -12,7 +12,7 @@ export const CONSENT_TEXT =
 export const CONSENT_SOURCE = "https://publicjobs.ca/";
 
 export const WELCOME_TEMPLATE_ID = "job-alerts-welcome";
-export const WELCOME_FROM = "Public Jobs <alerts@publicjobs.ca>";
+export const WELCOME_FROM = "PublicJobs.ca <alerts@publicjobs.ca>";
 
 const SITE_URL = CONSENT_SOURCE;
 const ALLOWED_ORIGINS = new Set([
@@ -58,7 +58,7 @@ function htmlPage(status, origin) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ontario Public Jobs</title>
+  <title>PublicJobs.ca</title>
 </head>
 <body>
   <main>
@@ -238,7 +238,7 @@ export async function handleSignup(request, env, deps = {}) {
 
   if (request.method === "GET") {
     return withCors(
-      new Response("Ontario Public Jobs signup endpoint\n", {
+      new Response("PublicJobs.ca signup endpoint\n", {
         status: 200,
         headers: { "Content-Type": "text/plain; charset=utf-8" },
       }),
