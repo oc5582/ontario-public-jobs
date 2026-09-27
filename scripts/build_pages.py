@@ -12,8 +12,7 @@ import json
 import re
 import shutil
 from collections import Counter
-from datetime import date, datetime
-from zoneinfo import ZoneInfo
+from datetime import date
 from html import escape, unescape
 from html.parser import HTMLParser
 from pathlib import Path
@@ -283,17 +282,6 @@ def render_paragraphs(paragraphs: list[str]) -> str:
     if not paragraphs:
         return f'<p class="unavailable">{escape(UNAVAILABLE)}</p>'
     return "\n".join(f"<p>{escape(p)}</p>" for p in paragraphs)
-
-
-def toronto_today() -> date:
-    return datetime.now(ZoneInfo("America/Toronto")).date()
-
-
-def listing_is_visible(job: dict, today: date) -> bool:
-    closing = iso_date(text(job.get("closing_date")))
-    if not closing:
-        return True
-    return date.fromisoformat(closing) >= today
 
 
 def sort_jobs(jobs: list[dict]) -> list[dict]:
@@ -846,7 +834,6 @@ def main() -> None:
         raise SystemExit("listings.json must be a JSON array")
     jobs = sort_jobs(raw)
     assign_paths(jobs)
-    visible = [job for job in jobs if listing_is_visible(job, toronto_today())]
 
     apply_to_path: dict[str, str] = {}
     published_targets: set[str] = set()
@@ -898,7 +885,7 @@ def main() -> None:
         path.write_text(render_redirect(target, apply_url), encoding="utf-8")
         written_redirects += 1
 
-    (ROOT / "index.html").write_text(render_index(visible), encoding="utf-8")
+    (ROOT / "index.html").write_text(render_index(jobs), encoding="utf-8")
     write_info_pages()
     write_sitemap(slugs)
     write_robots()
