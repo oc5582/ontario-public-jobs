@@ -32,7 +32,7 @@ PIXEL_ID = "[PIXEL_ID]"
 # An empty value or the [OG_IMAGE_URL] placeholder omits og:image.
 OG_IMAGE_URL = "https://publicjobs.ca/og-image.png"
 OG_IMAGE_ALT = "PublicJobs.ca: government jobs in Toronto and the GTA"
-H1 = "Independent government job board for Toronto and the GTA"
+H1 = "Independent job board for government jobs in Toronto and the GTA"
 SUBHEAD = (
     "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other "
     "public employers in Toronto and the GTA, each hiring on its own website. "
