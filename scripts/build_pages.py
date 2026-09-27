@@ -30,9 +30,9 @@ BRAND = "PublicJobs.ca"
 # Leave [PIXEL_ID] in place until a real Meta Pixel id is set.
 # An empty value or that placeholder omits the pixel from every page.
 PIXEL_ID = "[PIXEL_ID]"
-# Leave [OG_IMAGE_URL] in place until an image URL is set.
-# An empty value or that placeholder omits og:image.
-OG_IMAGE_URL = "[OG_IMAGE_URL]"
+# An empty value or the [OG_IMAGE_URL] placeholder omits og:image.
+OG_IMAGE_URL = "https://publicjobs.ca/og-image.png"
+OG_IMAGE_ALT = "PublicJobs.ca: government jobs in Toronto and the GTA"
 H1 = "Independent government job board for Toronto and the GTA"
 SUBHEAD = (
     "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other "
@@ -399,6 +399,11 @@ def og_tags(title: str, description: str, url: str) -> str:
         lines.append(
             f'    <meta property="og:image" content="{escape(image, quote=True)}" />'
         )
+        lines.append('    <meta property="og:image:width" content="1200" />')
+        lines.append('    <meta property="og:image:height" content="630" />')
+        lines.append(
+            f'    <meta property="og:image:alt" content="{escape(OG_IMAGE_ALT)}" />'
+        )
     return "\n".join(lines)
 
 
@@ -679,7 +684,7 @@ def render_privacy_page() -> str:
     body = """          <p>Last updated: [DATE OF PUBLISHING]</p>
           <p>PublicJobs.ca is an independent job board. It is not affiliated with any government or with any employer listed on the site. This page explains what personal information we collect, why, and how you can control it.</p>
           <h2>Who we are</h2>
-          <p>PublicJobs.ca is operated by [OPERATOR NAME], [MAILING ADDRESS], Ontario, Canada. Contact: [CONTACT EMAIL].</p>
+          <p>PublicJobs.ca is operated by Osama Chaudhary, 65 Thorncliffe Park Drive, Apartment 603, Toronto, Ontario M4H 1L2, Canada. Contact: <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>.</p>
           <h2>Browsing the site</h2>
           <p>You can browse and search job listings without an account. When you click "Apply on employer site", you leave PublicJobs.ca and go to the employer's own website. That employer's privacy policy applies there. We do not receive your application.</p>
           <h2>Email alerts</h2>
@@ -696,11 +701,11 @@ def render_privacy_page() -> str:
           <h2>Service providers</h2>
           <p>We use trusted service providers to run this site and our emails: Cloudflare (runs the signup form), Resend (stores the mailing list and sends the emails), and Meta (ad measurement, described above). These providers may store information outside Canada, including in the United States, where it may be subject to local laws.</p>
           <h2>Unsubscribing</h2>
-          <p>Every alert email includes a one-click unsubscribe link. You can also email [CONTACT EMAIL] and we will remove you.</p>
+          <p>Every alert email includes a one-click unsubscribe link. You can also email <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a> and we will remove you.</p>
           <h2>How long we keep it</h2>
           <p>We keep your email address while you are subscribed. If you unsubscribe, we stop sending emails and delete or suppress your address within a reasonable time, keeping only what we need to make sure you are not emailed again.</p>
           <h2>Your rights</h2>
-          <p>You can ask to see the personal information we hold about you, ask us to correct it, or withdraw your consent at any time by emailing [CONTACT EMAIL]. If you are not satisfied with our response, you can contact the Office of the Privacy Commissioner of Canada at <a href="https://priv.gc.ca">priv.gc.ca</a>.</p>
+          <p>You can ask to see the personal information we hold about you, ask us to correct it, or withdraw your consent at any time by emailing <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>. If you are not satisfied with our response, you can contact the Office of the Privacy Commissioner of Canada at <a href="https://priv.gc.ca">priv.gc.ca</a>.</p>
           <h2>Changes to this policy</h2>
           <p>If we change this policy, we will update the date at the top of this page.</p>"""
     return render_info_page(
@@ -718,7 +723,7 @@ def render_about_page() -> str:
           <p>We do not hire and we do not take applications. Every job page links to the employer's own posting, and you apply there.</p>
           <p>Job details come from employers' public careers pages. Always check the employer's posting for the latest information, including closing dates and pay.</p>
           <p>Browsing is free and needs no account. Email alerts are optional.</p>
-          <p>Questions or corrections: [CONTACT EMAIL]. See our privacy policy at <a href="/privacy/">/privacy/</a>.</p>"""
+          <p>Questions or corrections: <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>. See our privacy policy at <a href="/privacy/">/privacy/</a>.</p>"""
     return render_info_page(
         f"About | {BRAND}",
         "About PublicJobs.ca",
