@@ -669,7 +669,7 @@ def render_info_page(title: str, heading: str, description: str, path: str, body
 
 
 def render_privacy_page() -> str:
-    body = """          <p>Last updated: [DATE OF PUBLISHING]</p>
+    body = """          <p>Last updated: September 27, 2026</p>
           <p>PublicJobs.ca is an independent job board. It is not affiliated with any government or with any employer listed on the site. This page explains what personal information we collect, why, and how you can control it.</p>
           <h2>Who we are</h2>
           <p>PublicJobs.ca is operated by Osama Chaudhary, 65 Thorncliffe Park Drive, Apartment 603, Toronto, Ontario M4H 1L2, Canada. Contact: <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>.</p>
@@ -731,7 +731,11 @@ def write_info_pages() -> None:
 
 
 def write_sitemap(paths: list[str]) -> None:
-    urls = [f"{SITE_URL}/"] + [f"{SITE_URL}/{path}" for path in paths]
+    urls = [
+        f"{SITE_URL}/",
+        f"{SITE_URL}/privacy/",
+        f"{SITE_URL}/about/",
+    ] + [f"{SITE_URL}/{path}" for path in paths]
     items = "\n".join(f"  <url><loc>{escape(url, quote=True)}</loc></url>" for url in urls)
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
