@@ -503,6 +503,7 @@ def render_index(jobs: list[dict]) -> str:
                   <input type="checkbox" id="consent" name="casl_consent" value="yes" required />
                   <span id="casl-label">{escape(CASL)}</span>
                 </label>
+                <p class="privacy-link"><a href="/privacy/">Privacy policy</a></p>
               </div>
 
               <div class="hp" aria-hidden="true">
