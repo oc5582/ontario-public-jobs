@@ -27,6 +27,9 @@ SITE_BASE = ""
 SITE_URL = SITE_ORIGIN + SITE_BASE
 
 BRAND = "PublicJobs.ca"
+# Leave [PIXEL_ID] in place until a real Meta Pixel id is set.
+# An empty value or that placeholder omits the pixel from every page.
+PIXEL_ID = "[PIXEL_ID]"
 H1 = "Independent government job board for Toronto and the GTA"
 SUBHEAD = (
     "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other "
@@ -324,12 +327,70 @@ def apply_button(url: str, extra_class: str = "") -> str:
     )
 
 
+def configured_value(value: str, placeholder: str) -> str:
+    raw = (value or "").strip()
+    if not raw or raw == placeholder:
+        return ""
+    return raw
+
+
+def js_quote(value: str) -> str:
+    return (
+        value.replace("\\", "\\\\")
+        .replace("'", "\\'")
+        .replace("\r", "")
+        .replace("\n", "")
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+    )
+
+
+def pixel_snippet() -> str:
+    pixel_id = configured_value(PIXEL_ID, "[PIXEL_ID]")
+    if not pixel_id:
+        return ""
+    safe_js = js_quote(pixel_id)
+    safe_url = escape(pixel_id, quote=True)
+    return f"""    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {{if(f.fbq)return;n=f.fbq=function(){{n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)}};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '{safe_js}');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id={safe_url}&amp;ev=PageView&amp;noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->"""
+
+
+def apply_click_script() -> str:
+    if not configured_value(PIXEL_ID, "[PIXEL_ID]"):
+        return ""
+    return """    <script>
+    document.addEventListener("click", function (event) {
+      var el = event.target;
+      var link = el && el.closest ? el.closest("a.apply-btn") : null;
+      if (!link || typeof fbq !== "function") return;
+      fbq("trackCustom", "ApplyClick");
+    });
+    </script>"""
+
+
 def shared_head(
     title: str, description: str, canonical: str, css_href: str, extra_css: str = ""
 ) -> str:
     extra = ""
     if extra_css:
         extra = f'\n    <link rel="stylesheet" href="{escape(extra_css, quote=True)}" />'
+    pixel = pixel_snippet()
+    pixel_block = f"\n{pixel}" if pixel else ""
     return f"""<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -339,7 +400,7 @@ def shared_head(
     <meta name="description" content="{escape(description)}" />
     <link rel="canonical" href="{escape(canonical, quote=True)}" />
 {FONT_LINKS}
-    <link rel="stylesheet" href="{escape(css_href, quote=True)}" />{extra}
+    <link rel="stylesheet" href="{escape(css_href, quote=True)}" />{extra}{pixel_block}
   </head>"""
 
 
@@ -374,6 +435,8 @@ def render_job_page(job: dict) -> str:
         for label, value in job_meta_rows(job)
     )
     apply = apply_button(apply_url) if apply_url else ""
+    script = apply_click_script()
+    script_block = f"\n{script}" if script else ""
     return f"""{shared_head(page_title, meta_desc, canonical, "../../../styles.css")}
   <body>
 {site_header("../../../")}
@@ -393,7 +456,7 @@ def render_job_page(job: dict) -> str:
         {apply}
       </article>
     </main>
-{site_footer()}
+{site_footer()}{script_block}
   </body>
 </html>
 """
