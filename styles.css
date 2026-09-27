@@ -49,6 +49,7 @@ body {
 input,
 button,
 .site-name,
+.site-nav a,
 .apply-btn,
 .crumb a {
   scroll-margin-top: 4.5rem;
@@ -71,20 +72,54 @@ button,
 }
 
 .header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   padding-top: 0.85rem;
   padding-bottom: 0.85rem;
 }
 
 .site-name {
+  flex: 0 0 auto;
   color: var(--ink);
   font-weight: 600;
   font-size: 1.0625rem;
   letter-spacing: -0.02em;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .site-name:hover {
   text-decoration: underline;
+}
+
+.site-nav {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+}
+
+.site-nav a {
+  color: var(--civic);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.25;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site-nav a:hover,
+.site-nav a[aria-current="page"] {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.site-nav a:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
 }
 
 .hero {

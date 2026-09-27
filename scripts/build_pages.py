@@ -420,10 +420,18 @@ def shared_head(
   </head>"""
 
 
-def site_header(home_href: str) -> str:
+def site_header(home_href: str, current: str = "") -> str:
+    def nav_link(label: str, href: str, key: str) -> str:
+        current_attr = ' aria-current="page"' if current == key else ""
+        return f'<a href="{escape(href, quote=True)}"{current_attr}>{escape(label)}</a>'
+
     return f"""    <header class="site-header">
       <div class="header-inner">
         <a class="site-name" href="{escape(home_href, quote=True)}">PublicJobs.ca</a>
+        <nav class="site-nav" aria-label="Site">
+          {nav_link("About", "/about/", "about")}
+          {nav_link("Privacy", "/privacy/", "privacy")}
+        </nav>
       </div>
     </header>"""
 
@@ -653,9 +661,15 @@ ABOUT_DESCRIPTION = (
 
 def render_info_page(title: str, heading: str, description: str, path: str, body: str) -> str:
     canonical = f"{SITE_URL}/{path}"
+    if path.startswith("about"):
+        current = "about"
+    elif path.startswith("privacy"):
+        current = "privacy"
+    else:
+        current = ""
     return f"""{shared_head(title, description, canonical, "../styles.css", extra_css="../pages.css")}
   <body>
-{site_header("../")}
+{site_header("../", current)}
     <main>
       <article class="job-page content">
         <p class="crumb"><a href="../">All openings</a></p>
