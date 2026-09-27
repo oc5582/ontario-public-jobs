@@ -220,11 +220,20 @@ def assign_paths(jobs: list[dict]) -> None:
             if counts[base] > 1:
                 req = requisition_id(job)
                 if req:
-                    slug = f"{base}-{req}"[:80].rstrip("-")
+                    combined = f"{base}-{req}"
+                    if len(combined) <= 80:
+                        slug = combined.rstrip("-")
+                    else:
+                        # Keep the requisition id when the title slug is already at the limit.
+                        suffix = f"-{req}"
+                        room = 80 - len(suffix)
+                        head = base[:room].rstrip("-") if room > 0 else ""
+                        slug = f"{head}{suffix}" if head else req[:80]
             original = slug
             n = 2
             while not slug or slug in used:
-                slug = f"{original}-{n}"[:80].rstrip("-")
+                # Leave room for "-N" so a slug already at 80 characters still changes.
+                slug = f"{original[: 80 - len(str(n)) - 1].rstrip('-')}-{n}"
                 n += 1
             used.add(slug)
             job["_employer_slug"] = emp_slug
