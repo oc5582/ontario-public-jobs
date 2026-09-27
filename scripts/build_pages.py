@@ -438,6 +438,7 @@ def site_header(home_href: str, current: str = "") -> str:
       <div class="header-inner">
         <a class="site-name" href="{escape(home_href, quote=True)}">PublicJobs.ca</a>
         <nav class="site-nav" aria-label="Site">
+          {nav_link("Employers", "/employers/", "employers")}
           {nav_link("About", "/about/", "about")}
           {nav_link("Privacy", "/privacy/", "privacy")}
         </nav>
@@ -668,15 +669,27 @@ ABOUT_DESCRIPTION = (
 )
 
 
-def render_info_page(title: str, heading: str, description: str, path: str, body: str) -> str:
+def render_info_page(
+    title: str,
+    heading: str,
+    description: str,
+    path: str,
+    body: str,
+    extra_head: str = "",
+) -> str:
     canonical = f"{SITE_URL}/{path}"
-    if path.startswith("about"):
+    if path.startswith("employers"):
+        current = "employers"
+    elif path.startswith("about"):
         current = "about"
     elif path.startswith("privacy"):
         current = "privacy"
     else:
         current = ""
-    return f"""{shared_head(title, description, canonical, "../styles.css", extra_css="../pages.css")}
+    head = shared_head(title, description, canonical, "../styles.css", extra_css="../pages.css")
+    if extra_head:
+        head = head.replace("\n  </head>", f"\n{extra_head}\n  </head>", 1)
+    return f"""{head}
   <body>
 {site_header("../", current)}
     <main>
@@ -747,6 +760,61 @@ def render_about_page() -> str:
     )
 
 
+EMPLOYERS_DESCRIPTION = (
+    "The full list of public employers in Toronto and the GTA whose current "
+    "job openings PublicJobs.ca collects. You apply on each employer's own website."
+)
+
+
+def employer_names(jobs: list[dict]) -> list[str]:
+    names = {text(job.get("employer")) for job in jobs}
+    names.discard("")
+    return sorted(names, key=lambda name: (name.casefold(), name))
+
+
+def employers_json_ld(employers: list[str]) -> str:
+    data = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Employers we list jobs from",
+        "url": f"{SITE_URL}/employers/",
+        "numberOfItems": len(employers),
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": index,
+                "item": {"@type": "Organization", "name": name},
+            }
+            for index, name in enumerate(employers, start=1)
+        ],
+    }
+    payload = json_for_script([data])[1:-1]
+    return f'    <script type="application/ld+json">{payload}</script>'
+
+
+def render_employers_page(jobs: list[dict]) -> str:
+    employers = employer_names(jobs)
+    items = "\n".join(f"            <li>{escape(name)}</li>" for name in employers)
+    body = f"""          <p>PublicJobs.ca collects current job openings from these public employers in Toronto and the GTA. You apply on each employer's own website. We are independent and not affiliated with any of them.</p>
+          <ul class="employer-list">
+{items}
+          </ul>"""
+    return render_info_page(
+        f"Employers | {BRAND}",
+        "Employers we list jobs from",
+        EMPLOYERS_DESCRIPTION,
+        "employers/",
+        body,
+        extra_head=employers_json_ld(employers),
+    )
+
+
+def write_employers_page(jobs: list[dict]) -> None:
+    path = ROOT / "employers" / "index.html"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(render_employers_page(jobs), encoding="utf-8")
+
+
 def write_info_pages() -> None:
     privacy = ROOT / "privacy" / "index.html"
     about = ROOT / "about" / "index.html"
@@ -761,6 +829,7 @@ def write_sitemap(paths: list[str]) -> None:
         f"{SITE_URL}/",
         f"{SITE_URL}/privacy/",
         f"{SITE_URL}/about/",
+        f"{SITE_URL}/employers/",
     ] + [f"{SITE_URL}/{path}" for path in paths]
     items = "\n".join(f"  <url><loc>{escape(url, quote=True)}</loc></url>" for url in urls)
     xml = (
@@ -917,11 +986,12 @@ def main() -> None:
 
     (ROOT / "index.html").write_text(render_index(jobs), encoding="utf-8")
     write_info_pages()
+    write_employers_page(jobs)
     write_sitemap(slugs)
     write_robots()
     (ROOT / ".nojekyll").write_text("", encoding="utf-8")
     print(
-        f"Wrote {len(jobs)} job pages, index.html, "
+        f"Wrote {len(jobs)} job pages, index.html, employers page, "
         f"and {written_redirects} redirects "
         f"({removed} unpublished legacy pages dropped)"
     )

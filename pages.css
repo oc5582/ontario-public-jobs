@@ -1,4 +1,4 @@
-/* Extra styles for /privacy/ and /about/ only. */
+/* Extra styles for /privacy/, /about/ and /employers/ only. */
 .description a {
   color: var(--civic);
 }
@@ -10,4 +10,17 @@
 
 .description li + li {
   margin-top: 0.35rem;
+}
+
+.description .employer-list {
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--rule);
+}
+
+.description .employer-list li {
+  margin: 0;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--rule);
 }
