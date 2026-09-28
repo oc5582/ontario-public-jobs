@@ -30,7 +30,7 @@ BRAND = "PublicJobs.ca"
 # An empty value or that placeholder omits the pixel from every page.
 PIXEL_ID = "4654096711502773"
 # Empty omits the Cloudflare Web Analytics beacon from every page.
-CF_ANALYTICS_TOKEN = ""
+CF_ANALYTICS_TOKEN = "b81ee0dcc95347e882d5e0a43124f360"
 # An empty value or the [OG_IMAGE_URL] placeholder omits og:image.
 OG_IMAGE_URL = "https://publicjobs.ca/og-image.png"
 OG_IMAGE_ALT = "PublicJobs.ca: government jobs in Toronto and the GTA"
