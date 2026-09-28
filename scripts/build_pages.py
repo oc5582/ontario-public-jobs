@@ -29,6 +29,8 @@ BRAND = "PublicJobs.ca"
 # Leave [PIXEL_ID] in place until a real Meta Pixel id is set.
 # An empty value or that placeholder omits the pixel from every page.
 PIXEL_ID = "4654096711502773"
+# Empty omits the Cloudflare Web Analytics beacon from every page.
+CF_ANALYTICS_TOKEN = ""
 # An empty value or the [OG_IMAGE_URL] placeholder omits og:image.
 OG_IMAGE_URL = "https://publicjobs.ca/og-image.png"
 OG_IMAGE_ALT = "PublicJobs.ca: government jobs in Toronto and the GTA"
@@ -370,6 +372,18 @@ def pixel_snippet() -> str:
     <!-- End Meta Pixel Code -->"""
 
 
+def analytics_snippet() -> str:
+    token = (CF_ANALYTICS_TOKEN or "").strip()
+    if not token:
+        return ""
+    payload = json.dumps({"token": token}).replace("'", "&#39;")
+    return (
+        "    <script defer "
+        'src="https://static.cloudflareinsights.com/beacon.min.js" '
+        f"data-cf-beacon='{payload}'></script>"
+    )
+
+
 def apply_click_script() -> str:
     if not configured_value(PIXEL_ID, "[PIXEL_ID]"):
         return ""
@@ -387,10 +401,15 @@ def og_tags(title: str, description: str, url: str) -> str:
     lines = [
         f'    <meta property="og:title" content="{escape(title)}" />',
         f'    <meta property="og:description" content="{escape(description)}" />',
-        f'    <meta property="og:url" content="{escape(url, quote=True)}" />',
-        '    <meta property="og:type" content="website" />',
-        f'    <meta property="og:site_name" content="{escape(BRAND)}" />',
     ]
+    if url:
+        lines.append(f'    <meta property="og:url" content="{escape(url, quote=True)}" />')
+    lines.extend(
+        [
+            '    <meta property="og:type" content="website" />',
+            f'    <meta property="og:site_name" content="{escape(BRAND)}" />',
+        ]
+    )
     image = configured_value(OG_IMAGE_URL, "[OG_IMAGE_URL]")
     if image:
         lines.append(
@@ -405,34 +424,53 @@ def og_tags(title: str, description: str, url: str) -> str:
 
 
 def shared_head(
-    title: str, description: str, canonical: str, css_href: str, extra_css: str = ""
+    title: str,
+    description: str,
+    canonical: str,
+    css_href: str,
+    extra_css: str = "",
+    robots: str = "",
+    asset_origin: str = "",
 ) -> str:
+    def rooted(path: str) -> str:
+        return f"{asset_origin}{path}" if asset_origin else path
+
     extra = ""
     if extra_css:
         extra = f'\n    <link rel="stylesheet" href="{escape(extra_css, quote=True)}" />'
     pixel = pixel_snippet()
     pixel_block = f"\n{pixel}" if pixel else ""
+    analytics = analytics_snippet()
+    analytics_block = f"\n{analytics}" if analytics else ""
+    robots_tag = (
+        f'\n    <meta name="robots" content="{escape(robots, quote=True)}" />' if robots else ""
+    )
+    canonical_tag = (
+        f'\n    <link rel="canonical" href="{escape(canonical, quote=True)}" />'
+        if canonical
+        else ""
+    )
     return f"""<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" href="{rooted("/favicon.ico")}" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="{rooted("/favicon-32x32.png")}">
+    <link rel="apple-touch-icon" href="{rooted("/apple-touch-icon.png")}">
     <title>{escape(title)}</title>
-    <meta name="description" content="{escape(description)}" />
-    <link rel="canonical" href="{escape(canonical, quote=True)}" />
+    <meta name="description" content="{escape(description)}" />{robots_tag}{canonical_tag}
 {og_tags(title, description, canonical)}
 {FONT_LINKS}
-    <link rel="stylesheet" href="{escape(css_href, quote=True)}" />{extra}{pixel_block}
+    <link rel="stylesheet" href="{escape(css_href, quote=True)}" />{extra}{pixel_block}{analytics_block}
   </head>"""
 
 
-def site_header(home_href: str, current: str = "") -> str:
+def site_header(home_href: str, current: str = "", link_base: str = "") -> str:
     def nav_link(label: str, href: str, key: str) -> str:
         current_attr = ' aria-current="page"' if current == key else ""
-        return f'<a href="{escape(href, quote=True)}"{current_attr}>{escape(label)}</a>'
+        full = f"{link_base}{href}" if link_base else href
+        return f'<a href="{escape(full, quote=True)}"{current_attr}>{escape(label)}</a>'
 
     return f"""    <header class="site-header">
       <div class="header-inner">
@@ -441,6 +479,7 @@ def site_header(home_href: str, current: str = "") -> str:
           {nav_link("Employers", "/employers/", "employers")}
           {nav_link("About", "/about/", "about")}
           {nav_link("Privacy", "/privacy/", "privacy")}
+          {nav_link("Terms", "/terms/", "terms")}
         </nav>
       </div>
     </header>"""
@@ -612,7 +651,7 @@ def render_index(jobs: list[dict]) -> str:
                   <input type="checkbox" id="consent" name="casl_consent" value="yes" required />
                   <span id="casl-label">{escape(CASL)}</span>
                 </label>
-                <p class="privacy-link"><a href="/privacy/">Privacy policy</a></p>
+                <p class="privacy-link"><a href="/privacy/">Privacy policy</a> <a href="/terms/">Terms of use</a></p>
               </div>
 
               <div class="hp" aria-hidden="true">
@@ -684,6 +723,8 @@ def render_info_page(
         current = "about"
     elif path.startswith("privacy"):
         current = "privacy"
+    elif path.startswith("terms"):
+        current = "terms"
     else:
         current = ""
     head = shared_head(title, description, canonical, "../styles.css", extra_css="../pages.css")
@@ -708,7 +749,7 @@ def render_info_page(
 
 
 def render_privacy_page() -> str:
-    body = """          <p>Last updated: September 27, 2026</p>
+    body = """          <p>Last updated: September 28, 2026</p>
           <p>PublicJobs.ca is an independent job board. It is not affiliated with any government or with any employer listed on the site. This page explains what personal information we collect, why, and how you can control it.</p>
           <h2>Who we are</h2>
           <p>PublicJobs.ca is operated by Osama Chaudhary, 65 Thorncliffe Park Drive, Apartment 603, Toronto, Ontario M4H 1L2, Canada. Contact: <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>.</p>
@@ -725,6 +766,9 @@ def render_privacy_page() -> str:
           <p>We use this only to send you job alert emails from PublicJobs.ca and to understand interest in the service. We do not sell or rent your information, and we do not share it with employers.</p>
           <h2>Advertising and measurement</h2>
           <p>We use the Meta Pixel, a tool from Meta Platforms, Inc., to measure how well our ads on Facebook and Instagram work. When you visit PublicJobs.ca, the Meta Pixel may use cookies and similar technology to collect information such as the pages you view, whether you signed up for alerts, whether you clicked through to an employer's site, and technical details about your browser and device. Meta may use this information as described in its own privacy policy (<a href="https://facebook.com/privacy/policy">facebook.com/privacy/policy</a>). We do not send your email address to Meta. You can control ad personalization in your Facebook and Instagram ad settings, and you can block or delete cookies in your browser settings.</p>
+          <h2>Site analytics and fonts</h2>
+          <p>We use Cloudflare Web Analytics to count visits. It uses no cookies and does not track you across sites. It records things like the page you visited, the referring site, your browser, and your country.</p>
+          <p>This site loads fonts from Google Fonts. Loading those fonts sends your IP address to Google.</p>
           <h2>Service providers</h2>
           <p>We use trusted service providers to run this site and our emails: Cloudflare (runs the signup form), Resend (stores the mailing list and sends the emails), and Meta (ad measurement, described above). These providers may store information outside Canada, including in the United States, where it may be subject to local laws.</p>
           <h2>Unsubscribing</h2>
@@ -750,7 +794,7 @@ def render_about_page() -> str:
           <p>We do not hire and we do not take applications. Every job page links to the employer's own posting, and you apply there.</p>
           <p>Job details come from employers' public careers pages. Always check the employer's posting for the latest information, including closing dates and pay.</p>
           <p>Browsing is free and needs no account. Email alerts are optional.</p>
-          <p>Questions or corrections: <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>. See our privacy policy at <a href="/privacy/">/privacy/</a>.</p>"""
+          <p>Questions or corrections: <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>. See our privacy policy at <a href="/privacy/">/privacy/</a>. See our terms of use at <a href="/terms/">/terms/</a>.</p>"""
     return render_info_page(
         f"About | {BRAND}",
         "About PublicJobs.ca",
@@ -758,6 +802,98 @@ def render_about_page() -> str:
         "about/",
         body,
     )
+
+
+TERMS_DESCRIPTION = (
+    "Terms for using PublicJobs.ca, an independent job board. Listings come "
+    "from employers' public career sites, and you apply on the employer's site."
+)
+
+
+def terms_json_ld() -> str:
+    data = {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Terms of use",
+        "url": f"{SITE_URL}/terms/",
+        "description": TERMS_DESCRIPTION,
+    }
+    payload = json_for_script([data])[1:-1]
+    return f'    <script type="application/ld+json">{payload}</script>'
+
+
+def render_terms_page() -> str:
+    body = """          <p>Last updated September 28, 2026</p>
+          <h2>Who runs the site</h2>
+          <p>PublicJobs.ca is operated by Osama Chaudhary, 65 Thorncliffe Park Drive, Apartment 603, Toronto, Ontario M4H 1L2, Canada. Contact <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>.</p>
+          <h2>An independent site</h2>
+          <p>PublicJobs.ca is independent. It is not affiliated with or endorsed by any government or any employer listed on the site.</p>
+          <h2>Listings</h2>
+          <p>Listings are collected from employers' public career sites. They may be out of date, closed, or changed. Always confirm the details on the employer's site. We do not guarantee that the listings are accurate or complete.</p>
+          <h2>Applying</h2>
+          <p>We never charge job seekers, and we do not take applications. Applying happens on the employer's site.</p>
+          <h2>External links</h2>
+          <p>Links to other websites are not ours. We are not responsible for those sites.</p>
+          <h2>Email alerts</h2>
+          <p>Email alerts are optional. We send them only with your consent. Every email has an unsubscribe link. See our <a href="/privacy/">privacy policy</a>.</p>
+          <h2>Acceptable use</h2>
+          <p>Do not scrape the site in a way that overloads it. Do not misuse the signup form, for example by signing up other people.</p>
+          <h2>No warranties</h2>
+          <p>The site is provided as is, with no warranties. To the extent permitted by law, we are not liable for losses from using the site or the listings.</p>
+          <h2>Changes to these terms</h2>
+          <p>We may update these terms. When we do, the date at the top of this page changes.</p>
+          <h2>Governing law</h2>
+          <p>These terms are governed by the laws of Ontario and the federal laws of Canada that apply there.</p>"""
+    return render_info_page(
+        f"Terms of use | {BRAND}",
+        "Terms of use",
+        TERMS_DESCRIPTION,
+        "terms/",
+        body,
+        extra_head=terms_json_ld(),
+    )
+
+
+def write_terms_page() -> None:
+    path = ROOT / "terms" / "index.html"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(render_terms_page(), encoding="utf-8")
+
+
+def render_not_found() -> str:
+    origin = SITE_URL
+    head = shared_head(
+        f"Page not found | {BRAND}",
+        "This page may have moved, or the job may have closed.",
+        "",
+        f"{origin}/styles.css",
+        robots="noindex",
+        asset_origin=origin,
+    )
+    return f"""{head}
+  <body>
+{site_header(origin + "/", link_base=origin)}
+    <main>
+      <div class="content not-found">
+        <h1>Page not found</h1>
+        <p>This page may have moved, or the job may have closed.</p>
+        <form class="search-field" role="search" action="{origin}/" method="get">
+          <label for="job-search">Search titles and employers</label>
+          <input id="job-search" name="q" type="search" autocomplete="off" spellcheck="false" />
+          <button type="submit">Search</button>
+        </form>
+        <p><a href="{origin}/">See all current jobs</a></p>
+        <p><a href="{origin}/employers/">Employers</a></p>
+      </div>
+    </main>
+{site_footer()}
+  </body>
+</html>
+"""
+
+
+def write_not_found() -> None:
+    (ROOT / "404.html").write_text(render_not_found(), encoding="utf-8")
 
 
 EMPLOYERS_DESCRIPTION = (
@@ -830,6 +966,7 @@ def write_sitemap(paths: list[str]) -> None:
         f"{SITE_URL}/privacy/",
         f"{SITE_URL}/about/",
         f"{SITE_URL}/employers/",
+        f"{SITE_URL}/terms/",
     ] + [f"{SITE_URL}/{path}" for path in paths]
     items = "\n".join(f"  <url><loc>{escape(url, quote=True)}</loc></url>" for url in urls)
     xml = (
@@ -915,7 +1052,7 @@ def legacy_candidates() -> list[Path]:
     if JOBS_DIR.exists():
         paths.extend(sorted(JOBS_DIR.glob("*.html")))
     for path in sorted(ROOT.glob("*.html")):
-        if path.name == "index.html":
+        if path.name in {"index.html", "404.html"}:
             continue
         paths.append(path)
     return paths
@@ -960,7 +1097,7 @@ def main() -> None:
         if path.parent == ROOT and path.exists():
             path.unlink()
     for path in ROOT.glob("*.html"):
-        if path.name == "index.html":
+        if path.name in {"index.html", "404.html"}:
             continue
         html = read_html(path)
         if 'class="job-page"' in html or 'class="apply-btn"' in html:
@@ -987,6 +1124,8 @@ def main() -> None:
     (ROOT / "index.html").write_text(render_index(jobs), encoding="utf-8")
     write_info_pages()
     write_employers_page(jobs)
+    write_terms_page()
+    write_not_found()
     write_sitemap(slugs)
     write_robots()
     (ROOT / ".nojekyll").write_text("", encoding="utf-8")

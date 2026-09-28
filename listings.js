@@ -65,6 +65,15 @@
     var statusEl = document.getElementById("page-status");
     var page = 0;
     var query = "";
+    try {
+      var initialQuery = new URLSearchParams(window.location.search).get("q");
+      if (initialQuery) {
+        query = initialQuery;
+        searchEl.value = initialQuery;
+      }
+    } catch (err) {
+      query = "";
+    }
 
     function filtered() {
       var q = norm(query);
