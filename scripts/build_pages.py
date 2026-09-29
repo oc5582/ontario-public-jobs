@@ -234,8 +234,9 @@ def assign_paths(jobs: list[dict]) -> None:
             original = slug
             n = 2
             while not slug or slug in used:
-                # Leave room for "-N" so a slug already at 80 characters still changes.
-                slug = f"{original[: 80 - len(str(n)) - 1].rstrip('-')}-{n}"
+                # Keep the numeric suffix when the title slug is already 80 characters.
+                suffix = f"-{n}"
+                slug = (original[: max(1, 80 - len(suffix))] + suffix).rstrip("-")
                 n += 1
             used.add(slug)
             job["_employer_slug"] = emp_slug
