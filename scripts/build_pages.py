@@ -456,6 +456,7 @@ def shared_head(
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="google-site-verification" content="snN0wTgRbpJxtyxaevQl1EQhaPh61CSRjOeVh7IjMQY" />
     <link rel="icon" href="{rooted("/favicon.ico")}" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="{rooted("/favicon-32x32.png")}">
     <link rel="apple-touch-icon" href="{rooted("/apple-touch-icon.png")}">
