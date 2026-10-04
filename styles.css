@@ -741,6 +741,187 @@ button[type="submit"]:disabled {
   }
 }
 
+/* Five nav links do not fit beside the wordmark at phone width. */
+@media (max-width: 640px) {
+  .header-inner {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    row-gap: 0.4rem;
+  }
+
+  .site-nav {
+    flex: 1 0 100%;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.85rem;
+    margin-left: 0;
+  }
+}
+
+/* The longest link takes the first row so the other four stay together. */
+@media (max-width: 420px) {
+  .site-nav a:first-child {
+    flex-basis: 100%;
+  }
+}
+
+/* Resume match (/match/). Scoped so the rest of the site keeps square controls. */
+.match {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.match h1 {
+  font-size: 1.75rem;
+  line-height: 1.25;
+  margin: 0 0 0.5rem;
+}
+
+.match h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 2rem 0 0.5rem;
+}
+
+.match .lede {
+  color: var(--muted);
+  margin: 0 0 1.5rem;
+}
+
+.match a {
+  color: var(--civic);
+}
+
+.match fieldset {
+  min-width: 0;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 0 0 1.25rem;
+  background: var(--surface);
+}
+
+.match legend {
+  font-weight: 600;
+  padding: 0 0.25rem;
+}
+
+.match label {
+  display: block;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.match input[type="email"],
+.match textarea {
+  width: 100%;
+  font: inherit;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #6b7680;
+  border-radius: 4px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.match textarea {
+  min-height: 9rem;
+  resize: vertical;
+}
+
+.match input[type="file"] {
+  font: inherit;
+  max-width: 100%;
+}
+
+.match .checkbox {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-weight: 400;
+  margin-top: 1rem;
+}
+
+.match .checkbox input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.15rem;
+  flex: 0 0 auto;
+}
+
+.match .checkbox span {
+  min-width: 0;
+}
+
+.match .hint {
+  color: var(--muted);
+  font-size: 0.9375rem;
+  margin: 0.35rem 0 0;
+}
+
+.match .or {
+  margin: 1rem 0 0.5rem;
+  color: var(--muted);
+}
+
+.match button[type="submit"] {
+  font: inherit;
+  font-weight: 600;
+  background: var(--civic);
+  color: #fff;
+  border: 0;
+  border-radius: 4px;
+  padding: 0.8rem 1.25rem;
+  min-height: 44px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 0;
+}
+
+.match button[disabled] {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.match .status {
+  margin: 1rem 0 0;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  background: var(--hover);
+  border-left: 4px solid var(--civic);
+  font-size: 1rem;
+}
+
+.match .status.error {
+  border-left-color: var(--urgent);
+}
+
+.match ol.results {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.match ol.results li {
+  border-top: 1px solid var(--rule);
+  padding: 0.85rem 0;
+}
+
+.match ol.results a {
+  font-weight: 600;
+  color: var(--civic);
+}
+
+.match .meta {
+  color: var(--muted);
+  font-size: 0.9375rem;
+  margin: 0.15rem 0;
+}
+
+.match .why {
+  margin: 0.25rem 0 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
