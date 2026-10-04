@@ -484,6 +484,7 @@ def site_header(home_href: str, current: str = "", link_base: str = "") -> str:
           {nav_link("Match your resume", "/match/", "match")}
           {nav_link("Employers", "/employers/", "employers")}
           {nav_link("About", "/about/", "about")}
+          {nav_link("FAQ", "/faq/", "faq")}
           {nav_link("Privacy", "/privacy/", "privacy")}
           {nav_link("Terms", "/terms/", "terms")}
         </nav>
@@ -1331,6 +1332,8 @@ def render_info_page(
         current = "employers"
     elif path.startswith("about"):
         current = "about"
+    elif path.startswith("faq"):
+        current = "faq"
     elif path.startswith("privacy"):
         current = "privacy"
     elif path.startswith("terms"):
@@ -1664,6 +1667,170 @@ def write_match_page() -> None:
     path = ROOT / "match" / "index.html"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(render_match_page(), encoding="utf-8")
+FAQ_DESCRIPTION = (
+    "Answers about PublicJobs.ca: which employers are listed, how to apply, "
+    "free email alerts, and how often jobs are updated."
+)
+CANADA_WORK_URL = (
+    "https://www.canada.ca/en/immigration-refugees-citizenship/services/work-canada.html"
+)
+
+
+def faq_entries(employer_count: int) -> list[dict]:
+    """Visible FAQ copy. Each answer is plain sentences plus optional links.
+
+    JSON-LD uses the same words as the page. Link text is part of the sentence.
+    """
+    employers = "employer" if employer_count == 1 else "employers"
+    return [
+        {
+            "question": "What is PublicJobs.ca?",
+            "parts": [
+                "PublicJobs.ca is an independent job board. "
+                "It collects current job openings from public employers in Toronto and the GTA and lists them in one place. "
+                "Those employers include Crown corporations, provincial and federal agencies, City of Toronto agencies, and some public-interest regulators.",
+            ],
+        },
+        {
+            "question": "Which employers are listed?",
+            "parts": [
+                f"PublicJobs.ca lists current openings from {employer_count} public {employers} in Toronto and the GTA. "
+                "The full list is on the ",
+                {"text": "employers page", "href": "/employers/"},
+                ".",
+            ],
+        },
+        {
+            "question": "Is it free?",
+            "parts": [
+                "Yes. Browsing and searching the job board is free and does not need an account. "
+                "Email alerts are free. "
+                "PublicJobs.ca never charges job seekers.",
+            ],
+        },
+        {
+            "question": "How do I apply for a job?",
+            "parts": [
+                'On the job page, choose "Apply on employer site". '
+                "That link leaves PublicJobs.ca and goes to the employer's own posting, where you apply. "
+                "PublicJobs.ca does not take applications and does not receive them.",
+            ],
+        },
+        {
+            "question": "How often are jobs updated?",
+            "parts": [
+                "The list of openings is refreshed each weekday. "
+                "A posting can still change or close on the employer's site before the next refresh. "
+                "Check the employer's posting for the latest details, including closing dates.",
+            ],
+        },
+        {
+            "question": "How do I get new jobs by email?",
+            "parts": [
+                "Use the ",
+                {"text": "signup form on the homepage", "href": "/#signup-heading"},
+                ". Enter your email and agree to receive free job alert emails from PublicJobs.ca. "
+                "You can unsubscribe anytime. "
+                "Every alert email includes a one-click unsubscribe link, and you can also email ",
+                {"text": "hello@publicjobs.ca", "href": "mailto:hello@publicjobs.ca"},
+                ".",
+            ],
+        },
+        {
+            "question": "Can newcomers to Canada apply?",
+            "parts": [
+                "Work requirements vary by employer. "
+                "Check each posting to see who may apply. "
+                "PublicJobs.ca does not give advice on work eligibility or immigration. "
+                "For general information about working in Canada, see the ",
+                {
+                    "text": "Government of Canada page on working in Canada",
+                    "href": CANADA_WORK_URL,
+                },
+                ".",
+            ],
+        },
+        {
+            "question": "Is PublicJobs.ca run by the government?",
+            "parts": [
+                "No. PublicJobs.ca is independent, is not a government website, and is not affiliated with, endorsed by, or acting for any government or any employer listed on the site. "
+                "It is operated by Osama Chaudhary. "
+                "Contact ",
+                {"text": "hello@publicjobs.ca", "href": "mailto:hello@publicjobs.ca"},
+                ".",
+            ],
+        },
+    ]
+
+
+def faq_answer_text(parts: list) -> str:
+    chunks: list[str] = []
+    for part in parts:
+        if isinstance(part, str):
+            chunks.append(part)
+        else:
+            chunks.append(part["text"])
+    return "".join(chunks)
+
+
+def faq_answer_html(parts: list) -> str:
+    chunks: list[str] = []
+    for part in parts:
+        if isinstance(part, str):
+            chunks.append(escape(part))
+            continue
+        href = escape(part["href"], quote=True)
+        label = escape(part["text"])
+        chunks.append(f'<a href="{href}">{label}</a>')
+    return "".join(chunks)
+
+
+def faq_json_ld(entries: list[dict]) -> str:
+    data = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "name": "Frequently asked questions",
+        "url": f"{SITE_URL}/faq/",
+        "description": FAQ_DESCRIPTION,
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": item["question"],
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": faq_answer_text(item["parts"]),
+                },
+            }
+            for item in entries
+        ],
+    }
+    payload = json_for_script([data])[1:-1]
+    return f'    <script type="application/ld+json">{payload}</script>'
+
+
+def render_faq_page(jobs: list[dict]) -> str:
+    entries = faq_entries(len(employer_names(jobs)))
+    blocks = "\n".join(
+        f"""          <section class="faq-item">
+            <h2>{escape(item["question"])}</h2>
+            <p>{faq_answer_html(item["parts"])}</p>
+          </section>"""
+        for item in entries
+    )
+    return render_info_page(
+        f"Frequently asked questions | {BRAND}",
+        "Frequently asked questions",
+        FAQ_DESCRIPTION,
+        "faq/",
+        blocks,
+        extra_head=faq_json_ld(entries),
+    )
+
+
+def write_faq_page(jobs: list[dict]) -> None:
+    path = ROOT / "faq" / "index.html"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(render_faq_page(jobs), encoding="utf-8")
 
 
 def render_not_found() -> str:
@@ -1771,6 +1938,7 @@ def write_sitemap(paths: list[str]) -> None:
         f"{SITE_URL}/",
         f"{SITE_URL}/privacy/",
         f"{SITE_URL}/about/",
+        f"{SITE_URL}/faq/",
         f"{SITE_URL}/employers/",
         f"{SITE_URL}/terms/",
         f"{SITE_URL}/match/",
@@ -1933,12 +2101,13 @@ def main() -> None:
     write_match_page()
     write_employers_page(jobs)
     write_terms_page()
+    write_faq_page(jobs)
     write_not_found()
     write_sitemap(slugs)
     write_robots()
     (ROOT / ".nojekyll").write_text("", encoding="utf-8")
     print(
-        f"Wrote {len(jobs)} job pages, index.html, employers page, "
+        f"Wrote {len(jobs)} job pages, index.html, employers page, FAQ page, "
         f"and {written_redirects} redirects "
         f"({removed} unpublished legacy pages dropped)"
     )

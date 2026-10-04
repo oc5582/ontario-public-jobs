@@ -1,6 +1,25 @@
-/* Extra styles for /privacy/, /about/, /employers/ and /terms/ only. */
+/* Extra styles for /privacy/, /about/, /faq/, /employers/ and /terms/ only. */
 .description a {
   color: var(--civic);
+}
+
+.description .faq-item a {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.description .faq-item + .faq-item {
+  margin-top: 1.35rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+
+.description .faq-item h2 {
+  margin-bottom: 0.45rem;
+}
+
+.description .faq-item p {
+  margin-bottom: 0;
 }
 
 .description ul {
