@@ -1534,6 +1534,27 @@ def assign_page_seo(jobs: list[dict]) -> None:
         job["_meta_desc"] = description
 
 
+def employer_link(job: dict) -> str:
+    """Link an employer name to its static hub, for example /employers/metrolinx/."""
+    name = text(job.get("employer"))
+    if not name:
+        return ""
+    slug = job.get("_employer_slug") or employer_slug(job)
+    href = f"/employers/{slug}/"
+    return f'<a href="{escape(href, quote=True)}">{escape(name)}</a>'
+
+
+def render_meta_rows(job: dict) -> str:
+    link = employer_link(job)
+    rows: list[str] = []
+    for label, value in job_meta_rows(job):
+        value_html = link if label == "Employer" and link else escape(value)
+        rows.append(
+            f'          <div class="meta-row"><dt>{escape(label)}</dt><dd>{value_html}</dd></div>'
+        )
+    return "\n".join(rows)
+
+
 def render_job_page(job: dict, closed: bool = False) -> str:
     title = text(job.get("title")) or "Untitled"
     employer = text(job.get("employer"))
@@ -1542,10 +1563,8 @@ def render_job_page(job: dict, closed: bool = False) -> str:
     meta_desc = text(job.get("_meta_desc")) or fit_meta_description(job)
     canonical = f"{SITE_URL}/{job['_path']}"
     apply_url = text(job.get("apply_url"))
-    dt_rows = "\n".join(
-        f'          <div class="meta-row"><dt>{escape(label)}</dt><dd>{escape(value)}</dd></div>'
-        for label, value in job_meta_rows(job)
-    )
+    link = employer_link(job)
+    dt_rows = render_meta_rows(job)
     apply = apply_button(apply_url) if apply_url else ""
     script = apply_click_script()
     script_block = f"\n{script}" if script else ""
@@ -1560,7 +1579,7 @@ def render_job_page(job: dict, closed: bool = False) -> str:
       <article class="job-page content">
         <p class="crumb"><a href="../../../">All openings</a></p>
 {closed_block}        <h1>{escape(title)}</h1>
-        {f'<p class="employer">{escape(employer)}</p>' if employer else ""}
+        {f'<p class="employer">{link}</p>' if link else ""}
         <dl class="job-meta">
 {dt_rows}
         </dl>
@@ -1714,6 +1733,7 @@ def render_index(jobs: list[dict]) -> str:
 
         <section class="listings" aria-labelledby="listings-heading">
           <h2 id="listings-heading">{escape(LISTINGS_HEADING)}</h2>
+          <p class="listings-index"><a href="/jobs/">Browse all {count} {label}</a></p>
           <p id="listings-empty" class="listings-empty" aria-live="polite" hidden>No openings match that search.</p>
           <ul class="job-list" id="job-list" tabindex="-1">
 {first_rows}
@@ -2578,8 +2598,12 @@ def employers_json_ld(employers: list[str]) -> str:
 
 def render_employers_page(jobs: list[dict]) -> str:
     employers = employer_names(jobs)
-    items = "\n".join(f"            <li>{escape(name)}</li>" for name in employers)
+    items = "\n".join(
+        f'            <li><a href="/employers/{escape(slugify(name) or "employer", quote=True)}/">{escape(name)}</a></li>'
+        for name in employers
+    )
     body = f"""          <p>PublicJobs.ca collects current job openings from these public employers in Toronto and the GTA. You apply on each employer's own website. We are independent and not affiliated with any of them.</p>
+          <p><a href="/jobs/">Browse all current openings</a></p>
           <ul class="employer-list">
 {items}
           </ul>"""
@@ -2615,7 +2639,11 @@ def sitemap_url(loc: str, lastmod: str) -> str:
     return f"{loc_xml}</url>"
 
 
-def write_sitemap(paths: list[str], lastmods: list[str] | None = None) -> None:
+def write_sitemap(
+    paths: list[str],
+    lastmods: list[str] | None = None,
+    extra_paths: list[str] | None = None,
+) -> None:
     if lastmods is None:
         lastmods = [""] * len(paths)
     if len(lastmods) != len(paths):
@@ -2631,6 +2659,7 @@ def write_sitemap(paths: list[str], lastmods: list[str] | None = None) -> None:
         f"{SITE_URL}/match/",
     ]
     lines = [sitemap_url(url, build_day) for url in static]
+    lines.extend(sitemap_url(f"{SITE_URL}/{path}", build_day) for path in (extra_paths or []))
     lines.extend(
         sitemap_url(f"{SITE_URL}/{path}", lastmod) for path, lastmod in zip(paths, lastmods)
     )
@@ -2804,12 +2833,17 @@ def main() -> None:
     write_terms_page()
     write_faq_page(jobs)
     write_not_found()
-    write_sitemap(slugs, lastmods)
+    # Imported here so hub_pages can import this module without a cycle at load.
+    from hub_pages import verify_internal_links, write_hub_pages
+
+    hub_paths = write_hub_pages(jobs)
+    write_sitemap(slugs, lastmods, hub_paths)
     write_robots()
     (ROOT / ".nojekyll").write_text("", encoding="utf-8")
+    verify_internal_links(open_jobs, hub_paths)
     print(
-        f"Wrote {len(jobs)} job pages ({closed_count} closed, kept off the homepage "
-        f"and sitemap), index.html, employers page, FAQ page, "
+        f"Wrote {len(jobs)} job pages ({closed_count} closed, kept off the homepage, "
+        f"employer pages, jobs index, and sitemap), index.html, {len(hub_paths)} hub pages, FAQ page, "
         f"and {written_redirects} redirects "
         f"({removed} unpublished legacy pages dropped)"
     )
