@@ -1649,6 +1649,44 @@ def json_for_script(records: list[dict]) -> str:
     )
 
 
+def home_json_ld() -> str:
+    org_id = f"{SITE_URL}/#organization"
+    data = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Organization",
+                "@id": org_id,
+                "name": BRAND,
+                "url": f"{SITE_URL}/",
+                "email": "hello@publicjobs.ca",
+                "founder": {
+                    "@type": "Person",
+                    "name": "Osama Chaudhary",
+                    "jobTitle": "Founder and operator",
+                },
+            },
+            {
+                "@type": "WebSite",
+                "@id": f"{SITE_URL}/#website",
+                "name": BRAND,
+                "url": f"{SITE_URL}/",
+                "publisher": {"@id": org_id},
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": {
+                        "@type": "EntryPoint",
+                        "urlTemplate": f"{SITE_URL}/?q={{search_term_string}}",
+                    },
+                    "query-input": "required name=search_term_string",
+                },
+            },
+        ],
+    }
+    payload = json_for_script([data])[1:-1]
+    return f'    <script type="application/ld+json">{payload}</script>'
+
+
 def render_index(jobs: list[dict]) -> str:
     records = [listing_record(job) for job in jobs]
     count = len(records)
@@ -1658,7 +1696,9 @@ def render_index(jobs: list[dict]) -> str:
     description = SUBHEAD
     title = f"{H1} | {BRAND}"
     next_disabled = "" if pages > 1 else " disabled"
-    return f"""{shared_head(title, description, SITE_URL + "/", "./styles.css")}
+    head = shared_head(title, description, SITE_URL + "/", "./styles.css")
+    head = head.replace("\n  </head>", f"\n{home_json_ld()}\n  </head>", 1)
+    return f"""{head}
   <body>
 {site_header("./")}
     <main>
@@ -1766,9 +1806,29 @@ PRIVACY_DESCRIPTION = (
     "personal information we collect, why, and how you can control it."
 )
 ABOUT_DESCRIPTION = (
-    "PublicJobs.ca collects current job openings from public employers in "
-    "Toronto and the GTA and lists them in one place."
+    "PublicJobs.ca is an independent job board run by Osama Chaudhary. "
+    "It lists current openings from public employers in Toronto and the GTA."
 )
+
+# Labels for the `source` values stored on each listing. Unknown keys are
+# shown as stored so the About page does not invent a vendor name.
+SOURCE_LABELS = {
+    "adp_workforce_now": "ADP Workforce Now",
+    "bamboohr": "BambooHR",
+    "beapplied": "BeApplied",
+    "dayforce_geo": "Dayforce",
+    "greenhouse": "Greenhouse",
+    "hibob": "HiBob",
+    "humi_applytojobs": "Humi",
+    "jazzhr": "JazzHR",
+    "jobvite": "Jobvite",
+    "oracle_ce": "Oracle Candidate Experience",
+    "sf_classic": "SAP SuccessFactors",
+    "sf_rmk": "SAP SuccessFactors",
+    "ukg_ultipro": "UKG UltiPro",
+    "workable": "Workable",
+    "workday_cxs": "Workday",
+}
 
 
 def render_info_page(
@@ -1855,13 +1915,59 @@ def render_privacy_page() -> str:
     )
 
 
+def load_listing_records() -> list[dict]:
+    raw = json.loads(DATA_PATH.read_text(encoding="utf-8"))
+    if not isinstance(raw, list):
+        raise SystemExit("listings.json must be a JSON array")
+    return raw
+
+
+def listing_source_names(jobs: list[dict]) -> list[str]:
+    names: set[str] = set()
+    for job in jobs:
+        key = text(job.get("source")).split(":", 1)[0]
+        if key:
+            names.add(SOURCE_LABELS.get(key, key))
+    return sorted(names, key=str.casefold)
+
+
+def english_list(items: list[str]) -> str:
+    if not items:
+        return ""
+    if len(items) == 1:
+        return items[0]
+    if len(items) == 2:
+        return f"{items[0]} and {items[1]}"
+    return ", ".join(items[:-1]) + ", and " + items[-1]
+
+
+def listing_fetch_sentence(jobs: list[dict]) -> str:
+    dates = sorted({iso_date(text(job.get("fetched_at"))) for job in jobs} - {""})
+    if not dates:
+        return "The current listings file does not record a fetch time."
+    if len(dates) == 1:
+        return f"The listings on the site now were fetched on {format_date(dates[0])}."
+    start = format_date(dates[0])
+    end = format_date(dates[-1])
+    return f"The listings on the site now were fetched between {start} and {end}."
+
+
 def render_about_page() -> str:
-    body = """          <p>PublicJobs.ca collects current job openings from public employers in Toronto and the GTA, such as Crown corporations, provincial and federal agencies, City of Toronto agencies, and some public-interest regulators, and lists them in one place.</p>
-          <p>We are independent. PublicJobs.ca is not a government website and is not affiliated with, endorsed by, or acting for any government or any employer listed on the site.</p>
-          <p>We do not hire and we do not take applications. Every job page links to the employer's own posting, and you apply there.</p>
-          <p>Job details come from employers' public careers pages. Always check the employer's posting for the latest information, including closing dates and pay.</p>
-          <p>Browsing is free and needs no account. Email alerts are optional.</p>
-          <p>Questions or corrections: <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>. See our privacy policy at <a href="/privacy/">/privacy/</a>. See our terms of use at <a href="/terms/">/terms/</a>.</p>"""
+    jobs = load_listing_records()
+    sources = escape(english_list(listing_source_names(jobs)))
+    fetched = escape(listing_fetch_sentence(jobs))
+    body = f"""          <h2>Who runs this site</h2>
+          <p>PublicJobs.ca is run independently by Osama Chaudhary. It is not a government website and is not affiliated with, endorsed by, or acting for any government or any employer listed on the site.</p>
+          <h2>What the site covers</h2>
+          <p>The site lists current job openings from public employers in Toronto and the GTA, such as Crown corporations, provincial and federal agencies, City of Toronto agencies, and some public-interest regulators.</p>
+          <p>We do not hire and we do not take applications. Every job page links to the employer's own posting, and you apply there. Browsing is free and needs no account. The homepage can search job titles and employer names. <a href="/jobs/">All current openings</a> are also listed on their own pages. The <a href="/employers/">employers page</a> names each organization and links to its openings. Email alerts are optional.</p>
+          <p><a href="/match/">Match your resume</a> compares a resume with the current openings. The resume is read to find matches and is not stored. Matching is free, up to 3 times. Common questions are answered on the <a href="/faq/">FAQ</a>.</p>
+          <h2>How listings are collected</h2>
+          <p>Listings are read from employers' public careers pages. The listings file records which system each posting came from. On this site those systems are {sources}. The words on each job page are the employer's posting. A posting whose closing date has passed stays on its own page, marked closed, and is left off the homepage, the jobs list, and the employer pages. Always check the employer's posting for the latest information, including closing dates and pay.</p>
+          <h2>How often listings are updated</h2>
+          <p>This site has no scheduled task that collects new listings. The pages are rebuilt from the listings file when that file is updated and published. Each listing stores the time it was fetched from the employer. {fetched}</p>
+          <h2>Contact</h2>
+          <p>Questions or corrections: <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>. See our <a href="/privacy/">privacy policy</a> and <a href="/terms/">terms of use</a>.</p>"""
     return render_info_page(
         f"About | {BRAND}",
         "About PublicJobs.ca",
@@ -2682,6 +2788,56 @@ def write_robots() -> None:
     )
 
 
+def render_llms_txt() -> str:
+    jobs = load_listing_records()
+    sources = english_list(listing_source_names(jobs))
+    fetched = listing_fetch_sentence(jobs)
+    lines = [
+        "# PublicJobs.ca",
+        "",
+        "> Independent job board for government and public-sector openings in Toronto and the GTA. Run by Osama Chaudhary. Not affiliated with any government or listed employer.",
+        "",
+        "PublicJobs.ca lists current openings collected from employers' public career sites. "
+        f"The listings file records the system each posting came from: {sources}. "
+        "The site does not take applications. Each job page links to the employer's posting, and you apply there. "
+        "Browsing is free and needs no account. The homepage can search titles and employers. "
+        "Every current opening is also linked from /jobs/, and each employer has a page under /employers/. "
+        "Match your resume at /match/ compares a resume with current openings. The resume is not stored. Matching is free, up to 3 times. "
+        "Email alerts are optional.",
+        "",
+        "A posting whose closing date has passed stays on its own page, marked closed, and is left off the homepage, /jobs/, and the employer pages.",
+        "",
+        "This repository has no cron and no scheduled GitHub Actions workflow that refreshes listings. "
+        "scripts/build_pages.py rebuilds the static pages from data/listings.json when that file is updated and published. "
+        f"{fetched} Contact: hello@publicjobs.ca.",
+        "",
+        "## Pages",
+        "",
+        f"- [Home]({SITE_URL}/): Current openings, with search by job title and employer.",
+        f"- [All openings]({SITE_URL}/jobs/): Every current opening, split across pages of links.",
+        f"- [Employers]({SITE_URL}/employers/): Public employers, each with a page of its current openings.",
+        f"- [Match your resume]({SITE_URL}/match/): Compare a resume with current openings. The resume is not stored. Free, up to 3 times.",
+        f"- [About]({SITE_URL}/about/): Who runs the site, what it covers, how listings are collected, and how often they are updated.",
+        f"- [FAQ]({SITE_URL}/faq/): Answers to common questions about the site.",
+        f"- [Sitemap]({SITE_URL}/sitemap.xml): Every published URL.",
+    ]
+    lines.extend(
+        [
+            "",
+            "## Optional",
+            "",
+            f"- [Privacy]({SITE_URL}/privacy/): What personal information the site collects and how email alerts work.",
+            f"- [Terms]({SITE_URL}/terms/): Terms of use.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def write_llms() -> None:
+    (ROOT / "llms.txt").write_text(render_llms_txt(), encoding="utf-8")
+
+
 def read_html(path: Path) -> str:
     try:
         return path.read_text(encoding="utf-8")
@@ -2839,6 +2995,7 @@ def main() -> None:
     hub_paths = write_hub_pages(jobs)
     write_sitemap(slugs, lastmods, hub_paths)
     write_robots()
+    write_llms()
     (ROOT / ".nojekyll").write_text("", encoding="utf-8")
     verify_internal_links(open_jobs, hub_paths)
     print(
