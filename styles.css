@@ -293,6 +293,18 @@ input[type="search"] {
   font-size: 1rem;
 }
 
+.listings-index {
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
+}
+
+.listings-index a {
+  color: var(--civic);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
 .pager {
   display: flex;
   flex-wrap: wrap;
@@ -302,7 +314,10 @@ input[type="search"] {
   margin-top: 1rem;
 }
 
-.pager button {
+.pager button,
+.pager a,
+.pager span {
+  display: inline-block;
   padding: 0.5rem 0.85rem;
   border: 1px solid var(--rule);
   border-radius: 0;
@@ -311,10 +326,12 @@ input[type="search"] {
   font: inherit;
   font-size: 0.875rem;
   font-weight: 600;
+  text-decoration: none;
   cursor: pointer;
 }
 
-.pager button:disabled {
+.pager button:disabled,
+.pager span[aria-disabled="true"] {
   color: var(--muted);
   cursor: not-allowed;
 }
@@ -567,6 +584,14 @@ button[type="submit"]:disabled {
   margin: 0 0 1.25rem;
   color: var(--muted);
   font-size: 1rem;
+}
+
+.job-page .employer a,
+.job-meta a {
+  color: var(--civic);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 
 .job-meta {

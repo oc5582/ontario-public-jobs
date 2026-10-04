@@ -81,3 +81,9 @@
   padding: 0.6rem 0;
   border-bottom: 1px solid var(--rule);
 }
+
+.description .employer-list a {
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
