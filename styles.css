@@ -512,9 +512,20 @@ button[type="submit"]:disabled {
 
 .site-footer p {
   margin: 0;
-  padding: 1.25rem 0 2.5rem;
+  padding: 1.25rem 0 0.75rem;
   color: var(--muted);
   font-size: 0.875rem;
+}
+
+.footer-nav {
+  padding: 0 0 2rem;
+}
+
+.footer-nav a {
+  color: var(--civic);
+  font-size: 0.875rem;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 
 .job-page {
@@ -618,8 +629,23 @@ button[type="submit"]:disabled {
     padding-right: 1rem;
   }
 
+  .header-inner {
+    flex-wrap: wrap;
+    row-gap: 0.15rem;
+  }
+
   .site-nav {
-    gap: 0.65rem;
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin-left: 0;
+    max-width: 100%;
+    gap: 0.15rem 0.85rem;
+  }
+
+  .site-nav a {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
   }
 
   .hero {

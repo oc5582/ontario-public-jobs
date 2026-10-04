@@ -1,6 +1,63 @@
-/* Extra styles for /privacy/, /about/, /employers/ and /terms/ only. */
+/* Extra styles for /privacy/, /about/, /faq/, /employers/ and /terms/ only. */
 .description a {
   color: var(--civic);
+}
+
+.description {
+  overflow-wrap: break-word;
+}
+
+.description .faq-toc {
+  margin: 0 0 2rem;
+}
+
+.description .faq-toc ol {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.description .faq-toc a {
+  display: inline-block;
+  padding: 0.2rem 0;
+  color: var(--civic);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.description .faq-section,
+.description .faq-item h3 {
+  scroll-margin-top: 6.5rem;
+}
+
+.description .faq-section + .faq-section {
+  margin-top: 2.25rem;
+}
+
+.description .faq-section > h2 {
+  margin-bottom: 1rem;
+}
+
+.description .faq-item a {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.description .faq-item + .faq-item {
+  margin-top: 1.35rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+
+.description .faq-item h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+
+.description .faq-item p {
+  margin-bottom: 0;
 }
 
 .description ul {
