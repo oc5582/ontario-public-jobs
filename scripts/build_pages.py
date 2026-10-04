@@ -16,6 +16,7 @@ from datetime import date
 from html import escape, unescape
 from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import parse_qs, unquote, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "data" / "listings.json"
@@ -151,11 +152,11 @@ class HtmlToText(HTMLParser):
             self.parts.append(data)
 
 
-def html_to_paragraphs(raw: str) -> list[str]:
+def html_to_paragraphs(raw: str, *, interpret_html: bool = True) -> list[str]:
     if not raw or not str(raw).strip():
         return []
     text_value = str(raw)
-    if re.search(r"<[a-zA-Z][^>]*>", text_value):
+    if interpret_html and re.search(r"<[a-zA-Z][^>]*>", text_value):
         parser = HtmlToText()
         try:
             parser.feed(text_value)
@@ -432,6 +433,7 @@ def shared_head(
     extra_css: str = "",
     robots: str = "",
     asset_origin: str = "",
+    extra_head: str = "",
 ) -> str:
     def rooted(path: str) -> str:
         return f"{asset_origin}{path}" if asset_origin else path
@@ -443,6 +445,7 @@ def shared_head(
     pixel_block = f"\n{pixel}" if pixel else ""
     analytics = analytics_snippet()
     analytics_block = f"\n{analytics}" if analytics else ""
+    extra_head_block = f"\n{extra_head}" if extra_head else ""
     robots_tag = (
         f'\n    <meta name="robots" content="{escape(robots, quote=True)}" />' if robots else ""
     )
@@ -464,7 +467,7 @@ def shared_head(
     <meta name="description" content="{escape(description)}" />{robots_tag}{canonical_tag}
 {og_tags(title, description, canonical)}
 {FONT_LINKS}
-    <link rel="stylesheet" href="{escape(css_href, quote=True)}" />{extra}{pixel_block}{analytics_block}
+    <link rel="stylesheet" href="{escape(css_href, quote=True)}" />{extra}{pixel_block}{analytics_block}{extra_head_block}
   </head>"""
 
 
@@ -495,6 +498,610 @@ def site_footer() -> str:
     </footer>"""
 
 
+# Place names that show up in listings. Region and country complete a
+# PostalAddress when the location string names the place and leaves the
+# province out. A Toronto/GTA place keeps its own city; it is not rewritten
+# to Toronto.
+PLACE_ADDRESS = {
+    "toronto": ("Toronto", "ON", "CA"),
+    "toront": ("Toronto", "ON", "CA"),
+    "downtown toronto": ("Toronto", "ON", "CA"),
+    "toronto west": ("Toronto", "ON", "CA"),
+    "north york": ("North York", "ON", "CA"),
+    "scarborough": ("Scarborough", "ON", "CA"),
+    "etobicoke": ("Etobicoke", "ON", "CA"),
+    "rexdale": ("Rexdale", "ON", "CA"),
+    "mississauga": ("Mississauga", "ON", "CA"),
+    "vaughan": ("Vaughan", "ON", "CA"),
+    "markham": ("Markham", "ON", "CA"),
+    "richmond hill": ("Richmond Hill", "ON", "CA"),
+    "oakville": ("Oakville", "ON", "CA"),
+    "burlington": ("Burlington", "ON", "CA"),
+    "milton": ("Milton", "ON", "CA"),
+    "pickering": ("Pickering", "ON", "CA"),
+    "ajax": ("Ajax", "ON", "CA"),
+    "whitby": ("Whitby", "ON", "CA"),
+    "oshawa": ("Oshawa", "ON", "CA"),
+    "newmarket": ("Newmarket", "ON", "CA"),
+    "whitchurch-stouffville": ("Whitchurch-Stouffville", "ON", "CA"),
+    "georgetown": ("Georgetown", "ON", "CA"),
+    "halton": ("Halton", "ON", "CA"),
+    "durham": ("Durham", "ON", "CA"),
+    "peel region": ("Peel Region", "ON", "CA"),
+    "hamilton": ("Hamilton", "ON", "CA"),
+    "kitchener": ("Kitchener", "ON", "CA"),
+    "ottawa": ("Ottawa", "ON", "CA"),
+    "sault ste. marie": ("Sault Ste. Marie", "ON", "CA"),
+    "grand sudbury": ("Grand Sudbury", "ON", "CA"),
+    "montreal": ("Montreal", "QC", "CA"),
+    "montréal": ("Montréal", "QC", "CA"),
+    "regina": ("Regina", "SK", "CA"),
+    "calgary": ("Calgary", "AB", "CA"),
+    "new york": ("New York", "NY", "US"),
+}
+PLACE_RE = re.compile(
+    r"\b(?:"
+    + "|".join(re.escape(name) for name in sorted(PLACE_ADDRESS, key=len, reverse=True))
+    + r")\b",
+    re.I,
+)
+REGION_BY_TOKEN = {
+    "ontario": "ON",
+    "on": "ON",
+    "quebec": "QC",
+    "québec": "QC",
+    "qc": "QC",
+    "saskatchewan": "SK",
+    "sk": "SK",
+    "alberta": "AB",
+    "ab": "AB",
+    "british columbia": "BC",
+    "bc": "BC",
+    "manitoba": "MB",
+    "mb": "MB",
+    "new brunswick": "NB",
+    "nb": "NB",
+    "nova scotia": "NS",
+    "ns": "NS",
+    "prince edward island": "PE",
+    "pe": "PE",
+    "newfoundland and labrador": "NL",
+    "nl": "NL",
+    "ny": "NY",
+}
+REGION_RE = re.compile(
+    r"\b(?:"
+    + "|".join(re.escape(name) for name in sorted(REGION_BY_TOKEN, key=len, reverse=True))
+    + r")\b",
+    re.I,
+)
+COUNTRY_BY_TOKEN = {
+    "canada": "CA",
+    "ca": "CA",
+    "united states": "US",
+    "usa": "US",
+    "us": "US",
+}
+COUNTRY_RE = re.compile(
+    r"\b(?:"
+    + "|".join(re.escape(name) for name in sorted(COUNTRY_BY_TOKEN, key=len, reverse=True))
+    + r")\b",
+    re.I,
+)
+COUNTRY_BY_REGION = {
+    "ON": "CA",
+    "QC": "CA",
+    "SK": "CA",
+    "AB": "CA",
+    "BC": "CA",
+    "MB": "CA",
+    "NB": "CA",
+    "NS": "CA",
+    "PE": "CA",
+    "NL": "CA",
+    "NY": "US",
+}
+POSTAL_RE = re.compile(
+    r"\b([ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z])\s?(\d[ABCEGHJ-NPRSTV-Z]\d)\b",
+    re.I,
+)
+STREET_RE = re.compile(
+    r"\b\d{1,6}\s+(?:[A-Za-zÀ-ÿ0-9.'’\-]+\s+){0,5}"
+    r"(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|"
+    r"Court|Crt|Place|Pl|Crescent|Cres|Terrace|Terr|Parkway|Pkwy|Square|Sq)"
+    r"\.?(?:\s+(?:West|East|North|South|[WENS]))?\b",
+    re.I,
+)
+FRENCH_STREET_RE = re.compile(
+    r"\b\d{1,6}\s+(?:rue|chemin)\s+[A-Za-zÀ-ÿ0-9.'’\-]+",
+    re.I,
+)
+NUMBERED_SITE_RE = re.compile(
+    r"(?:^|[–—-])\s*(\d{1,6}\s+[A-Za-z][A-Za-z0-9.'’\-]{1,40})\s*$"
+)
+UNNUMBERED_STREET_RE = re.compile(
+    r"^(?:[A-Za-zÀ-ÿ0-9.'’\-]+\s+){1,4}"
+    r"(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|"
+    r"Court|Crt|Place|Pl|Crescent|Cres|Terrace|Terr|Parkway|Pkwy|Square|Sq)\.?$",
+    re.I,
+)
+GTA_ONLY_RE = re.compile(
+    r"^(?:gta|greater toronto(?:\s+area)?|greater toronto and hamilton area|gtha)$",
+    re.I,
+)
+SALARY_CURRENCIES = {"CAD", "USD", "EUR", "GBP"}
+SALARY_UNITS = {
+    "HOUR": "HOUR",
+    "HOURLY": "HOUR",
+    "HR": "HOUR",
+    "DAY": "DAY",
+    "DAILY": "DAY",
+    "WEEK": "WEEK",
+    "WEEKLY": "WEEK",
+    "MONTH": "MONTH",
+    "MONTHLY": "MONTH",
+    "YEAR": "YEAR",
+    "YEARLY": "YEAR",
+    "ANNUAL": "YEAR",
+    "ANNUALLY": "YEAR",
+}
+EXPLICIT_SALARY_RE = (
+    re.compile(
+        r"^(?P<cur>CAD|USD|EUR|GBP)\s+(?P<min>\d+(?:\.\d+)?)\s*[-–—]\s*"
+        r"(?P<max>\d+(?:\.\d+)?)\s*\((?P<unit>year|hour|month|week|day)\)$",
+        re.I,
+    ),
+    re.compile(
+        r"^\$?(?P<min>\d+(?:,\d{3})*(?:\.\d+)?)\s*/\s*"
+        r"(?P<unit>hour|hr|year|month|week|day)\s*\((?P<cur>CAD|USD|EUR|GBP)\)$",
+        re.I,
+    ),
+    re.compile(
+        r"^\$?(?P<min>\d+(?:,\d{3})*(?:\.\d+)?)\s*[-–—]\s*\$?(?P<max>\d+(?:,\d{3})*(?:\.\d+)?)\s*/\s*"
+        r"(?P<unit>hour|hr|year|month|week|day)\s*\((?P<cur>CAD|USD|EUR|GBP)\)$",
+        re.I,
+    ),
+)
+
+
+def first_iso_date(job: dict, keys: tuple[str, ...]) -> str:
+    for key in keys:
+        found = iso_date(text(job.get(key)))
+        if found:
+            return found
+    return ""
+
+
+def posting_date(job: dict) -> str:
+    # fetched_at is the scrape time, not the date the employer posted the job.
+    return first_iso_date(
+        job,
+        (
+            "posted_date",
+            "posted",
+            "date_posted",
+            "datePosted",
+            "first_seen",
+            "first_seen_date",
+            "firstSeen",
+            "first_seen_at",
+        ),
+    )
+
+
+def closing_date(job: dict) -> str:
+    return first_iso_date(
+        job,
+        (
+            "closing_date",
+            "closes",
+            "valid_through",
+            "validThrough",
+            "application_deadline",
+        ),
+    )
+
+
+def job_description_html(job: dict) -> str:
+    for key in ("description_html", "descriptionHtml"):
+        raw = job.get(key)
+        if isinstance(raw, str) and raw.strip():
+            return raw.strip()
+    # Plain text is escaped and wrapped in paragraphs. Do not run it through the
+    # HTML parser: a literal "</script>" in the posting must survive as text.
+    paragraphs = html_to_paragraphs(text(job.get("description")), interpret_html=False)
+    if not paragraphs:
+        return ""
+    return "".join(f"<p>{escape(paragraph, quote=False)}</p>" for paragraph in paragraphs)
+
+
+def employer_same_as(job: dict) -> str:
+    for key in (
+        "employer_url",
+        "employer_website",
+        "employer_site",
+        "organization_url",
+        "website",
+        "same_as",
+        "sameAs",
+    ):
+        raw = text(job.get(key))
+        if raw.startswith("http://") or raw.startswith("https://"):
+            return raw
+    return ""
+
+
+def employment_types(raw: str) -> list[str]:
+    value = text(raw).lower()
+    if not value:
+        return []
+    found: list[str] = []
+
+    def add(token: str) -> None:
+        if token not in found:
+            found.append(token)
+
+    if re.search(r"\bfull[\s-]?time\b", value):
+        add("FULL_TIME")
+    if re.search(r"\bpart[\s-]?time\b", value):
+        add("PART_TIME")
+    if re.search(r"\bcontracts?\b|\bcontractor\b", value):
+        add("CONTRACTOR")
+    if re.search(r"\btemporary\b|\bfixed[\s-]?term\b", value):
+        add("TEMPORARY")
+    if re.search(r"\bintern(?:ship)?\b|\bco-?ops?\b", value):
+        add("INTERN")
+    if re.search(r"\bvolunteer\b", value):
+        add("VOLUNTEER")
+    if re.search(r"\bper[\s-]?diem\b", value):
+        add("PER_DIEM")
+    return found
+
+
+def fully_remote(job: dict) -> bool:
+    mode = re.sub(r"[\s_-]+", " ", text(job.get("work_mode")).lower()).strip()
+    return mode in {"remote", "fully remote", "work from home", "telecommute"}
+
+
+def as_number(item):
+    if isinstance(item, bool) or item is None:
+        return None
+    if isinstance(item, int):
+        return item
+    if isinstance(item, float):
+        if item != item or item in {float("inf"), float("-inf")}:
+            return None
+        return item
+    if isinstance(item, str) and item.strip():
+        cleaned = item.strip().replace(",", "").replace(" ", "")
+        if not re.fullmatch(r"\d+(?:\.\d+)?", cleaned):
+            return None
+        if "." in cleaned:
+            return float(cleaned)
+        return int(cleaned)
+    return None
+
+
+def salary_unit(raw: str) -> str:
+    token = re.sub(r"[\s_-]+", "", text(raw).upper())
+    return SALARY_UNITS.get(token, "")
+
+
+def monetary_amount(currency: str, unit: str, numbers: dict) -> dict | None:
+    code = text(currency).upper()
+    unit_text = salary_unit(unit)
+    if code not in SALARY_CURRENCIES or not unit_text or not numbers:
+        return None
+    if (
+        "minValue" in numbers
+        and "maxValue" in numbers
+        and numbers["minValue"] > numbers["maxValue"]
+    ):
+        return None
+    quantitative = {"@type": "QuantitativeValue", "unitText": unit_text}
+    for key in ("minValue", "maxValue", "value"):
+        if key in numbers:
+            quantitative[key] = numbers[key]
+    return {"@type": "MonetaryAmount", "currency": code, "value": quantitative}
+
+
+def salary_from_mapping(raw: dict) -> dict | None:
+    value = raw.get("value")
+    min_value = raw.get("minValue", raw.get("min"))
+    max_value = raw.get("maxValue", raw.get("max"))
+    unit = text(raw.get("unitText") or raw.get("unit") or "")
+    if isinstance(value, dict):
+        unit = unit or text(value.get("unitText") or value.get("unit") or "")
+        min_value = value.get("minValue", min_value)
+        max_value = value.get("maxValue", max_value)
+        value = value.get("value")
+    numbers = {}
+    for key, item in (("minValue", min_value), ("maxValue", max_value), ("value", value)):
+        number = as_number(item)
+        if number is not None:
+            numbers[key] = number
+    if "value" in numbers and ("minValue" in numbers or "maxValue" in numbers):
+        numbers.pop("value")
+    return monetary_amount(text(raw.get("currency") or raw.get("currencyCode")), unit, numbers)
+
+
+def salary_from_text(raw: str) -> dict | None:
+    cleaned = re.sub(r"\s+", " ", text(raw))
+    if not cleaned:
+        return None
+    for pattern in EXPLICIT_SALARY_RE:
+        match = pattern.fullmatch(cleaned)
+        if not match:
+            continue
+        numbers = {}
+        minimum = as_number(match.group("min"))
+        if minimum is None:
+            return None
+        maximum = as_number(match.groupdict().get("max"))
+        if maximum is None:
+            numbers["value"] = minimum
+        else:
+            numbers["minValue"] = minimum
+            numbers["maxValue"] = maximum
+        return monetary_amount(match.group("cur"), match.group("unit"), numbers)
+    return None
+
+
+def base_salary(job: dict) -> dict | None:
+    for key in ("base_salary", "baseSalary", "salary_structured", "structured_salary"):
+        raw = job.get(key)
+        if isinstance(raw, dict):
+            parsed = salary_from_mapping(raw)
+            if parsed:
+                return parsed
+        elif isinstance(raw, str):
+            parsed = salary_from_text(raw)
+            if parsed:
+                return parsed
+    raw_salary = job.get("salary")
+    if isinstance(raw_salary, dict):
+        return salary_from_mapping(raw_salary)
+    if isinstance(raw_salary, str):
+        return salary_from_text(raw_salary)
+    return None
+
+
+def explicit_job_id(job: dict) -> str:
+    for key in ("id", "job_id", "requisition_id", "req_id", "posting_id"):
+        raw = job.get(key)
+        if isinstance(raw, bool) or raw is None:
+            continue
+        if isinstance(raw, (int, float)):
+            if isinstance(raw, float) and not raw.is_integer():
+                continue
+            return str(int(raw))
+        value = text(raw)
+        if value:
+            return value
+    return ""
+
+
+def apply_job_id(url: str) -> str:
+    raw = text(url)
+    if not raw:
+        return ""
+    parsed = urlparse(raw)
+    query = parse_qs(parsed.query)
+    for key in ("career_job_req_id", "gh_jid", "jobId", "opportunityId"):
+        values = query.get(key) or []
+        if values and text(values[0]):
+            return text(values[0])
+    path = unquote(parsed.path).rstrip("/")
+    segment = path.split("/")[-1] if path else ""
+    match = re.search(r"_((?:JR|R)[-_]?\d[\w-]*)$", segment, re.I)
+    if match:
+        return match.group(1)
+    if re.fullmatch(r"\d+", segment):
+        return segment
+    if re.fullmatch(
+        r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+        segment,
+    ):
+        return segment.lower()
+    match = re.search(r"/view/([A-Za-z0-9]{8,})(?:/|$)", path)
+    if match:
+        return match.group(1)
+    match = re.search(r"/apply/([A-Za-z0-9]{6,})(?:/|$)", path)
+    if match:
+        return match.group(1)
+    if "myworkdayjobs.com" not in parsed.netloc.lower():
+        match = re.search(r"/job/([A-Za-z0-9]{6,})$", path)
+        if match:
+            return match.group(1)
+    return ""
+
+
+def clean_location_segment(part: str) -> str:
+    cleaned = re.sub(r"\s+", " ", part).strip(" .")
+    cleaned = re.sub(r"\s*\([^)]*\)\s*", " ", cleaned)
+    cleaned = re.sub(
+        r"^(?:hybrid|remote|on[\s-]?site)\s*[·•|\-–—:/]+\s*",
+        "",
+        cleaned,
+        flags=re.I,
+    )
+    cleaned = re.sub(
+        r"\s*[·•|\-–—]\s*(?:hybrid(?:\s*/\s*on[\s-]?site)?|on[\s-]?site|remote)\s*$",
+        "",
+        cleaned,
+        flags=re.I,
+    )
+    return re.sub(r"\s+", " ", cleaned).strip(" ,.-")
+
+
+def cut_match(source: str, match: re.Match) -> str:
+    return re.sub(r"\s+", " ", (source[: match.start()] + " " + source[match.end():])).strip(" ,.-/")
+
+
+def postal_address(street: str, locality: str, region: str, postal: str, country: str) -> dict:
+    address = {"@type": "PostalAddress"}
+    if street:
+        address["streetAddress"] = street
+    if locality:
+        address["addressLocality"] = locality
+    if region:
+        address["addressRegion"] = region
+    if postal:
+        address["postalCode"] = postal
+    if country:
+        address["addressCountry"] = country
+    return {"@type": "Place", "address": address}
+
+
+def parse_location_segment(part: str) -> list[dict]:
+    segment = clean_location_segment(part)
+    if not segment:
+        return []
+    postal = ""
+    postal_match = POSTAL_RE.search(segment)
+    if postal_match:
+        postal = f"{postal_match.group(1)} {postal_match.group(2)}".upper()
+        segment = cut_match(segment, postal_match)
+    street = ""
+    street_match = STREET_RE.search(segment) or FRENCH_STREET_RE.search(segment)
+    if not street_match:
+        for piece in segment.split(","):
+            candidate = piece.strip()
+            if UNNUMBERED_STREET_RE.fullmatch(candidate):
+                street_match = re.search(re.escape(candidate), segment)
+                break
+    if street_match:
+        street = re.sub(r"\s+", " ", street_match.group(0)).strip()
+        segment = cut_match(segment, street_match)
+    elif segment:
+        numbered = NUMBERED_SITE_RE.search(segment)
+        if numbered and not re.search(r"\b(?:month|months|year|years|hour|hours)\b", numbered.group(1), re.I):
+            street = re.sub(r"\s+", " ", numbered.group(1)).strip()
+            segment = cut_match(segment, numbered)
+    places = []
+    seen_localities = set()
+    for match in PLACE_RE.finditer(segment):
+        locality, region, country = PLACE_ADDRESS[match.group(0).lower()]
+        if locality in seen_localities:
+            continue
+        seen_localities.add(locality)
+        places.append((locality, region, country))
+    regions = []
+    for match in REGION_RE.finditer(segment):
+        code = REGION_BY_TOKEN[match.group(0).lower()]
+        if code not in regions:
+            regions.append(code)
+    countries = []
+    for match in COUNTRY_RE.finditer(segment):
+        code = COUNTRY_BY_TOKEN[match.group(0).lower()]
+        if code not in countries:
+            countries.append(code)
+    region_override = regions[0] if len(regions) == 1 else ""
+    country_override = countries[0] if len(countries) == 1 else ""
+    if not places and region_override:
+        country = country_override or COUNTRY_BY_REGION.get(region_override, "")
+        if country:
+            return [postal_address("", "", region_override, postal if not places else "", country)]
+    if not places and GTA_ONLY_RE.fullmatch(segment):
+        return [postal_address("", "Toronto", "ON", "", "CA")]
+    if not places:
+        return []
+    located = []
+    attach_detail = len(places) == 1
+    for locality, region, country in places:
+        use_region = region_override or region
+        use_country = country_override or COUNTRY_BY_REGION.get(use_region, "") or country
+        # A province named in the text wins over the place table when they disagree.
+        if region_override and COUNTRY_BY_REGION.get(region_override) and not country_override:
+            use_country = COUNTRY_BY_REGION[region_override]
+        located.append(
+            postal_address(
+                street if attach_detail else "",
+                locality,
+                use_region,
+                postal if attach_detail else "",
+                use_country,
+            )
+        )
+    return [place for place in located if place["address"].get("addressCountry")]
+
+
+def job_locations(raw: str) -> list[dict]:
+    cleaned = re.sub(r"\s+", " ", text(raw)).strip()
+    if not cleaned:
+        return []
+    places: list[dict] = []
+    seen = set()
+    for part in re.split(r"\s*;\s*", cleaned):
+        for place in parse_location_segment(part):
+            key = tuple(sorted(place["address"].items()))
+            if key in seen:
+                continue
+            seen.add(key)
+            places.append(place)
+    if places:
+        return places
+    if re.search(r"\b(?:toronto|gta|greater toronto)\b", cleaned, re.I) or GTA_ONLY_RE.fullmatch(cleaned):
+        return [postal_address("", "Toronto", "ON", "", "CA")]
+    return []
+
+
+def job_posting_data(job: dict) -> dict | None:
+    title = text(job.get("title"))
+    employer = text(job.get("employer"))
+    description = job_description_html(job)
+    if not title or not employer or not description:
+        return None
+    data = {
+        "@context": "https://schema.org/",
+        "@type": "JobPosting",
+        "title": title,
+        "description": description,
+    }
+    job_id = explicit_job_id(job) or apply_job_id(text(job.get("apply_url")))
+    if job_id:
+        data["identifier"] = {
+            "@type": "PropertyValue",
+            "name": employer,
+            "value": job_id,
+        }
+    posted = posting_date(job)
+    if posted:
+        data["datePosted"] = posted
+    closes = closing_date(job)
+    if closes:
+        data["validThrough"] = closes
+    types = employment_types(text(job.get("employment_type")))
+    if len(types) == 1:
+        data["employmentType"] = types[0]
+    elif types:
+        data["employmentType"] = types
+    organization = {"@type": "Organization", "name": employer}
+    same_as = employer_same_as(job)
+    if same_as:
+        organization["sameAs"] = same_as
+    data["hiringOrganization"] = organization
+    places = job_locations(text(job.get("location")))
+    if len(places) == 1:
+        data["jobLocation"] = places[0]
+    elif places:
+        data["jobLocation"] = places
+    if fully_remote(job):
+        data["jobLocationType"] = "TELECOMMUTE"
+    salary = base_salary(job)
+    if salary:
+        data["baseSalary"] = salary
+    return data
+
+
+def job_posting_json_ld(job: dict) -> str:
+    data = job_posting_data(job)
+    if not data:
+        return ""
+    payload = json_for_script([data])[1:-1]
+    return f'    <script type="application/ld+json">{payload}</script>'
+
+
 def render_job_page(job: dict) -> str:
     title = text(job.get("title")) or "Untitled"
     employer = text(job.get("employer"))
@@ -512,7 +1119,7 @@ def render_job_page(job: dict) -> str:
     apply = apply_button(apply_url) if apply_url else ""
     script = apply_click_script()
     script_block = f"\n{script}" if script else ""
-    return f"""{shared_head(page_title, meta_desc, canonical, "../../../styles.css")}
+    return f"""{shared_head(page_title, meta_desc, canonical, "../../../styles.css", extra_head=job_posting_json_ld(job))}
   <body>
 {site_header("../../../")}
     <main>
