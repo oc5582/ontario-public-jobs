@@ -104,7 +104,7 @@ def render_employer_page(name: str, slug: str, group: list[dict]) -> str:
 {job_list}
       </article>
     </main>
-{bp.site_footer()}
+{bp.site_footer("../../")}
   </body>
 </html>
 """
@@ -176,7 +176,7 @@ def render_jobs_index_page(
 {pager_nav(page, pages)}
       </article>
     </main>
-{bp.site_footer()}
+{bp.site_footer(prefix)}
   </body>
 </html>
 """

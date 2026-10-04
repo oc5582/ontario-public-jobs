@@ -179,9 +179,14 @@ test("homepage form is email plus consent and listings stay in the HTML", () => 
   const listingsAt = html.indexOf('id="job-list"');
   const signupAt = html.indexOf('id="signup-form"');
   assert.ok(signupAt > 0 && listingsAt > signupAt);
-  assert.match(html, /Get new Toronto Crown &amp; agency openings by email — free\./);
+  assert.match(html, /Or get new openings by email/);
+  assert.match(html, /New openings by email/);
   assert.match(html, /name="casl_consent"/);
   assert.match(html, /type="checkbox"/);
+  assert.doesNotMatch(html, /id="consent"[^>]*\schecked/);
+  assert.match(html, /See which jobs fit your resume/);
+  assert.match(html, /id="nav-more-btn"[^>]*aria-controls="nav-more-panel"/);
+  assert.match(html, /src="\.\/nav\.js"/);
   assert.doesNotMatch(html.slice(signupAt, signupAt + 2500), /name="(region|keyword|employer)"/);
   assert.match(html, /href="jobs\/[^"]+\/[^"]+\/"/);
 

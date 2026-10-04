@@ -36,11 +36,18 @@ CF_ANALYTICS_TOKEN = "b81ee0dcc95347e882d5e0a43124f360"
 # An empty value or the [OG_IMAGE_URL] placeholder omits og:image.
 OG_IMAGE_URL = "https://publicjobs.ca/og-image.png"
 OG_IMAGE_ALT = "PublicJobs.ca: government jobs in Toronto and the GTA"
-H1 = "Independent job board for government jobs in Toronto and the GTA"
-SUBHEAD = (
+# Visible homepage heading. The document title and meta description stay on the
+# longer wording below so search snippets do not change with this redesign.
+PAGE_TITLE = "Independent job board for government jobs in Toronto and the GTA"
+META_DESCRIPTION = (
     "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other "
     "public employers in Toronto and the GTA, each hiring on its own website. "
     "Their openings, collected in one place."
+)
+H1 = "Government jobs in Toronto and the GTA"
+SUBHEAD = (
+    "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other "
+    "public employers in Toronto and the GTA."
 )
 LISTINGS_HEADING = "Current openings"
 FOOTER = "PublicJobs.ca is independent and not affiliated with any government."
@@ -69,17 +76,32 @@ SEARCH_ALIASES = {
     "Workplace Safety and Insurance Board": "WSIB",
 }
 
-SIGNUP_HEADING = "Get new Toronto Crown & agency openings by email — free."
-SIGNUP_LEAD = "The job board stays public. This signs you up for email alerts only."
+SIGNUP_HEADING_DESKTOP = "Or get new openings by email"
+SIGNUP_HEADING_PHONE = "New openings by email"
 CASL = (
     "I agree to receive job alert emails from PublicJobs.ca at this address. "
     "I can unsubscribe anytime."
 )
-SOFT_PAY = (
-    "Optional. If this saved you time each week, "
-    "would you pay a small monthly fee for it?"
+CASL_PHONE = (
+    "I agree to job alert emails from PublicJobs.ca. Unsubscribe anytime."
 )
 SUBMIT_LABEL = "Email me new openings"
+SUBMIT_LABEL_PHONE = "Sign up"
+MATCH_PROMO_KICKER = "New on PublicJobs.ca"
+MATCH_PROMO_HEADING = "See which jobs fit your resume"
+MATCH_PROMO_PHONE_LEAD = (
+    "Get your best matches from every opening, with a reason for each."
+)
+MATCH_PROMO_FINE = (
+    "Free, up to 3 matches. Needs your email for job alerts. "
+    "Your resume is not stored."
+)
+MATCH_PROMO_FINE_PHONE = "Free, up to 3 matches."
+MATCH_PROMO_STEPS = (
+    "Upload your resume",
+    "We check every opening",
+    "See your matches",
+)
 UNAVAILABLE = (
     "A job description is not available for this posting. "
     "Use the Apply button to view details on the employer site."
@@ -527,30 +549,51 @@ def site_header(home_href: str, current: str = "", link_base: str = "") -> str:
         full = f"{link_base}{href}" if link_base else href
         return f'<a href="{escape(full, quote=True)}"{current_attr}>{escape(label)}</a>'
 
+    more = "\n".join(
+        f"              <li>{nav_link(label, href, key)}</li>"
+        for label, href, key in (
+            ("About", "/about/", "about"),
+            ("FAQ", "/faq/", "faq"),
+            ("Privacy", "/privacy/", "privacy"),
+            ("Terms", "/terms/", "terms"),
+        )
+    )
     return f"""    <header class="site-header">
       <div class="header-inner">
         <a class="site-name" href="{escape(home_href, quote=True)}">PublicJobs.ca</a>
         <nav class="site-nav" aria-label="Site">
           {nav_link("Match your resume", "/match/", "match")}
           {nav_link("Employers", "/employers/", "employers")}
-          {nav_link("About", "/about/", "about")}
-          {nav_link("FAQ", "/faq/", "faq")}
-          {nav_link("Privacy", "/privacy/", "privacy")}
-          {nav_link("Terms", "/terms/", "terms")}
+          <div class="nav-more">
+            <button type="button" class="nav-more-btn" id="nav-more-btn" aria-expanded="false" aria-controls="nav-more-panel">More</button>
+            <ul class="nav-more-panel" id="nav-more-panel" hidden>
+{more}
+            </ul>
+          </div>
         </nav>
       </div>
     </header>"""
 
 
-def site_footer() -> str:
+def site_footer(home_href: str = "./", current: str = "", link_base: str = "") -> str:
+    def foot_link(label: str, href: str, key: str) -> str:
+        current_attr = ' aria-current="page"' if current == key else ""
+        full = f"{link_base}{href}" if link_base else href
+        return f'<a href="{escape(full, quote=True)}"{current_attr}>{escape(label)}</a>'
+
+    script = escape(f"{home_href}nav.js", quote=True)
     return f"""    <footer class="site-footer">
       <div class="content">
         <p>{escape(FOOTER)}</p>
         <nav class="footer-nav" aria-label="Footer">
-          <a href="/faq/">Frequently asked questions</a>
+          {foot_link("About", "/about/", "about")}
+          {foot_link("Frequently asked questions", "/faq/", "faq")}
+          {foot_link("Privacy", "/privacy/", "privacy")}
+          {foot_link("Terms", "/terms/", "terms")}
         </nav>
       </div>
-    </footer>"""
+    </footer>
+    <script src="{script}"></script>"""
 
 
 # Place names that show up in listings. Region and country complete a
@@ -1619,7 +1662,7 @@ def render_job_page(job: dict, closed: bool = False) -> str:
         {apply}
       </article>
     </main>
-{site_footer()}{script_block}
+{site_footer("../../../")}{script_block}
   </body>
 </html>
 """
@@ -1715,14 +1758,78 @@ def home_json_ld() -> str:
     return f'    <script type="application/ld+json">{payload}</script>'
 
 
+def render_match_promo(count: int) -> str:
+    noun = "opening" if count == 1 else "openings"
+    lead = (
+        f"Upload your resume and we'll check it against all {count} {noun}. "
+        "You get your best matches, each with a reason why it fits."
+    )
+    steps = "\n".join(
+        f'              <li><span class="match-promo-num" aria-hidden="true">{index}</span>'
+        f"<span>{escape(label)}</span></li>"
+        for index, label in enumerate(MATCH_PROMO_STEPS, start=1)
+    )
+    return f"""        <section class="match-promo" aria-labelledby="match-promo-heading">
+          <div class="match-promo-panel">
+            <div class="match-promo-copy">
+              <p class="match-promo-kicker">{escape(MATCH_PROMO_KICKER)}</p>
+              <h2 id="match-promo-heading">{escape(MATCH_PROMO_HEADING)}</h2>
+              <p class="match-promo-lead b2-desktop">{escape(lead)}</p>
+              <p class="match-promo-lead b2-phone">{escape(MATCH_PROMO_PHONE_LEAD)}</p>
+              <a class="match-promo-btn" href="/match/">Match my resume</a>
+              <p class="match-promo-fine b2-desktop">{escape(MATCH_PROMO_FINE)}</p>
+              <p class="match-promo-fine b2-phone">{escape(MATCH_PROMO_FINE_PHONE)}</p>
+            </div>
+            <ol class="match-promo-steps">
+{steps}
+            </ol>
+          </div>
+        </section>"""
+
+
+def render_signup() -> str:
+    return f"""        <section class="signup signup-compact" aria-labelledby="signup-heading">
+          <form id="signup-form" method="post" novalidate>
+            <div class="signup-compact-row">
+              <h2 id="signup-heading" class="signup-compact-heading"><span class="b2-desktop">{escape(SIGNUP_HEADING_DESKTOP)}</span><span class="b2-phone">{escape(SIGNUP_HEADING_PHONE)}</span></h2>
+              <div class="signup-compact-fields">
+                <label id="email-label" for="email" class="visually-hidden">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  autocomplete="email"
+                  inputmode="email"
+                  maxlength="254"
+                  placeholder="you@example.com"
+                />
+                <button type="submit" id="submit-btn"><span class="b2-desktop">{escape(SUBMIT_LABEL)}</span><span class="b2-phone">{escape(SUBMIT_LABEL_PHONE)}</span></button>
+              </div>
+            </div>
+            <label class="checkbox signup-compact-consent" for="consent">
+              <input type="checkbox" id="consent" name="casl_consent" value="yes" required />
+              <span id="casl-label">{escape(CASL)}</span>
+              <span class="b2-phone b2-consent">{escape(CASL_PHONE)} <a href="/privacy/">Privacy</a></span>
+              <span class="signup-compact-links"><a href="/privacy/">Privacy</a> <a href="/terms/">Terms</a></span>
+            </label>
+            <div class="hp" aria-hidden="true">
+              <label for="gotcha">Leave this field blank</label>
+              <input type="text" id="gotcha" name="_gotcha" tabindex="-1" autocomplete="off" />
+            </div>
+            <div id="signup-status" class="status" role="status" aria-live="polite" hidden></div>
+          </form>
+        </section>"""
+
+
 def render_index(jobs: list[dict]) -> str:
     records = [listing_record(job) for job in jobs]
     count = len(records)
     pages = max(1, (count + PAGE_SIZE - 1) // PAGE_SIZE)
     label = "opening" if count == 1 else "openings"
     first_rows = "\n".join(render_row(rec) for rec in records[:PAGE_SIZE])
-    description = SUBHEAD
-    title = f"{H1} | {BRAND}"
+    description = META_DESCRIPTION
+    title = f"{PAGE_TITLE} | {BRAND}"
     next_disabled = "" if pages > 1 else " disabled"
     head = shared_head(title, description, SITE_URL + "/", "./styles.css")
     head = head.replace("\n  </head>", f"\n{home_json_ld()}\n  </head>", 1)
@@ -1752,52 +1859,9 @@ def render_index(jobs: list[dict]) -> str:
           </div>
         </section>
 
-        <section class="signup" aria-labelledby="signup-heading">
-          <div class="signup-panel">
-            <div class="signup-copy">
-              <h2 id="signup-heading">{escape(SIGNUP_HEADING)}</h2>
-              <p class="signup-lead" id="signup-lead">{escape(SIGNUP_LEAD)}</p>
-            </div>
-            <form id="signup-form" method="post" novalidate>
-              <div class="signup-fields">
-                <div class="field">
-                  <label id="email-label" for="email">Email</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    required
-                    autocomplete="email"
-                    inputmode="email"
-                    maxlength="254"
-                    placeholder="you@example.com"
-                  />
-                </div>
-                <button type="submit" id="submit-btn">{escape(SUBMIT_LABEL)}</button>
-              </div>
+{render_match_promo(count)}
 
-              <div class="field consent-field">
-                <label class="checkbox" for="consent">
-                  <input type="checkbox" id="consent" name="casl_consent" value="yes" required />
-                  <span id="casl-label">{escape(CASL)}</span>
-                </label>
-                <p class="privacy-link"><a href="/privacy/">Privacy policy</a> <a href="/terms/">Terms of use</a></p>
-              </div>
-
-              <div class="hp" aria-hidden="true">
-                <label for="gotcha">Leave this field blank</label>
-                <input type="text" id="gotcha" name="_gotcha" tabindex="-1" autocomplete="off" />
-              </div>
-
-              <div class="pay-ask">
-                <p id="soft-pay-ask">{escape(SOFT_PAY)}</p>
-                <div class="pay-options" id="pay-options"></div>
-              </div>
-
-              <div id="signup-status" class="status" role="status" aria-live="polite" hidden></div>
-            </form>
-          </div>
-        </section>
+{render_signup()}
 
         <section class="listings" aria-labelledby="listings-heading">
           <h2 id="listings-heading">{escape(LISTINGS_HEADING)}</h2>
@@ -1817,7 +1881,7 @@ def render_index(jobs: list[dict]) -> str:
         </section>
       </div>
     </main>
-{site_footer()}
+{site_footer("./")}
 
     <script id="listings-data" type="application/json">{json_for_script(records)}</script>
     <script src="./listings.js"></script>
@@ -1895,7 +1959,7 @@ def render_info_page(
         </section>
       </article>
     </main>
-{site_footer()}
+{site_footer("../", current)}
   </body>
 </html>
 """
@@ -2242,7 +2306,7 @@ def render_match_page() -> str:
     <main class="match">
 {MATCH_MAIN}
     </main>
-{site_footer()}
+{site_footer("../", "match")}
 {MATCH_SCRIPT}
   </body>
 </html>
@@ -2688,7 +2752,7 @@ def render_not_found() -> str:
         <p><a href="{origin}/employers/">Employers</a></p>
       </div>
     </main>
-{site_footer()}
+{site_footer(origin + "/", link_base=origin)}
   </body>
 </html>
 """

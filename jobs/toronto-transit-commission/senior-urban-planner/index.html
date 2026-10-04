@@ -52,10 +52,15 @@
         <nav class="site-nav" aria-label="Site">
           <a href="/match/">Match your resume</a>
           <a href="/employers/">Employers</a>
-          <a href="/about/">About</a>
-          <a href="/faq/">FAQ</a>
-          <a href="/privacy/">Privacy</a>
-          <a href="/terms/">Terms</a>
+          <div class="nav-more">
+            <button type="button" class="nav-more-btn" id="nav-more-btn" aria-expanded="false" aria-controls="nav-more-panel">More</button>
+            <ul class="nav-more-panel" id="nav-more-panel" hidden>
+              <li><a href="/about/">About</a></li>
+              <li><a href="/faq/">FAQ</a></li>
+              <li><a href="/privacy/">Privacy</a></li>
+              <li><a href="/terms/">Terms</a></li>
+            </ul>
+          </div>
         </nav>
       </div>
     </header>
@@ -182,10 +187,14 @@
       <div class="content">
         <p>PublicJobs.ca is independent and not affiliated with any government.</p>
         <nav class="footer-nav" aria-label="Footer">
+          <a href="/about/">About</a>
           <a href="/faq/">Frequently asked questions</a>
+          <a href="/privacy/">Privacy</a>
+          <a href="/terms/">Terms</a>
         </nav>
       </div>
     </footer>
+    <script src="../../../nav.js"></script>
     <script>
     document.addEventListener("click", function (event) {
       var el = event.target;
