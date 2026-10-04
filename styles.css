@@ -717,6 +717,9 @@ button[type="submit"]:disabled {
 }
 
 .footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
   padding: 0 0 2rem;
 }
 
@@ -863,22 +866,24 @@ button[type="submit"]:disabled {
   }
 
   .header-inner {
-    flex-wrap: wrap;
-    row-gap: 0.15rem;
+    flex-wrap: nowrap;
+    align-items: center;
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
   }
 
   .site-nav {
-    flex: 1 1 100%;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    margin-left: 0;
-    max-width: 100%;
-    gap: 0.15rem 0.85rem;
+    flex: 0 1 auto;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    margin-left: auto;
+    max-width: none;
+    gap: 0.75rem;
   }
 
-  .site-nav a {
-    padding-top: 0.25rem;
-    padding-bottom: 0.25rem;
+  .site-nav > a {
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
   }
 
   .hero {
@@ -1002,29 +1007,6 @@ button[type="submit"]:disabled {
   /* The note drops under the apply button once the row is phone-width. */
   .apply-note {
     flex: 1 0 100%;
-  }
-}
-
-/* Five nav links do not fit beside the wordmark at phone width. */
-@media (max-width: 640px) {
-  .header-inner {
-    flex-wrap: wrap;
-    align-items: flex-start;
-    row-gap: 0.4rem;
-  }
-
-  .site-nav {
-    flex: 1 0 100%;
-    flex-wrap: wrap;
-    gap: 0.35rem 0.85rem;
-    margin-left: 0;
-  }
-}
-
-/* The longest link takes the first row so the other four stay together. */
-@media (max-width: 420px) {
-  .site-nav a:first-child {
-    flex-basis: 100%;
   }
 }
 
@@ -1196,5 +1178,478 @@ button[type="submit"]:disabled {
   *::after {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* Header disclosure. Brand, two links, and More stay on one row. */
+.nav-more {
+  position: relative;
+}
+
+.nav-more-btn {
+  margin: 0;
+  padding: 0.3rem 0.65rem;
+  font: inherit;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  color: var(--civic);
+  background: var(--surface);
+  border: 1px solid var(--civic);
+  border-radius: 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.nav-more-btn:hover {
+  background: var(--hover);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.nav-more-btn[aria-expanded="true"] {
+  background: var(--civic);
+  color: #fff;
+}
+
+.nav-more-btn:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.nav-more-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 30;
+  min-width: 11rem;
+  margin: 0;
+  padding: 0.35rem 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+}
+
+.nav-more-panel[hidden] {
+  display: none;
+}
+
+.site-nav .nav-more-panel a {
+  display: block;
+  padding: 0.55rem 1rem;
+  font-size: 0.9375rem;
+  color: var(--civic);
+  text-decoration: none;
+  white-space: normal;
+}
+
+.site-nav .nav-more-panel a:hover {
+  background: var(--hover);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.site-nav .nav-more-panel a:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: -3px;
+}
+
+.footer-nav a[aria-current="page"] {
+  font-weight: 600;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Homepage resume-match panel. */
+.match-promo {
+  margin: 1.25rem 0 0;
+}
+
+.match-promo-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(14rem, 1fr);
+  gap: 1.25rem 2.5rem;
+  align-items: center;
+  padding: 1.75rem 2rem;
+  background: var(--civic);
+  color: #fff;
+}
+
+.match-promo-kicker {
+  margin: 0 0 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #cfe8d9;
+}
+
+.match-promo h2 {
+  margin: 0;
+  font-size: clamp(1.625rem, 2.2vw + 1rem, 2.25rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+
+.match-promo-lead {
+  margin: 0.75rem 0 0;
+  max-width: 36rem;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  color: #fff;
+}
+
+.match-promo-btn {
+  display: inline-block;
+  margin-top: 1.25rem;
+  padding: 0.85rem 1.5rem;
+  background: #fff;
+  color: var(--civic);
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid #fff;
+  border-radius: 0;
+}
+
+.match-promo-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.match-promo-panel:hover .match-promo-btn {
+  background: #e7f3ec;
+  border-color: #e7f3ec;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.match-promo-btn:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.match-promo-fine {
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
+  color: #dde6ef;
+}
+
+.match-promo-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 2rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  display: grid;
+  gap: 1rem;
+}
+
+.match-promo-steps li {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.match-promo-num {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: #0d5c32;
+  color: #fff;
+  font-weight: 600;
+  border: 2px solid #fff;
+}
+
+.b2-phone {
+  display: none;
+}
+
+.signup.signup-compact {
+  margin: 0;
+  padding: 0.85rem 1.15rem;
+  border: 1px solid var(--rule);
+  border-top: 0;
+  background: var(--surface);
+}
+
+.signup-compact-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  flex-wrap: wrap;
+}
+
+.signup.signup-compact .signup-compact-heading {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  flex: none;
+}
+
+.signup-compact-fields {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 16rem;
+}
+
+.signup-compact-fields input {
+  flex: 1;
+  min-width: 0;
+}
+
+.signup-compact-fields button[type="submit"] {
+  margin: 0;
+  white-space: nowrap;
+  padding: 0.6rem 1rem;
+}
+
+.signup.signup-compact .checkbox {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.25rem 0.5rem;
+  margin: 0.6rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.signup-compact-consent input {
+  margin: 0.15rem 0 0;
+}
+
+.signup-compact-consent span#casl-label {
+  flex: 1;
+  min-width: 12rem;
+}
+
+.signup-compact-links a {
+  color: var(--civic);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  margin-right: 0.5rem;
+}
+
+@media (max-width: 767px) {
+  .match-promo {
+    margin-top: 0.75rem;
+  }
+
+  .match-promo-panel {
+    grid-template-columns: 1fr;
+    padding: 1.25rem 1rem;
+    gap: 1.1rem;
+  }
+
+  .match-promo-lead {
+    font-size: 1rem;
+  }
+
+  .match-promo-btn {
+    display: block;
+    text-align: center;
+    margin-top: 1rem;
+  }
+
+  .match-promo-steps {
+    padding: 1rem 0 0;
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.35);
+    gap: 0.6rem;
+  }
+
+  .match-promo-steps li {
+    font-size: 0.9375rem;
+  }
+
+  .match-promo-num {
+    width: 1.9rem;
+    height: 1.9rem;
+    font-size: 0.9375rem;
+  }
+
+  .signup.signup-compact {
+    padding: 0.75rem;
+  }
+
+  .signup-compact-fields {
+    min-width: 100%;
+  }
+
+  .signup-compact-fields button[type="submit"] {
+    padding: 0.55rem 0.7rem;
+    font-size: 0.875rem;
+  }
+
+  .signup.signup-compact .signup-compact-heading {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .b2-desktop {
+    display: none;
+  }
+
+  p.b2-phone {
+    display: block;
+  }
+
+  span.b2-phone {
+    display: inline;
+  }
+
+  .match-promo {
+    margin-top: 0.75rem;
+  }
+
+  .match-promo-panel {
+    display: block;
+    padding: 1rem;
+  }
+
+  .match-promo-kicker,
+  .match-promo-steps {
+    display: none;
+  }
+
+  .match-promo h2 {
+    font-size: 1.375rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .match-promo-lead {
+    margin-top: 0.4rem;
+    font-size: 0.9375rem;
+    line-height: 1.45;
+  }
+
+  .match-promo-btn {
+    display: block;
+    margin-top: 0.75rem;
+    padding: 0.65rem 1rem;
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .match-promo-fine {
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  .signup.signup-compact {
+    padding: 0.6rem 0.75rem 0.65rem;
+  }
+
+  .signup-compact-row {
+    gap: 0.4rem;
+  }
+
+  .signup.signup-compact .signup-compact-heading {
+    flex: 1 1 100%;
+    font-size: 0.9375rem;
+  }
+
+  .signup-compact-fields {
+    min-width: 0;
+    max-width: 100%;
+    gap: 0.4rem;
+  }
+
+  .signup-compact-fields input {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .signup-compact-fields button[type="submit"] {
+    padding: 0.5rem 0.9rem;
+    font-size: 0.9375rem;
+  }
+
+  .signup.signup-compact .checkbox {
+    margin-top: 0.45rem;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+    line-height: 1.4;
+  }
+
+  .signup-compact-consent span#casl-label {
+    display: none;
+  }
+
+  .signup-compact-consent .b2-consent {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .signup-compact-consent .b2-consent a {
+    color: var(--civic);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  .signup-compact-links {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .header-inner {
+    gap: 0.5rem;
+  }
+
+  .site-name {
+    font-size: 1rem;
+  }
+
+  .site-nav {
+    gap: 0.6rem;
+  }
+
+  .site-nav > a,
+  .nav-more-btn {
+    font-size: 0.8125rem;
+  }
+
+  .nav-more-btn {
+    padding: 0.3rem 0.5rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .header-inner {
+    gap: 0.4rem;
+  }
+
+  .site-name {
+    font-size: 0.9375rem;
+  }
+
+  .site-nav {
+    gap: 0.5rem;
+  }
+
+  .nav-more-btn {
+    padding: 0.3rem 0.4rem;
   }
 }

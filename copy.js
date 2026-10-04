@@ -1,9 +1,9 @@
 /** All UI strings — Product Lead draft placeholders */
 window.COPY = {
   productName: "PublicJobs.ca",
-  pageHeading: "Government Jobs in Toronto and the GTA",
+  pageHeading: "Government jobs in Toronto and the GTA",
   subhead:
-    "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other public employers in Toronto and the GTA, each hiring on its own website. Their openings, collected in one place.",
+    "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other public employers in Toronto and the GTA.",
   whoItsFor:
     "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other public employers in Toronto and the GTA, each hiring on its own website. Their openings, collected in one place.",
   promise:
@@ -35,7 +35,9 @@ window.COPY = {
     },
   },
   signup: {
-    heading: "Get new Toronto Crown & agency openings by email — free.",
+    heading: "Or get new openings by email",
+    headingDesktop: "Or get new openings by email",
+    headingPhone: "New openings by email",
     lead: "The job board stays public. This signs you up for email alerts only.",
     successSent: "You’re on the list. We’ll email new openings to this address.",
     error: "Something went wrong. Please try again.",

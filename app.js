@@ -12,7 +12,20 @@
     if (!C) return;
 
     const heading = $("#signup-heading");
-    if (heading && C.signup && C.signup.heading) heading.textContent = C.signup.heading;
+    if (heading && C.signup) {
+      const desktopHeading = heading.querySelector(".b2-desktop");
+      const phoneHeading = heading.querySelector(".b2-phone");
+      if (desktopHeading || phoneHeading) {
+        if (desktopHeading && (C.signup.headingDesktop || C.signup.heading)) {
+          desktopHeading.textContent = C.signup.headingDesktop || C.signup.heading;
+        }
+        if (phoneHeading && C.signup.headingPhone) {
+          phoneHeading.textContent = C.signup.headingPhone;
+        }
+      } else if (C.signup.heading) {
+        heading.textContent = C.signup.heading;
+      }
+    }
     const lead = $("#signup-lead");
     if (lead && C.signup && C.signup.lead) lead.textContent = C.signup.lead;
 
@@ -23,7 +36,11 @@
     const emailLabel = $("#email-label");
     if (emailLabel) emailLabel.textContent = C.form.emailLabel;
     const submit = $("#submit-btn");
-    if (submit) submit.textContent = C.form.submit;
+    if (submit && C.form && C.form.submit) {
+      const desktopSubmit = submit.querySelector(".b2-desktop");
+      if (desktopSubmit) desktopSubmit.textContent = C.form.submit;
+      else submit.textContent = C.form.submit;
+    }
 
     const payBox = $("#pay-options");
     if (!payBox) return;

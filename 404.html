@@ -50,10 +50,15 @@
         <nav class="site-nav" aria-label="Site">
           <a href="https://publicjobs.ca/match/">Match your resume</a>
           <a href="https://publicjobs.ca/employers/">Employers</a>
-          <a href="https://publicjobs.ca/about/">About</a>
-          <a href="https://publicjobs.ca/faq/">FAQ</a>
-          <a href="https://publicjobs.ca/privacy/">Privacy</a>
-          <a href="https://publicjobs.ca/terms/">Terms</a>
+          <div class="nav-more">
+            <button type="button" class="nav-more-btn" id="nav-more-btn" aria-expanded="false" aria-controls="nav-more-panel">More</button>
+            <ul class="nav-more-panel" id="nav-more-panel" hidden>
+              <li><a href="https://publicjobs.ca/about/">About</a></li>
+              <li><a href="https://publicjobs.ca/faq/">FAQ</a></li>
+              <li><a href="https://publicjobs.ca/privacy/">Privacy</a></li>
+              <li><a href="https://publicjobs.ca/terms/">Terms</a></li>
+            </ul>
+          </div>
         </nav>
       </div>
     </header>
@@ -74,9 +79,13 @@
       <div class="content">
         <p>PublicJobs.ca is independent and not affiliated with any government.</p>
         <nav class="footer-nav" aria-label="Footer">
-          <a href="/faq/">Frequently asked questions</a>
+          <a href="https://publicjobs.ca/about/">About</a>
+          <a href="https://publicjobs.ca/faq/">Frequently asked questions</a>
+          <a href="https://publicjobs.ca/privacy/">Privacy</a>
+          <a href="https://publicjobs.ca/terms/">Terms</a>
         </nav>
       </div>
     </footer>
+    <script src="https://publicjobs.ca/nav.js"></script>
   </body>
 </html>
