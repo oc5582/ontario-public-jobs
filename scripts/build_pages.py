@@ -1960,9 +1960,10 @@ def render_about_page() -> str:
           <p>PublicJobs.ca is run independently by Osama Chaudhary. It is not a government website and is not affiliated with, endorsed by, or acting for any government or any employer listed on the site.</p>
           <h2>What the site covers</h2>
           <p>The site lists current job openings from public employers in Toronto and the GTA, such as Crown corporations, provincial and federal agencies, City of Toronto agencies, and some public-interest regulators.</p>
-          <p>We do not hire and we do not take applications. Every job page links to the employer's own posting, and you apply there. Browsing is free and needs no account. You can search job titles and employer names on the homepage. Email alerts are optional.</p>
+          <p>We do not hire and we do not take applications. Every job page links to the employer's own posting, and you apply there. Browsing is free and needs no account. The homepage can search job titles and employer names. <a href="/jobs/">All current openings</a> are also listed on their own pages. The <a href="/employers/">employers page</a> names each organization and links to its openings. Email alerts are optional.</p>
+          <p><a href="/match/">Match your resume</a> compares a resume with the current openings. The resume is read to find matches and is not stored. Matching is free, up to 3 times. Common questions are answered on the <a href="/faq/">FAQ</a>.</p>
           <h2>How listings are collected</h2>
-          <p>Listings are read from employers' public careers pages. The listings file records which system each posting came from. On this site those systems are {sources}. The words on each job page are the employer's posting. Always check that posting for the latest information, including closing dates and pay.</p>
+          <p>Listings are read from employers' public careers pages. The listings file records which system each posting came from. On this site those systems are {sources}. The words on each job page are the employer's posting. A posting whose closing date has passed stays on its own page, marked closed, and is left off the homepage, the jobs list, and the employer pages. Always check the employer's posting for the latest information, including closing dates and pay.</p>
           <h2>How often listings are updated</h2>
           <p>This site has no scheduled task that collects new listings. The pages are rebuilt from the listings file when that file is updated and published. Each listing stores the time it was fetched from the employer. {fetched}</p>
           <h2>Contact</h2>
@@ -2799,7 +2800,12 @@ def render_llms_txt() -> str:
         "PublicJobs.ca lists current openings collected from employers' public career sites. "
         f"The listings file records the system each posting came from: {sources}. "
         "The site does not take applications. Each job page links to the employer's posting, and you apply there. "
-        "Browsing is free and needs no account. The homepage can search titles and employers. Email alerts are optional.",
+        "Browsing is free and needs no account. The homepage can search titles and employers. "
+        "Every current opening is also linked from /jobs/, and each employer has a page under /employers/. "
+        "Match your resume at /match/ compares a resume with current openings. The resume is not stored. Matching is free, up to 3 times. "
+        "Email alerts are optional.",
+        "",
+        "A posting whose closing date has passed stays on its own page, marked closed, and is left off the homepage, /jobs/, and the employer pages.",
         "",
         "This repository has no cron and no scheduled GitHub Actions workflow that refreshes listings. "
         "scripts/build_pages.py rebuilds the static pages from data/listings.json when that file is updated and published. "
@@ -2808,12 +2814,13 @@ def render_llms_txt() -> str:
         "## Pages",
         "",
         f"- [Home]({SITE_URL}/): Current openings, with search by job title and employer.",
-        f"- [Employers]({SITE_URL}/employers/): Public employers whose openings are listed.",
+        f"- [All openings]({SITE_URL}/jobs/): Every current opening, split across pages of links.",
+        f"- [Employers]({SITE_URL}/employers/): Public employers, each with a page of its current openings.",
+        f"- [Match your resume]({SITE_URL}/match/): Compare a resume with current openings. The resume is not stored. Free, up to 3 times.",
         f"- [About]({SITE_URL}/about/): Who runs the site, what it covers, how listings are collected, and how often they are updated.",
+        f"- [FAQ]({SITE_URL}/faq/): Answers to common questions about the site.",
+        f"- [Sitemap]({SITE_URL}/sitemap.xml): Every published URL.",
     ]
-    if (ROOT / "faq" / "index.html").is_file():
-        lines.append(f"- [FAQ]({SITE_URL}/faq/): Answers to common questions about the site.")
-    lines.append(f"- [Sitemap]({SITE_URL}/sitemap.xml): Every published URL.")
     lines.extend(
         [
             "",
