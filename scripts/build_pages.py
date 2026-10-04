@@ -1129,14 +1129,417 @@ def job_posting_json_ld(job: dict) -> str:
     return f'    <script type="application/ld+json">{payload}</script>'
 
 
+# Google cuts titles around 60 characters and collapses duplicate descriptions.
+# Titles use the employer's own short name. Descriptions use only this posting's
+# title, employer, city, salary, and closing date.
+TITLE_LIMIT = 60
+DESC_LIMIT = 160
+DESC_CLOSER = "Apply on the employer's site."
+MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+# Short name only when it is the organization's own acronym, or the name with a
+# corporate suffix removed. Every other employer keeps the name from the feed.
+SHORT_EMPLOYERS = {
+    "Alcohol and Gaming Commission of Ontario (AGCO)": "AGCO",
+    "Art Gallery of Ontario": "AGO",
+    "Business Development Bank of Canada (BDC)": "BDC",
+    "Canada Development Investment Corporation (CDEV)": "CDEV",
+    "Canada Infrastructure Bank": "CIB",
+    "Canada Mortgage and Housing Corporation (CMHC)": "CMHC",
+    "Canada Pension Plan Investment Board (CPPIB)": "CPPIB",
+    "Canada Post Corporation": "Canada Post",
+    "Canadian Broadcasting Corporation (CBC / Radio-Canada)": "CBC",
+    "Chartered Professional Accountants of Ontario (CPA Ontario)": "CPA Ontario",
+    "Exhibition Place (Board of Governors) / Canadian National Exhibition Association": "Exhibition Place",
+    "Export Development Canada (EDC)": "EDC",
+    "Farm Credit Canada": "FCC",
+    "Financial Services Regulatory Authority of Ontario (FSRA)": "FSRA",
+    "Home Construction Regulatory Authority (HCRA)": "HCRA",
+    "Hydro One Limited": "Hydro One",
+    "Independent Electricity System Operator (IESO)": "IESO",
+    "Infrastructure Ontario": "IO",
+    "Investment Management Corporation of Ontario (IMCO)": "IMCO",
+    "Law Society of Ontario": "LSO",
+    "Liquor Control Board of Ontario (LCBO)": "LCBO",
+    "Metropolitan Toronto Convention Centre Corporation": "MTCC",
+    "Ontario Cannabis Retail Corporation (Ontario Cannabis Store)": "OCS",
+    "Ontario Centre of Innovation": "OCI",
+    "Ontario Educational Communications Authority (TVO)": "TVO",
+    "Ontario Energy Board": "OEB",
+    "Ontario French-Language Educational Communications Authority (TFO)": "TFO",
+    "Ontario Lottery and Gaming Corporation (OLG)": "OLG",
+    "Ontario Power Generation Inc.": "OPG",
+    "Ontario Securities Commission": "OSC",
+    "Public Health Ontario (Ontario Agency for Health Protection and Promotion)": "PHO",
+    "Royal Ontario Museum": "ROM",
+    "Technical Standards and Safety Authority (TSSA)": "TSSA",
+    "Toronto Atmospheric Fund": "TAF",
+    "Toronto Community Housing Corporation": "TCHC",
+    "Toronto Hydro Corporation": "Toronto Hydro",
+    "Toronto Parking Authority": "TPA",
+    "Toronto Transit Commission": "TTC",
+    "Toronto Zoo (Board of Management)": "Toronto Zoo",
+    "Toronto and Region Conservation Authority": "TRCA",
+    "Workplace Safety and Insurance Appeals Tribunal": "WSIAT",
+    "Workplace Safety and Insurance Board": "WSIB",
+}
+SALARY_AMOUNT_RE = re.compile(
+    r"(?:CA\$|CAD|\$)\s*(\d[\d,]*(?:\.\d+)?)"
+    r"|(?<![\d.,])(\d{1,3}(?:,\d{3})+(?:\.\d+)?)(?!\d)"
+    r"|(?<![\d.,])(\d{5,}(?:\.\d+)?)(?!\d)",
+    re.I,
+)
+
+
+def job_title(job: dict) -> str:
+    return text(job.get("title")) or "Untitled"
+
+
+def short_employer(name: str) -> str:
+    name = text(name)
+    return SHORT_EMPLOYERS.get(name, name)
+
+
+def job_cities(location: str) -> list[str]:
+    cities: list[str] = []
+    for place in job_locations(location):
+        city = text(place.get("address", {}).get("addressLocality"))
+        if city and city not in cities:
+            cities.append(city)
+    return cities
+
+
+def posting_label(job: dict) -> str:
+    label = explicit_job_id(job) or apply_job_id(text(job.get("apply_url")))
+    if re.fullmatch(r"\d+_\d+", label):
+        return label.split("_", 1)[0]
+    return label
+
+
+def shorten(value: str, limit: int) -> str:
+    value = re.sub(r"\s+", " ", value).strip()
+    if len(value) <= limit or limit <= 0:
+        return value if len(value) <= limit else ""
+    cut = value[:limit]
+    if " " in cut:
+        cut = cut.rsplit(" ", 1)[0]
+    return cut.rstrip(" -–—,;:/|(")
+
+
+def clip_words(value: str, limit: int) -> str:
+    value = re.sub(r"\s+", " ", value).strip()
+    if len(value) <= limit:
+        return value
+    if limit < 2:
+        return value[:limit]
+    cut = shorten(value, limit - 1)
+    if len(cut) < max(4, limit // 3):
+        cut = value[: limit - 1].rstrip()
+    clipped = (cut or value[: limit - 1]).rstrip()
+    # The feed's title is balanced. Drop a parenthesis this clip opened.
+    if value.count("(") == value.count(")") and clipped.count("(") > clipped.count(")"):
+        clipped = clipped[: clipped.rfind("(")].rstrip(" -–—,;:/|")
+    return (clipped or value[: limit - 1]).rstrip() + "…"
+
+
+def shared_prefix(values: list[str]) -> str:
+    prefix = values[0]
+    for value in values[1:]:
+        while prefix and not value.startswith(prefix):
+            prefix = prefix[:-1]
+    if (
+        prefix
+        and prefix[-1].isalnum()
+        and any(len(value) > len(prefix) and value[len(prefix)].isalnum() for value in values)
+    ):
+        prefix = prefix.rsplit(" ", 1)[0]
+    return prefix.rstrip()
+
+
+def distinguishing_heads(titles: list[str], room: int) -> list[str]:
+    """Keep the words that differ when several long titles clip to one string."""
+    prefix = shared_prefix(titles).rstrip(" -–—")
+    heads: list[str] = []
+    for title in titles:
+        if len(title) <= room:
+            heads.append(title)
+            continue
+        if prefix and title.startswith(prefix):
+            rest = title[len(prefix) :].lstrip(" -–—")
+        else:
+            rest = ""
+        if not rest:
+            heads.append(clip_words(title, room))
+            continue
+        rest_keep = rest if len(rest) <= max(12, room - 18) else clip_words(rest, max(12, room - 18))
+        pre_room = room - len("… ") - len(rest_keep)
+        if prefix and pre_room >= 8:
+            pre = prefix if len(prefix) <= pre_room else shorten(prefix, pre_room)
+            head = f"{pre}… {rest_keep}" if pre else rest_keep
+        else:
+            head = rest_keep
+        heads.append(head if len(head) <= room else clip_words(head, room))
+    return heads
+
+
+def title_room(employer: str, qualifier: str = "") -> int:
+    tail = f" ({qualifier})" if qualifier else ""
+    if employer:
+        tail += f", {employer}"
+    return TITLE_LIMIT - len(tail)
+
+
+def fit_page_title(title: str, employer: str, qualifier: str = "") -> str:
+    title = re.sub(r"\s+", " ", title).strip()
+    qual = f" ({qualifier})" if qualifier else ""
+    emp = f", {employer}" if employer else ""
+    brand = f" | {BRAND}"
+    if len(title) + len(qual) + len(emp) + len(brand) <= TITLE_LIMIT:
+        return title + qual + emp + brand
+    if len(title) + len(qual) + len(emp) <= TITLE_LIMIT:
+        return title + qual + emp
+    tail = qual + emp
+    room = TITLE_LIMIT - len(tail)
+    if room >= 12:
+        return clip_words(title, room) + tail
+    return clip_words(title + tail, TITLE_LIMIT)
+
+
+def thousands(amount: float) -> int:
+    cents = int(round(amount * 100))
+    return (cents + 50_000) // 100_000
+
+
+def money(amount: float) -> str:
+    cents = int(round(amount * 100))
+    dollars, remainder = divmod(cents, 100)
+    if remainder == 0:
+        return f"${dollars:,}"
+    return f"${dollars:,}.{remainder:02d}"
+
+
+def salary_amounts(raw: str) -> list[float]:
+    amounts: list[float] = []
+    for match in SALARY_AMOUNT_RE.finditer(raw):
+        token = next(group for group in match.groups() if group)
+        amounts.append(float(token.replace(",", "")))
+    return amounts
+
+
+def salary_period(raw: str) -> str:
+    if re.search(r"\bbi-?\s*weekly\b", raw, re.I):
+        return "biweekly"
+    if re.search(r"per\s*hour|/ ?hr\b|/ ?hour\b|\bhourly\b", raw, re.I):
+        return "hour"
+    if re.search(r"\b(?:annually|annual|per\s*year|/ ?year|\(year\)|a year)\b", raw, re.I):
+        return "year"
+    return ""
+
+
+def format_salary_amounts(amounts: list[float], kind: str) -> str:
+    if len(amounts) == 1:
+        amount = amounts[0]
+        if kind == "year":
+            return f"${thousands(amount)}k"
+        if kind == "hour":
+            return f"${amount:.2f}/hr"
+        body = money(amount)
+        return f"{body} every 2 weeks" if kind == "biweekly" else body
+    low, high = min(amounts), max(amounts)
+    if kind == "year":
+        body = f"${thousands(low)}k-${thousands(high)}k"
+    elif kind == "hour":
+        body = f"${low:.2f}-${high:.2f}/hr"
+    else:
+        body = f"{money(low)}-{money(high)}"
+        if kind == "biweekly":
+            body += " every 2 weeks"
+    return body
+
+
+def compact_salary(raw: str) -> str:
+    cleaned = re.sub(r"\s+", " ", text(raw)).strip()
+    if not cleaned:
+        return ""
+    amounts = salary_amounts(cleaned)
+    if not amounts:
+        return clip_words(cleaned, 48)
+    low = cleaned.lower()
+    if "training rate" in low and len(amounts) >= 3:
+        return (
+            f"${amounts[0]:.2f}/hr training, then "
+            f"${amounts[1]:.2f}-${amounts[-1]:.2f}/hr"
+        )
+    if "premium" in low and len(amounts) >= 2 and amounts[1] < amounts[0]:
+        return f"${amounts[0]:.2f} + ${amounts[1]:.2f}/hr premium"
+    period = salary_period(cleaned)
+    annual = [amount for amount in amounts if amount >= 10000]
+    small = [amount for amount in amounts if amount < 1000]
+    if period == "hour" and annual and small:
+        chosen, kind = annual, "year"
+    elif period == "hour":
+        chosen, kind = amounts, "hour"
+    elif period == "biweekly":
+        chosen, kind = amounts, "biweekly"
+    elif period == "year" or annual:
+        chosen, kind = (annual or amounts), "year"
+    else:
+        chosen, kind = amounts, ""
+    return format_salary_amounts(chosen, kind)
+
+
+def short_month_date(iso: str) -> str:
+    if not iso:
+        return ""
+    year, month, day = iso.split("-")
+    return f"{MONTHS[int(month) - 1]} {int(day)}, {year}"
+
+
+def fit_meta_description(job: dict, qualifier: str = "") -> str:
+    title = job_title(job)
+    employer = short_employer(text(job.get("employer")))
+    cities = job_cities(text(job.get("location")))
+    salary = compact_salary(text(job.get("salary")))
+    closes = short_month_date(closing_date(job))
+    tail_bits: list[str] = []
+    if salary:
+        tail_bits.append(salary)
+    if closes:
+        tail_bits.append(f"Closes {closes}")
+    if text(job.get("apply_url")):
+        tail_bits.append(DESC_CLOSER)
+    tail = ". ".join(tail_bits)
+    qual = f" ({qualifier})" if qualifier else ""
+    at = f" at {employer}" if employer else ""
+
+    def lead(city_names: list[str], head: str) -> str:
+        place = f", {', '.join(city_names)}" if city_names else ""
+        return f"{head}{qual}{at}{place}"
+
+    while len(cities) > 1 and DESC_LIMIT - len(lead(cities, "")) - 2 - len(tail) < 16:
+        cities = cities[:-1]
+    room = DESC_LIMIT - len(lead(cities, "")) - 2 - len(tail)
+    if room < 8:
+        head = clip_words(title, max(8, room))
+        description = f"{head}{qual}{at}. {tail}" if tail else f"{head}{qual}{at}"
+    else:
+        head = title if len(title) <= room else clip_words(title, room)
+        description = f"{lead(cities, head)}. {tail}" if tail else lead(cities, head)
+    if len(description) > DESC_LIMIT:
+        return clip_words(description, DESC_LIMIT)
+    return description
+
+
+def indexes_by_value(values: list[str]) -> dict[str, list[int]]:
+    groups: dict[str, list[int]] = {}
+    for index, value in enumerate(values):
+        groups.setdefault(value, []).append(index)
+    return groups
+
+
+def qualifiers_for(jobs: list[dict], indexes: list[int]) -> list[str]:
+    cities = []
+    for index in indexes:
+        found = job_cities(text(jobs[index].get("location")))
+        cities.append(found[0] if found else "")
+    if all(cities) and len(set(cities)) == len(indexes):
+        return cities
+    labels = [posting_label(jobs[index]) for index in indexes]
+    if all(labels) and len(set(labels)) == len(indexes):
+        return labels
+    combined = []
+    for number, (city, label) in enumerate(zip(cities, labels), start=1):
+        bit = " ".join(part for part in (city, label) if part)
+        combined.append(bit or str(number))
+    if len(set(combined)) != len(indexes):
+        combined = [f"{bit} {number}" for number, bit in enumerate(combined, start=1)]
+    return combined
+
+
+def unique_page_titles(jobs: list[dict], titles: list[str]) -> list[str]:
+    titles = list(titles)
+    for _ in range(4):
+        collided = [indexes for indexes in indexes_by_value(titles).values() if len(indexes) > 1]
+        if not collided:
+            return titles
+        for indexes in collided:
+            raws = [job_title(jobs[index]) for index in indexes]
+            if len(set(raws)) > 1:
+                room = min(
+                    title_room(short_employer(text(jobs[index].get("employer"))))
+                    for index in indexes
+                )
+                heads = distinguishing_heads(raws, max(12, room))
+                if all(heads) and len(set(heads)) == len(heads):
+                    for index, head in zip(indexes, heads):
+                        employer = short_employer(text(jobs[index].get("employer")))
+                        titles[index] = fit_page_title(head, employer)
+                    continue
+            for index, qualifier in zip(indexes, qualifiers_for(jobs, indexes)):
+                employer = short_employer(text(jobs[index].get("employer")))
+                titles[index] = fit_page_title(job_title(jobs[index]), employer, qualifier)
+    seen: set[str] = set()
+    unique: list[str] = []
+    for title in titles:
+        candidate = title
+        number = 2
+        while candidate in seen:
+            suffix = f" ({number})"
+            candidate = clip_words(title, TITLE_LIMIT - len(suffix)) + suffix
+            number += 1
+        seen.add(candidate)
+        unique.append(candidate)
+    return unique
+
+
+def unique_meta_descriptions(jobs: list[dict], descriptions: list[str]) -> list[str]:
+    descriptions = list(descriptions)
+    for _ in range(3):
+        collided = [
+            indexes for indexes in indexes_by_value(descriptions).values() if len(indexes) > 1
+        ]
+        if not collided:
+            return descriptions
+        for indexes in collided:
+            for index, qualifier in zip(indexes, qualifiers_for(jobs, indexes)):
+                descriptions[index] = fit_meta_description(jobs[index], qualifier)
+    seen: set[str] = set()
+    unique: list[str] = []
+    for description in descriptions:
+        candidate = description
+        number = 2
+        while candidate in seen:
+            suffix = f" ({number})"
+            base = description
+            if len(base) + len(suffix) > DESC_LIMIT:
+                base = clip_words(description, DESC_LIMIT - len(suffix))
+            candidate = base + suffix
+            number += 1
+        seen.add(candidate)
+        unique.append(candidate)
+    return unique
+
+
+def assign_page_seo(jobs: list[dict]) -> None:
+    titles = [
+        fit_page_title(job_title(job), short_employer(text(job.get("employer"))))
+        for job in jobs
+    ]
+    descriptions = [fit_meta_description(job) for job in jobs]
+    for job, title, description in zip(
+        jobs,
+        unique_page_titles(jobs, titles),
+        unique_meta_descriptions(jobs, descriptions),
+    ):
+        job["_page_title"] = title
+        job["_meta_desc"] = description
+
+
 def render_job_page(job: dict, closed: bool = False) -> str:
     title = text(job.get("title")) or "Untitled"
     employer = text(job.get("employer"))
-    page_title = f"{title} — {employer} | {BRAND}" if employer else f"{title} | {BRAND}"
+    page_title = text(job.get("_page_title")) or fit_page_title(title, short_employer(employer))
     paragraphs = html_to_paragraphs(text(job.get("description")))
-    meta_desc = first_sentence(paragraphs) or (
-        f"{title} at {employer}".strip(" at") + " — public sector opening in Toronto and the GTA."
-    )
+    meta_desc = text(job.get("_meta_desc")) or fit_meta_description(job)
     canonical = f"{SITE_URL}/{job['_path']}"
     apply_url = text(job.get("apply_url"))
     dt_rows = "\n".join(
@@ -2334,6 +2737,7 @@ def main() -> None:
     today = today_toronto()
     jobs = sort_jobs(raw)
     assign_paths(jobs)
+    assign_page_seo(jobs)
     open_jobs = [job for job in jobs if not job_is_closed(job, today)]
 
     apply_to_path: dict[str, str] = {}
