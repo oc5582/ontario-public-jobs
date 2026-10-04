@@ -1,0 +1,25 @@
+# Reference config for the resume match preview Worker. Deployed manually (not by CI).
+name = "publicjobs-resume-match"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+account_id = "277a2bbf146ed0358bc4b0ad66db8629"
+workers_dev = true
+
+[observability]
+enabled = true
+
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "USAGE"          # preview_html page + optional config_model / config_batch overrides
+id = "fdff87dd6046498092ba6d5c905aa521"
+
+[[d1_databases]]
+binding = "DB"             # usage counters: usage(k TEXT PRIMARY KEY, n INTEGER)
+database_name = "publicjobs-resume-match-usage"
+database_id = "62a183d1-65f0-4efd-b5af-4766dc4773be"
+
+[[services]]
+binding = "SIGNUP"         # existing live signup Worker, called (not modified) to add the contact + welcome email
+service = "ontario-public-jobs-signup"

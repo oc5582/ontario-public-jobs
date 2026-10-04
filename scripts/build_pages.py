@@ -481,6 +481,7 @@ def site_header(home_href: str, current: str = "", link_base: str = "") -> str:
       <div class="header-inner">
         <a class="site-name" href="{escape(home_href, quote=True)}">PublicJobs.ca</a>
         <nav class="site-nav" aria-label="Site">
+          {nav_link("Match your resume", "/match/", "match")}
           {nav_link("Employers", "/employers/", "employers")}
           {nav_link("About", "/about/", "about")}
           {nav_link("Privacy", "/privacy/", "privacy")}
@@ -1358,7 +1359,7 @@ def render_info_page(
 
 
 def render_privacy_page() -> str:
-    body = """          <p>Last updated: September 28, 2026</p>
+    body = """          <p>Last updated: October 4, 2026</p>
           <p>PublicJobs.ca is an independent job board. It is not affiliated with any government or with any employer listed on the site. This page explains what personal information we collect, why, and how you can control it.</p>
           <h2>Who we are</h2>
           <p>PublicJobs.ca is operated by Osama Chaudhary, 65 Thorncliffe Park Drive, Apartment 603, Toronto, Ontario M4H 1L2, Canada. Contact: <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>.</p>
@@ -1373,6 +1374,8 @@ def render_privacy_page() -> str:
             <li>your answer to the optional question about paying for alerts, if you choose to answer</li>
           </ul>
           <p>We use this only to send you job alert emails from PublicJobs.ca and to understand interest in the service. We do not sell or rent your information, and we do not share it with employers.</p>
+          <h2>Resume match</h2>
+          <p>If you use the resume match tool, your resume is read to find matches and is not stored. We keep only a one-way code made from your email address to count your free uses.</p>
           <h2>Advertising and measurement</h2>
           <p>We use the Meta Pixel, a tool from Meta Platforms, Inc., to measure how well our ads on Facebook and Instagram work. When you visit PublicJobs.ca, the Meta Pixel may use cookies and similar technology to collect information such as the pages you view, whether you signed up for alerts, whether you clicked through to an employer's site, and technical details about your browser and device. Meta may use this information as described in its own privacy policy (<a href="https://facebook.com/privacy/policy">facebook.com/privacy/policy</a>). We do not send your email address to Meta. You can control ad personalization in your Facebook and Instagram ad settings, and you can block or delete cookies in your browser settings.</p>
           <h2>Site analytics and fonts</h2>
@@ -1467,6 +1470,200 @@ def write_terms_page() -> None:
     path = ROOT / "terms" / "index.html"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(render_terms_page(), encoding="utf-8")
+
+
+MATCH_DESCRIPTION = (
+    "Upload your resume and see which current public sector jobs in Toronto "
+    "and the GTA fit your experience. Free. Your resume is not stored."
+)
+
+MATCH_MAIN = """      <h1>Match your resume</h1>
+      <p class="lede">Add your resume and we will check it against every current opening on PublicJobs.ca. We show any job you might qualify for, so you do not miss one. Free, up to 3 times.</p>
+
+      <form id="match-form" novalidate>
+        <fieldset>
+          <legend>1. Your email</legend>
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required autocomplete="email" inputmode="email" maxlength="254" placeholder="you@example.com" />
+          <label class="checkbox" for="consent">
+            <input type="checkbox" id="consent" name="casl_consent" value="yes" required />
+            <span>I agree to receive job alert emails from PublicJobs.ca at this address. I can unsubscribe anytime.</span>
+          </label>
+          <p class="hint">You need to agree to see your matches. We send new jobs once a week.</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>2. Your resume</legend>
+          <label for="resume-file">Upload a PDF or Word file</label>
+          <input type="file" id="resume-file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+          <p class="hint" id="file-status" aria-live="polite">Your file stays on your device. Only the text is read.</p>
+          <p class="or">Or paste your resume text</p>
+          <label for="resume-text">Resume text</label>
+          <textarea id="resume-text" maxlength="15000" placeholder="Paste your work experience, education and skills"></textarea>
+        </fieldset>
+
+        <div class="hp" aria-hidden="true">
+          <label for="gotcha">Leave this field blank</label>
+          <input type="text" id="gotcha" name="_gotcha" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <button type="submit" id="submit-btn">Find my jobs</button>
+        <p class="hint">Your resume is read to find matches and is not stored. <a href="/privacy/">Privacy policy</a></p>
+        <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+      </form>
+
+      <section id="results" hidden aria-labelledby="results-title">
+        <h2 id="results-title" tabindex="-1">Your matches</h2>
+        <p id="results-summary"></p>
+        <div id="strong-wrap" hidden>
+          <h2>Strong matches</h2>
+          <ol class="results" id="strong-list"></ol>
+        </div>
+        <div id="maybe-wrap" hidden>
+          <h2>Worth a look</h2>
+          <p class="hint">These are related to your experience or could be a step up. Read the posting to decide.</p>
+          <ol class="results" id="maybe-list"></ol>
+        </div>
+        <p><a href="/">See all openings</a></p>
+      </section>"""
+
+MATCH_SCRIPT = """    <script>
+      (function () {
+        var ENDPOINT = "https://publicjobs-resume-match.publicjobs.workers.dev/match";
+        var MAX = 15000;
+        var form = document.getElementById("match-form");
+        var fileInput = document.getElementById("resume-file");
+        var fileStatus = document.getElementById("file-status");
+        var textArea = document.getElementById("resume-text");
+        var statusEl = document.getElementById("status");
+        var btn = document.getElementById("submit-btn");
+        var fileText = "";
+
+        function setStatus(msg, isError) {
+          statusEl.textContent = msg;
+          statusEl.className = "status" + (isError ? " error" : "");
+          statusEl.hidden = !msg;
+        }
+        function loadScript(src) {
+          return new Promise(function (resolve, reject) {
+            var s = document.createElement("script");
+            s.src = src; s.onload = resolve; s.onerror = reject;
+            s.integrity = "sha384-/cXAMbzovUIKbBERjPmR3SnPTh8siWr5lsvFYj1Uq4XP0yaJUZJmsh0YXyGv5P0y";
+            s.crossOrigin = "anonymous";
+            document.head.appendChild(s);
+          });
+        }
+        async function pdfText(buf) {
+          var pdfjs = await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs");
+          pdfjs.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs";
+          var doc = await pdfjs.getDocument({ data: buf }).promise;
+          var out = [];
+          for (var i = 1; i <= Math.min(doc.numPages, 10); i++) {
+            var page = await doc.getPage(i);
+            var c = await page.getTextContent();
+            out.push(c.items.map(function (it) { return it.str + (it.hasEOL ? "\\n" : " "); }).join(""));
+          }
+          return out.join("\\n");
+        }
+        async function docxText(buf) {
+          if (!window.mammoth) await loadScript("https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js");
+          var r = await window.mammoth.extractRawText({ arrayBuffer: buf });
+          return r.value;
+        }
+        fileInput.addEventListener("change", async function () {
+          fileText = "";
+          var f = fileInput.files && fileInput.files[0];
+          if (!f) return;
+          if (f.size > 10 * 1024 * 1024) { fileStatus.textContent = "That file is too large. Use a file under 10 MB, or paste the text."; return; }
+          fileStatus.textContent = "Reading your file...";
+          try {
+            var buf = await f.arrayBuffer();
+            var name = f.name.toLowerCase();
+            if (name.endsWith(".pdf")) fileText = await pdfText(buf);
+            else if (name.endsWith(".docx")) fileText = await docxText(buf);
+            else { fileStatus.textContent = "Use a PDF or Word (.docx) file, or paste the text."; return; }
+            fileText = fileText.replace(/[ \\t]+/g, " ").replace(/\\n{3,}/g, "\\n\\n").trim();
+            if (fileText.length < 80) { fileStatus.textContent = "We could not read text from this file. It may be a scanned image. Please paste the text instead."; fileText = ""; return; }
+            fileStatus.textContent = "Read your file (" + Math.min(fileText.length, MAX).toLocaleString() + " characters). Your file stays on your device.";
+          } catch (e) {
+            fileText = "";
+            fileStatus.textContent = "We could not read this file. Please paste the text instead.";
+          }
+        });
+        function render(listId, wrapId, items) {
+          var list = document.getElementById(listId);
+          list.innerHTML = "";
+          items.forEach(function (j) {
+            var li = document.createElement("li");
+            var a = document.createElement("a"); a.href = j.url; a.textContent = j.title;
+            var meta = document.createElement("p"); meta.className = "meta";
+            meta.textContent = [j.employer, j.location, j.closing_date ? "Closes " + j.closing_date : ""].filter(Boolean).join(" · ");
+            var why = document.createElement("p"); why.className = "why"; why.textContent = j.reason;
+            li.appendChild(a); li.appendChild(meta); li.appendChild(why);
+            list.appendChild(li);
+          });
+          document.getElementById(wrapId).hidden = items.length === 0;
+        }
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          var email = document.getElementById("email").value.trim();
+          var consent = document.getElementById("consent").checked;
+          var resume = (textArea.value.trim() || fileText).slice(0, MAX);
+          if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || !consent) { setStatus("Enter your email and check the box to agree to job alert emails.", true); return; }
+          if (resume.length < 80) { setStatus("Add your resume. Upload a PDF or Word file, or paste the text.", true); return; }
+          btn.disabled = true; btn.textContent = "Checking jobs...";
+          setStatus("Checking your resume against every current opening. This takes about 30 to 60 seconds. Please keep this page open.", false);
+          try {
+            var res = await fetch(ENDPOINT, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Accept: "application/json" },
+              body: JSON.stringify({ email: email, casl_consent: "yes", resume_text: resume, _gotcha: document.getElementById("gotcha").value })
+            });
+            var data = await res.json().catch(function () { return {}; });
+            if (!res.ok || !data.ok) { setStatus(data.error || "Something went wrong. Please try again.", true); return; }
+            setStatus("", false);
+            var n = data.strong.length + data.maybe.length;
+            document.getElementById("results-summary").textContent = n
+              ? "We found " + n + " jobs out of " + data.jobs_checked + " that could fit you. You have " + data.remaining + " free " + (data.remaining === 1 ? "match" : "matches") + " left. New jobs will come to your inbox every week."
+              : "We did not find a close fit right now. New jobs will come to your inbox every week, and you can browse all openings below.";
+            render("strong-list", "strong-wrap", data.strong);
+            render("maybe-list", "maybe-wrap", data.maybe);
+            document.getElementById("results").hidden = false;
+            document.getElementById("results-title").focus();
+          } catch (err) {
+            setStatus("Something went wrong. Please check your connection and try again.", true);
+          } finally {
+            btn.disabled = false; btn.textContent = "Find my jobs";
+          }
+        });
+      })();
+    </script>"""
+
+
+def render_match_page() -> str:
+    head = shared_head(
+        f"Match your resume to public-sector jobs | {BRAND}",
+        MATCH_DESCRIPTION,
+        f"{SITE_URL}/match/",
+        "../styles.css",
+    )
+    return f"""{head}
+  <body>
+{site_header("../", "match")}
+    <main class="match">
+{MATCH_MAIN}
+    </main>
+{site_footer()}
+{MATCH_SCRIPT}
+  </body>
+</html>
+"""
+
+
+def write_match_page() -> None:
+    path = ROOT / "match" / "index.html"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(render_match_page(), encoding="utf-8")
 
 
 def render_not_found() -> str:
@@ -1576,6 +1773,7 @@ def write_sitemap(paths: list[str]) -> None:
         f"{SITE_URL}/about/",
         f"{SITE_URL}/employers/",
         f"{SITE_URL}/terms/",
+        f"{SITE_URL}/match/",
     ] + [f"{SITE_URL}/{path}" for path in paths]
     items = "\n".join(f"  <url><loc>{escape(url, quote=True)}</loc></url>" for url in urls)
     xml = (
@@ -1732,6 +1930,7 @@ def main() -> None:
 
     (ROOT / "index.html").write_text(render_index(jobs), encoding="utf-8")
     write_info_pages()
+    write_match_page()
     write_employers_page(jobs)
     write_terms_page()
     write_not_found()
