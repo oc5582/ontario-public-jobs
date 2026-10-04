@@ -12,11 +12,12 @@ import json
 import re
 import shutil
 from collections import Counter
-from datetime import date
+from datetime import date, datetime
 from html import escape, unescape
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
+from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "data" / "listings.json"
@@ -295,6 +296,27 @@ def render_paragraphs(paragraphs: list[str]) -> str:
     if not paragraphs:
         return f'<p class="unavailable">{escape(UNAVAILABLE)}</p>'
     return "\n".join(f"<p>{escape(p)}</p>" for p in paragraphs)
+
+
+def today_toronto() -> date:
+    # Closing dates are calendar dates. Judge them against the build day in Toronto.
+    return datetime.now(ZoneInfo("America/Toronto")).date()
+
+
+def job_is_closed(job: dict, today: date) -> bool:
+    closing = closing_date(job)
+    if not closing:
+        return False
+    return date.fromisoformat(closing) < today
+
+
+def job_lastmod(job: dict) -> str:
+    # Posted date when we have one. Otherwise the day the listing was fetched.
+    # Skip the tag when neither is a real date.
+    posted = posting_date(job)
+    if posted:
+        return posted
+    return iso_date(text(job.get("fetched_at")))
 
 
 def sort_jobs(jobs: list[dict]) -> list[dict]:
@@ -1107,7 +1129,7 @@ def job_posting_json_ld(job: dict) -> str:
     return f'    <script type="application/ld+json">{payload}</script>'
 
 
-def render_job_page(job: dict) -> str:
+def render_job_page(job: dict, closed: bool = False) -> str:
     title = text(job.get("title")) or "Untitled"
     employer = text(job.get("employer"))
     page_title = f"{title} — {employer} | {BRAND}" if employer else f"{title} | {BRAND}"
@@ -1124,13 +1146,17 @@ def render_job_page(job: dict) -> str:
     apply = apply_button(apply_url) if apply_url else ""
     script = apply_click_script()
     script_block = f"\n{script}" if script else ""
-    return f"""{shared_head(page_title, meta_desc, canonical, "../../../styles.css", extra_head=job_posting_json_ld(job))}
+    closed_block = ""
+    if closed:
+        closed_block = '        <p class="closed-banner" role="status">This job has closed</p>\n'
+    robots = "noindex" if closed else ""
+    return f"""{shared_head(page_title, meta_desc, canonical, "../../../styles.css", robots=robots, extra_head=job_posting_json_ld(job))}
   <body>
 {site_header("../../../")}
     <main>
       <article class="job-page content">
         <p class="crumb"><a href="../../../">All openings</a></p>
-        <h1>{escape(title)}</h1>
+{closed_block}        <h1>{escape(title)}</h1>
         {f'<p class="employer">{escape(employer)}</p>' if employer else ""}
         <dl class="job-meta">
 {dt_rows}
@@ -2179,8 +2205,20 @@ def write_info_pages() -> None:
     about.write_text(render_about_page(), encoding="utf-8")
 
 
-def write_sitemap(paths: list[str]) -> None:
-    urls = [
+def sitemap_url(loc: str, lastmod: str) -> str:
+    loc_xml = f"  <url><loc>{escape(loc, quote=True)}</loc>"
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", lastmod or ""):
+        return f"{loc_xml}<lastmod>{lastmod}</lastmod></url>"
+    return f"{loc_xml}</url>"
+
+
+def write_sitemap(paths: list[str], lastmods: list[str] | None = None) -> None:
+    if lastmods is None:
+        lastmods = [""] * len(paths)
+    if len(lastmods) != len(paths):
+        raise SystemExit("sitemap lastmod count does not match paths")
+    build_day = today_toronto().isoformat()
+    static = [
         f"{SITE_URL}/",
         f"{SITE_URL}/privacy/",
         f"{SITE_URL}/about/",
@@ -2188,8 +2226,12 @@ def write_sitemap(paths: list[str]) -> None:
         f"{SITE_URL}/employers/",
         f"{SITE_URL}/terms/",
         f"{SITE_URL}/match/",
-    ] + [f"{SITE_URL}/{path}" for path in paths]
-    items = "\n".join(f"  <url><loc>{escape(url, quote=True)}</loc></url>" for url in urls)
+    ]
+    lines = [sitemap_url(url, build_day) for url in static]
+    lines.extend(
+        sitemap_url(f"{SITE_URL}/{path}", lastmod) for path, lastmod in zip(paths, lastmods)
+    )
+    items = "\n".join(lines)
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -2289,8 +2331,10 @@ def main() -> None:
     raw = json.loads(DATA_PATH.read_text(encoding="utf-8"))
     if not isinstance(raw, list):
         raise SystemExit("listings.json must be a JSON array")
+    today = today_toronto()
     jobs = sort_jobs(raw)
     assign_paths(jobs)
+    open_jobs = [job for job in jobs if not job_is_closed(job, today)]
 
     apply_to_path: dict[str, str] = {}
     published_targets: set[str] = set()
@@ -2325,16 +2369,23 @@ def main() -> None:
             path.unlink()
 
     slugs: list[str] = []
+    lastmods: list[str] = []
     used: set[str] = set()
+    closed_count = 0
     for job in jobs:
         rel = job["_path"]
         if rel in used:
             raise SystemExit(f"duplicate path: {rel}")
         used.add(rel)
-        slugs.append(rel)
+        closed = job_is_closed(job, today)
+        if closed:
+            closed_count += 1
+        else:
+            slugs.append(rel)
+            lastmods.append(job_lastmod(job))
         page_path = JOBS_DIR / job["_employer_slug"] / job["_job_slug"] / "index.html"
         page_path.parent.mkdir(parents=True, exist_ok=True)
-        page_path.write_text(render_job_page(job), encoding="utf-8")
+        page_path.write_text(render_job_page(job, closed=closed), encoding="utf-8")
 
     written_redirects = 0
     for path, target, apply_url in redirects:
@@ -2342,18 +2393,19 @@ def main() -> None:
         path.write_text(render_redirect(target, apply_url), encoding="utf-8")
         written_redirects += 1
 
-    (ROOT / "index.html").write_text(render_index(jobs), encoding="utf-8")
+    (ROOT / "index.html").write_text(render_index(open_jobs), encoding="utf-8")
     write_info_pages()
     write_match_page()
     write_employers_page(jobs)
     write_terms_page()
     write_faq_page(jobs)
     write_not_found()
-    write_sitemap(slugs)
+    write_sitemap(slugs, lastmods)
     write_robots()
     (ROOT / ".nojekyll").write_text("", encoding="utf-8")
     print(
-        f"Wrote {len(jobs)} job pages, index.html, employers page, FAQ page, "
+        f"Wrote {len(jobs)} job pages ({closed_count} closed, kept off the homepage "
+        f"and sitemap), index.html, employers page, FAQ page, "
         f"and {written_redirects} redirects "
         f"({removed} unpublished legacy pages dropped)"
     )
