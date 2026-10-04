@@ -512,9 +512,20 @@ button[type="submit"]:disabled {
 
 .site-footer p {
   margin: 0;
-  padding: 1.25rem 0 2.5rem;
+  padding: 1.25rem 0 0.75rem;
   color: var(--muted);
   font-size: 0.875rem;
+}
+
+.footer-nav {
+  padding: 0 0 2rem;
+}
+
+.footer-nav a {
+  color: var(--civic);
+  font-size: 0.875rem;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 
 .job-page {

@@ -496,6 +496,9 @@ def site_footer() -> str:
     return f"""    <footer class="site-footer">
       <div class="content">
         <p>{escape(FOOTER)}</p>
+        <nav class="footer-nav" aria-label="Footer">
+          <a href="/faq/">Frequently asked questions</a>
+        </nav>
       </div>
     </footer>"""
 
@@ -1667,99 +1670,309 @@ def write_match_page() -> None:
     path = ROOT / "match" / "index.html"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(render_match_page(), encoding="utf-8")
+FAQ_TITLE = f"Government and Crown corporation jobs in Toronto: FAQ | {BRAND}"
+FAQ_HEADING = "Frequently asked questions"
 FAQ_DESCRIPTION = (
-    "Answers about PublicJobs.ca: which employers are listed, how to apply, "
-    "free email alerts, and how often jobs are updated."
+    "Answers about government jobs in Toronto: Crown corporations, Ontario "
+    "provincial agencies, City of Toronto agencies, pensions, unions and who can apply."
 )
 CANADA_WORK_URL = (
     "https://www.canada.ca/en/immigration-refugees-citizenship/services/work-canada.html"
 )
+FAQ_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 
 
-def faq_entries(employer_count: int) -> list[dict]:
-    """Visible FAQ copy. Each answer is plain sentences plus optional links.
+def parts_from_markdown(answer: str) -> list:
+    parts: list = []
+    cursor = 0
+    for match in FAQ_LINK_RE.finditer(answer):
+        if match.start() > cursor:
+            parts.append(answer[cursor:match.start()])
+        parts.append({"text": match.group(1), "href": match.group(2)})
+        cursor = match.end()
+    if cursor < len(answer):
+        parts.append(answer[cursor:])
+    return parts
 
-    JSON-LD uses the same words as the page. Link text is part of the sentence.
-    """
+
+def faq_item(question: str, answer: str) -> dict:
+    return {"question": question, "parts": parts_from_markdown(answer)}
+
+
+def faq_anchor(question: str) -> str:
+    value = question.casefold().replace("'", "").replace("’", "")
+    value = re.sub(r"[^a-z0-9]+", "-", value)
+    return value.strip("-")
+
+
+def faq_sections(employer_count: int) -> list[dict]:
+    """Visible FAQ copy. JSON-LD uses the same words, with link labels kept."""
     employers = "employer" if employer_count == 1 else "employers"
+    about = [
+        faq_item(
+            "What is PublicJobs.ca?",
+            "PublicJobs.ca is an independent job board. "
+            "It collects current job openings from public employers in Toronto and the GTA and lists them in one place.",
+        ),
+        faq_item(
+            "What kinds of employers does PublicJobs.ca list?",
+            "PublicJobs.ca lists Crown corporations, provincial and federal agencies, City of Toronto agencies, and some public-interest regulators.",
+        ),
+        faq_item(
+            "Which employers are listed?",
+            f"PublicJobs.ca lists current openings from {employer_count} public {employers} in Toronto and the GTA. "
+            "The full list is on the [employers page](/employers/).",
+        ),
+        faq_item(
+            "Is browsing PublicJobs.ca free?",
+            "Yes. Browsing and searching the job board is free and does not need an account.",
+        ),
+        faq_item(
+            "Are email alerts free?",
+            "Yes. Email alerts are free. PublicJobs.ca never charges job seekers.",
+        ),
+        faq_item(
+            "How do I apply for a job?",
+            'On the job page, choose "Apply on employer site". '
+            "That link leaves PublicJobs.ca and goes to the employer's own posting, where you apply. "
+            "PublicJobs.ca does not take applications and does not receive them.",
+        ),
+        faq_item(
+            "How often are jobs updated?",
+            "The list of openings is refreshed each weekday. "
+            "A posting can still change or close on the employer's site before the next refresh. "
+            "Check the employer's posting for the latest details, including closing dates.",
+        ),
+        faq_item(
+            "How do I get new jobs by email?",
+            "Use the [signup form on the homepage](/#signup-heading). "
+            "Enter your email and agree to receive free job alert emails from PublicJobs.ca.",
+        ),
+        faq_item(
+            "How do I unsubscribe from email alerts?",
+            "You can unsubscribe anytime. "
+            "Every alert email includes a one-click unsubscribe link, and you can also email [hello@publicjobs.ca](mailto:hello@publicjobs.ca).",
+        ),
+        faq_item(
+            "Can newcomers to Canada apply?",
+            "Work requirements vary by employer. Check each posting to see who may apply.",
+        ),
+        faq_item(
+            "Does PublicJobs.ca give advice on work eligibility?",
+            "PublicJobs.ca does not give advice on work eligibility or immigration. "
+            "For general information about working in Canada, see the "
+            f"[Government of Canada page on working in Canada]({CANADA_WORK_URL}).",
+        ),
+        faq_item(
+            "Is PublicJobs.ca run by the government?",
+            "No. PublicJobs.ca is independent, is not a government website, and is not affiliated with, endorsed by, or acting for any government or any employer listed on the site.",
+        ),
+        faq_item(
+            "Who runs PublicJobs.ca?",
+            "PublicJobs.ca is operated by Osama Chaudhary. "
+            "Contact [hello@publicjobs.ca](mailto:hello@publicjobs.ca).",
+        ),
+    ]
+    levels = [
+        faq_item(
+            "What are the three levels of government in Canada?",
+            "Canada has three levels of government: federal, provincial or territorial, and municipal. "
+            "Each level runs its own services and has its own public-sector employers.",
+        ),
+        faq_item(
+            "What does the federal government do?",
+            "The federal government, based in Ottawa, handles national matters such as mail, money and banking, national defence, immigration and employment insurance.",
+        ),
+        faq_item(
+            "What does the Ontario government do?",
+            "The Ontario government runs province-wide services such as health care, education and road rules.",
+        ),
+        faq_item(
+            "What does the City of Toronto do?",
+            "The City of Toronto runs local services such as public transit, parks, parking, libraries and local police. "
+            "Many of these services are run by City agencies, like the TTC and the Toronto Zoo.",
+        ),
+        faq_item(
+            "Which levels of government do PublicJobs.ca employers belong to?",
+            "We list jobs from all three levels: federal Crown corporations, Ontario provincial agencies, and City of Toronto agencies and corporations. "
+            "We also list a few public-interest regulators that are not part of any government. "
+            "See the full list on our [employers page](/employers/).",
+        ),
+    ]
+    crowns = [
+        faq_item(
+            "What is a Crown corporation in Canada?",
+            "A Crown corporation is a company owned by a government that runs much like a business but also serves public goals. "
+            "Federal Crown corporations are owned directly by the Government of Canada.",
+        ),
+        faq_item(
+            "What is the difference between a Crown corporation and a government ministry?",
+            "A ministry (called a department in the federal government) is part of the core government and is led by an elected minister. "
+            "A Crown corporation is a separate organization owned by the government, with its own board, that runs more like a business.",
+        ),
+        faq_item(
+            "Is a Crown corporation job a government job?",
+            "It is a public-sector job, because the employer is owned by a government. "
+            "But you work for the Crown corporation itself, not for a government ministry.",
+        ),
+        faq_item(
+            "Which federal Crown corporations are on PublicJobs.ca?",
+            "We list Toronto-area jobs from federal Crown corporations including CBC/Radio-Canada, Canada Post, BDC, CMHC, Export Development Canada, Farm Credit Canada, CPP Investments, Canada Infrastructure Bank, CDEV and Telefilm Canada. "
+            "Browse their current openings on the [homepage](/).",
+        ),
+        faq_item(
+            "Is Canada Post a Crown corporation?",
+            "Yes. Canada Post Corporation is on the Government of Canada's official list of federal Crown corporations.",
+        ),
+        faq_item(
+            "Is the CBC a Crown corporation?",
+            "Yes. The Canadian Broadcasting Corporation (CBC/Radio-Canada) is a federal Crown corporation.",
+        ),
+        faq_item(
+            "Are federal Crown corporation employees part of the federal public service?",
+            "Generally, no. The federal public service covers government departments and certain agencies, while each Crown corporation is its own employer and hires through its own careers site.",
+        ),
+        faq_item(
+            "What is a provincial agency in Ontario?",
+            "A provincial agency is an organization set up by the Ontario government to deliver a service or oversee an area. "
+            "Ontario says all provincial agencies are part of government, must follow government rules, and are led by people the government appoints.",
+        ),
+        faq_item(
+            "Does Ontario have Crown corporations?",
+            "Yes, though Ontario's official lists usually call them provincial agencies. "
+            "For example, the LCBO and OLG are provincial agencies that run business operations.",
+        ),
+        faq_item(
+            "Which Ontario provincial agencies are on PublicJobs.ca?",
+            "We list provincial agency jobs from employers such as Metrolinx, LCBO, OLG, the Ontario Securities Commission, FSRA, AGCO, the Ontario Energy Board, Infrastructure Ontario, iGaming Ontario, Ontario Health, Public Health Ontario, WSIB, TVO, TFO and the Royal Ontario Museum. "
+            "See them all on our [employers page](/employers/).",
+        ),
+        faq_item(
+            "Is Metrolinx a government job?",
+            "Yes, Metrolinx jobs are provincial public-sector jobs. "
+            "Metrolinx is an Ontario provincial agency and a Crown agency, and it hires its own staff through its own careers site.",
+        ),
+        faq_item(
+            "Is Ontario Power Generation (OPG) a Crown corporation?",
+            "OPG is a company wholly owned by the Province of Ontario, which is its only shareholder. "
+            "That makes it a provincially owned employer, though it is not on Ontario's list of provincial agencies.",
+        ),
+        faq_item(
+            "Is Hydro One a Crown corporation?",
+            "Not fully. Hydro One is a publicly traded company, and the Province of Ontario is its largest shareholder, owning about 47% of its shares as of March 2026.",
+        ),
+        faq_item(
+            "What is a regulatory agency?",
+            "A regulatory agency oversees an industry and enforces the rules for it. "
+            "Ontario regulatory agencies on our site include the Ontario Securities Commission, FSRA, AGCO and the Ontario Energy Board.",
+        ),
+        faq_item(
+            "Are TTC employees government employees?",
+            "The TTC is an agency of the City of Toronto, so TTC jobs are municipal public-sector jobs. "
+            "The TTC has its own board and hires its own staff, separately from City of Toronto jobs.",
+        ),
+        faq_item(
+            "What are City of Toronto agencies?",
+            "City agencies deliver City services such as transit, parking and the zoo, and each is governed by a board that gets its powers from City Council. "
+            "City of Toronto agencies on our site include the TTC, Toronto Parking Authority, Toronto Zoo, Exhibition Place, CreateTO and the Toronto Atmospheric Fund.",
+        ),
+        faq_item(
+            "What is a City of Toronto corporation?",
+            "A City corporation is a company wholly owned by the City of Toronto that operates independently and approves its own budget. "
+            "Toronto Hydro and Toronto Community Housing are two examples on our site.",
+        ),
+        faq_item(
+            "What is a delegated administrative authority?",
+            "A delegated administrative authority is a not-for-profit corporation that runs certain Ontario laws for the government. "
+            "By law, it is not part of the government or a government agency.",
+        ),
+        faq_item(
+            "Is TSSA part of the Ontario government?",
+            "No. The Technical Standards and Safety Authority (TSSA) is a not-for-profit delegated administrative authority that enforces Ontario safety laws for things like elevators, boilers and fuels.",
+        ),
+        faq_item(
+            "Is HCRA part of the Ontario government?",
+            "No. The Home Construction Regulatory Authority (HCRA) is a delegated administrative authority that licenses and regulates new home builders and sellers in Ontario.",
+        ),
+        faq_item(
+            "Are CPA Ontario and the Law Society of Ontario government agencies?",
+            "No. They are professional regulators set up under Ontario laws to oversee accountants (CPA Ontario) and lawyers and paralegals (Law Society of Ontario). "
+            "We list them because their work serves the public interest.",
+        ),
+    ]
+    working = [
+        faq_item(
+            "What is the Ontario Public Service (OPS)?",
+            "The Ontario Public Service is the staff who work in the Government of Ontario's ministries. "
+            "Its rules come from the Public Service of Ontario Act, 2006, and its jobs are posted on Ontario Public Service Careers (gojobs.gov.on.ca).",
+        ),
+        faq_item(
+            "Is working for a provincial agency the same as working for the OPS?",
+            "Not always. Many agencies, such as Metrolinx and the LCBO, hire their own staff through their own careers sites, while some smaller agencies hire through Ontario Public Service Careers.",
+        ),
+        faq_item(
+            "Does PublicJobs.ca list Ontario ministry jobs?",
+            "Not right now. Our list focuses on Crown corporations, provincial agencies and City of Toronto organizations; you can find ministry jobs on Ontario Public Service Careers.",
+        ),
+        faq_item(
+            "Who can work for a Crown corporation or agency?",
+            "To work anywhere in Canada, you must be a Canadian citizen, a permanent resident, or authorized in writing to work in Canada. "
+            "Each employer may have extra requirements, so read the job posting.",
+        ),
+        faq_item(
+            "Do I need to be a Canadian citizen to work in the Ontario Public Service?",
+            "No. Ontario says citizens, permanent residents and people authorized in writing to work in Canada can work in the Ontario Public Service.",
+        ),
+        faq_item(
+            "Do federal government jobs give preference to Canadian citizens?",
+            "In external hiring for the federal public service, eligible veterans come first, then Canadian citizens and permanent residents, ahead of other applicants. "
+            "This rule is for the federal public service, not Crown corporations, which set their own hiring rules.",
+        ),
+        faq_item(
+            "Do public-sector jobs need a security check?",
+            "Some do. For example, some Ontario Public Service jobs need an employment security check, which can include a police record check; the job posting says if one is required.",
+        ),
+        faq_item(
+            "Do I need to speak French for a federal Crown corporation job?",
+            "Some jobs need English and French, and others do not. "
+            "Federal Crown corporations covered by the Official Languages Act must serve the public in both languages, so check the language requirement in each posting.",
+        ),
+        faq_item(
+            "Do I need French for an Ontario Public Service job?",
+            "Only for designated bilingual positions, which are tested in French. "
+            "All candidates are assessed in English, and each job ad shows the language of the position.",
+        ),
+        faq_item(
+            "Are Crown corporation jobs unionized?",
+            "Many public-sector jobs are unionized, but it depends on the employer and the role. "
+            "Check the job posting or ask the employer.",
+        ),
+        faq_item(
+            "Do Crown corporations offer pensions?",
+            "Many public employers offer a workplace pension plan, but the plan and who can join it differ by employer and job type. "
+            "Check the job posting or the employer's careers site for details.",
+        ),
+        faq_item(
+            "What is OMERS?",
+            "OMERS is a pension plan whose members are mainly employees of Ontario municipalities, local boards and public utilities. "
+            "Whether a job includes OMERS depends on the employer.",
+        ),
+        faq_item(
+            "What pension plans cover Ontario Public Service employees?",
+            "Permanent Ontario Public Service employees usually join the Public Service Pension Plan (PSPP). "
+            "Employees in positions eligible for the OPSEU Pension Plan, run by OPTrust, join that plan instead.",
+        ),
+        faq_item(
+            "Are public-sector jobs more stable?",
+            "Many people look for public-sector jobs in Toronto for stability, set pay scales and benefits. "
+            "But pay, benefits and job security differ by employer, union status and contract type, and no job is guaranteed.",
+        ),
+    ]
     return [
-        {
-            "question": "What is PublicJobs.ca?",
-            "parts": [
-                "PublicJobs.ca is an independent job board. "
-                "It collects current job openings from public employers in Toronto and the GTA and lists them in one place. "
-                "Those employers include Crown corporations, provincial and federal agencies, City of Toronto agencies, and some public-interest regulators.",
-            ],
-        },
-        {
-            "question": "Which employers are listed?",
-            "parts": [
-                f"PublicJobs.ca lists current openings from {employer_count} public {employers} in Toronto and the GTA. "
-                "The full list is on the ",
-                {"text": "employers page", "href": "/employers/"},
-                ".",
-            ],
-        },
-        {
-            "question": "Is it free?",
-            "parts": [
-                "Yes. Browsing and searching the job board is free and does not need an account. "
-                "Email alerts are free. "
-                "PublicJobs.ca never charges job seekers.",
-            ],
-        },
-        {
-            "question": "How do I apply for a job?",
-            "parts": [
-                'On the job page, choose "Apply on employer site". '
-                "That link leaves PublicJobs.ca and goes to the employer's own posting, where you apply. "
-                "PublicJobs.ca does not take applications and does not receive them.",
-            ],
-        },
-        {
-            "question": "How often are jobs updated?",
-            "parts": [
-                "The list of openings is refreshed each weekday. "
-                "A posting can still change or close on the employer's site before the next refresh. "
-                "Check the employer's posting for the latest details, including closing dates.",
-            ],
-        },
-        {
-            "question": "How do I get new jobs by email?",
-            "parts": [
-                "Use the ",
-                {"text": "signup form on the homepage", "href": "/#signup-heading"},
-                ". Enter your email and agree to receive free job alert emails from PublicJobs.ca. "
-                "You can unsubscribe anytime. "
-                "Every alert email includes a one-click unsubscribe link, and you can also email ",
-                {"text": "hello@publicjobs.ca", "href": "mailto:hello@publicjobs.ca"},
-                ".",
-            ],
-        },
-        {
-            "question": "Can newcomers to Canada apply?",
-            "parts": [
-                "Work requirements vary by employer. "
-                "Check each posting to see who may apply. "
-                "PublicJobs.ca does not give advice on work eligibility or immigration. "
-                "For general information about working in Canada, see the ",
-                {
-                    "text": "Government of Canada page on working in Canada",
-                    "href": CANADA_WORK_URL,
-                },
-                ".",
-            ],
-        },
-        {
-            "question": "Is PublicJobs.ca run by the government?",
-            "parts": [
-                "No. PublicJobs.ca is independent, is not a government website, and is not affiliated with, endorsed by, or acting for any government or any employer listed on the site. "
-                "It is operated by Osama Chaudhary. "
-                "Contact ",
-                {"text": "hello@publicjobs.ca", "href": "mailto:hello@publicjobs.ca"},
-                ".",
-            ],
-        },
+        {"id": "about-publicjobs-ca", "heading": "About PublicJobs.ca", "items": about},
+        {"id": "levels-of-government-in-canada", "heading": "Levels of government in Canada", "items": levels},
+        {"id": "crown-corporations-and-agencies", "heading": "Crown corporations and agencies", "items": crowns},
+        {"id": "working-in-the-public-sector", "heading": "Working in the public sector", "items": working},
     ]
 
 
@@ -1785,11 +1998,15 @@ def faq_answer_html(parts: list) -> str:
     return "".join(chunks)
 
 
-def faq_json_ld(entries: list[dict]) -> str:
+def faq_items(sections: list[dict]) -> list[dict]:
+    return [item for section in sections for item in section["items"]]
+
+
+def faq_json_ld(sections: list[dict]) -> str:
     data = {
         "@context": "https://schema.org",
         "@type": "FAQPage",
-        "name": "Frequently asked questions",
+        "name": FAQ_HEADING,
         "url": f"{SITE_URL}/faq/",
         "description": FAQ_DESCRIPTION,
         "mainEntity": [
@@ -1801,29 +2018,58 @@ def faq_json_ld(entries: list[dict]) -> str:
                     "text": faq_answer_text(item["parts"]),
                 },
             }
-            for item in entries
+            for item in faq_items(sections)
         ],
     }
     payload = json_for_script([data])[1:-1]
     return f'    <script type="application/ld+json">{payload}</script>'
 
 
-def render_faq_page(jobs: list[dict]) -> str:
-    entries = faq_entries(len(employer_names(jobs)))
-    blocks = "\n".join(
-        f"""          <section class="faq-item">
-            <h2>{escape(item["question"])}</h2>
-            <p>{faq_answer_html(item["parts"])}</p>
-          </section>"""
-        for item in entries
+def render_faq_body(sections: list[dict]) -> str:
+    toc = "\n".join(
+        f'            <li><a href="#{escape(section["id"], quote=True)}">{escape(section["heading"])}</a></li>'
+        for section in sections
     )
+    seen: set[str] = set()
+    groups: list[str] = []
+    for section in sections:
+        questions: list[str] = []
+        for item in section["items"]:
+            anchor = faq_anchor(item["question"])
+            if anchor in seen:
+                raise SystemExit(f"duplicate faq anchor: {anchor}")
+            seen.add(anchor)
+            questions.append(
+                f"""            <section class="faq-item">
+              <h3 id="{escape(anchor, quote=True)}">{escape(item["question"])}</h3>
+              <p>{faq_answer_html(item["parts"])}</p>
+            </section>"""
+            )
+        groups.append(
+            f"""          <section class="faq-section" id="{escape(section["id"], quote=True)}">
+            <h2>{escape(section["heading"])}</h2>
+{chr(10).join(questions)}
+          </section>"""
+        )
+    return f"""          <nav class="faq-toc" aria-label="On this page">
+            <ol>
+{toc}
+            </ol>
+          </nav>
+{chr(10).join(groups)}"""
+
+
+def render_faq_page(jobs: list[dict]) -> str:
+    if len(FAQ_DESCRIPTION) > 160:
+        raise SystemExit(f"FAQ meta description is {len(FAQ_DESCRIPTION)} characters")
+    sections = faq_sections(len(employer_names(jobs)))
     return render_info_page(
-        f"Frequently asked questions | {BRAND}",
-        "Frequently asked questions",
+        FAQ_TITLE,
+        FAQ_HEADING,
         FAQ_DESCRIPTION,
         "faq/",
-        blocks,
-        extra_head=faq_json_ld(entries),
+        render_faq_body(sections),
+        extra_head=faq_json_ld(sections),
     )
 
 
