@@ -1,0 +1,19 @@
+# PublicJobs.ca
+
+> Independent job board for government and public-sector openings in Toronto and the GTA. Run by Osama Chaudhary. Not affiliated with any government or listed employer.
+
+PublicJobs.ca lists current openings collected from employers' public career sites. The listings file records the system each posting came from: ADP Workforce Now, BambooHR, BeApplied, Dayforce, Greenhouse, HiBob, Humi, JazzHR, Jobvite, Oracle Candidate Experience, SAP SuccessFactors, UKG UltiPro, Workable, and Workday. The site does not take applications. Each job page links to the employer's posting, and you apply there. Browsing is free and needs no account. The homepage can search titles and employers. Email alerts are optional.
+
+This repository has no cron and no scheduled GitHub Actions workflow that refreshes listings. scripts/build_pages.py rebuilds the static pages from data/listings.json when that file is updated and published. The listings on the site now were fetched on October 2, 2026. Contact: hello@publicjobs.ca.
+
+## Pages
+
+- [Home](https://publicjobs.ca/): Current openings, with search by job title and employer.
+- [Employers](https://publicjobs.ca/employers/): Public employers whose openings are listed.
+- [About](https://publicjobs.ca/about/): Who runs the site, what it covers, how listings are collected, and how often they are updated.
+- [Sitemap](https://publicjobs.ca/sitemap.xml): Every published URL.
+
+## Optional
+
+- [Privacy](https://publicjobs.ca/privacy/): What personal information the site collects and how email alerts work.
+- [Terms](https://publicjobs.ca/terms/): Terms of use.
