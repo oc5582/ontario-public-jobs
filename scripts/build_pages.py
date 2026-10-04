@@ -113,9 +113,9 @@ SKIP_TAGS = {"script", "style", "noscript"}
 APPLY_RE = re.compile(r'class="apply-btn"[^>]*href="([^"]+)"')
 LEGACY_APPLY_RE = re.compile(r'name="legacy-apply-url" content="([^"]+)"')
 REFRESH_RE = re.compile(r'http-equiv="refresh" content="0; url=([^"]+)"')
-FONT_LINKS = """    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet" />"""
+# Latin subset of the IBM Plex Sans variable font (weights 400–700). The LCP
+# heading is weight 600, and this one file also covers body text at 400.
+FONT_PRELOAD = "/fonts/ibm-plex-sans-latin.woff2"
 
 
 class HtmlToText(HTMLParser):
@@ -371,21 +371,35 @@ def js_quote(value: str) -> str:
     )
 
 
+def font_links(asset_origin: str = "") -> str:
+    href = f"{asset_origin}{FONT_PRELOAD}" if asset_origin else FONT_PRELOAD
+    return (
+        f'    <link rel="preload" href="{escape(href, quote=True)}" '
+        'as="font" type="font/woff2" crossorigin fetchpriority="high" />'
+    )
+
+
 def pixel_snippet() -> str:
     pixel_id = configured_value(PIXEL_ID, "[PIXEL_ID]")
     if not pixel_id:
         return ""
     safe_js = js_quote(pixel_id)
     safe_url = escape(pixel_id, quote=True)
+    # The stub queues init, PageView, Lead, and ApplyClick immediately.
+    # fbevents.js is inserted after load, on idle, and then drains that queue.
     return f"""    <!-- Meta Pixel Code -->
     <script>
     !function(f,b,e,v,n,t,s)
     {{if(f.fbq)return;n=f.fbq=function(){{n.callMethod?
     n.callMethod.apply(n,arguments):n.queue.push(arguments)}};
     if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}}(window, document,'script',
+    n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
+    function load(){{if(load.done)return;load.done=!0;
+    s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}}
+    function arm(){{if(f.requestIdleCallback)f.requestIdleCallback(load,{{timeout:2000}});
+    else f.setTimeout(load,1)}}
+    if(b.readyState==='complete')arm();else f.addEventListener('load',arm)
+    }}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
     fbq('init', '{safe_js}');
     fbq('track', 'PageView');
@@ -488,7 +502,7 @@ def shared_head(
     <title>{escape(title)}</title>
     <meta name="description" content="{escape(description)}" />{robots_tag}{canonical_tag}
 {og_tags(title, description, canonical)}
-{FONT_LINKS}
+{font_links(asset_origin)}
     <link rel="stylesheet" href="{escape(css_href, quote=True)}" />{extra}{pixel_block}{analytics_block}{extra_head_block}
   </head>"""
 
