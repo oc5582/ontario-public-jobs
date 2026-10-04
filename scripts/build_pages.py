@@ -84,6 +84,9 @@ UNAVAILABLE = (
     "A job description is not available for this posting. "
     "Use the Apply button to view details on the employer site."
 )
+APPLY_NOTE = (
+    "For the latest details and the full posting, view this job on the employer's site."
+)
 
 BLOCK_TAGS = {
     "p",
@@ -350,6 +353,17 @@ def apply_button(url: str, extra_class: str = "") -> str:
     return (
         f'<a class="{cls}" href="{href}" target="_blank" rel="noopener noreferrer">'
         "Apply on employer site</a>"
+    )
+
+
+def apply_block(url: str) -> str:
+    # The note stays on closed pages too. The button still opens the employer
+    # posting, and the sentence points there for the latest details.
+    return (
+        '<div class="apply-row">\n'
+        f"          {apply_button(url)}\n"
+        f'          <p class="apply-note">{escape(APPLY_NOTE)}</p>\n'
+        "        </div>"
     )
 
 
@@ -1579,7 +1593,7 @@ def render_job_page(job: dict, closed: bool = False) -> str:
     apply_url = text(job.get("apply_url"))
     link = employer_link(job)
     dt_rows = render_meta_rows(job)
-    apply = apply_button(apply_url) if apply_url else ""
+    apply = apply_block(apply_url) if apply_url else ""
     script = apply_click_script()
     script_block = f"\n{script}" if script else ""
     closed_block = ""
@@ -1979,7 +1993,7 @@ def render_about_page() -> str:
           <h2>How listings are collected</h2>
           <p>Listings are read from employers' public careers pages. The listings file records which system each posting came from. On this site those systems are {sources}. The words on each job page are the employer's posting. A posting whose closing date has passed stays on its own page, marked closed, and is left off the homepage, the jobs list, and the employer pages. Always check the employer's posting for the latest information, including closing dates and pay.</p>
           <h2>How often listings are updated</h2>
-          <p>This site has no scheduled task that collects new listings. The pages are rebuilt from the listings file when that file is updated and published. Each listing stores the time it was fetched from the employer. {fetched}</p>
+          <p>Listings are refreshed every weekday and published automatically. The pages are rebuilt from the listings file. Each listing stores the time it was fetched from the employer. {fetched}</p>
           <h2>Contact</h2>
           <p>Questions or corrections: <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>. See our <a href="/privacy/">privacy policy</a> and <a href="/terms/">terms of use</a>.</p>"""
     return render_info_page(
@@ -2821,8 +2835,8 @@ def render_llms_txt() -> str:
         "",
         "A posting whose closing date has passed stays on its own page, marked closed, and is left off the homepage, /jobs/, and the employer pages.",
         "",
-        "This repository has no cron and no scheduled GitHub Actions workflow that refreshes listings. "
-        "scripts/build_pages.py rebuilds the static pages from data/listings.json when that file is updated and published. "
+        "Listings are refreshed every weekday and published automatically. "
+        "scripts/build_pages.py rebuilds the static pages from data/listings.json. "
         f"{fetched} Contact: hello@publicjobs.ca.",
         "",
         "## Pages",
