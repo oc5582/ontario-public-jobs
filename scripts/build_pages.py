@@ -40,13 +40,13 @@ OG_IMAGE_ALT = "PublicJobs.ca: government jobs in Toronto and the GTA"
 # longer wording below so search snippets do not change with this redesign.
 PAGE_TITLE = "Independent job board for government jobs in Toronto and the GTA"
 META_DESCRIPTION = (
-    "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other "
+    "City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 60 other "
     "public employers in Toronto and the GTA, each hiring on its own website. "
     "Their openings, collected in one place."
 )
 H1 = "Government jobs in Toronto and the GTA"
 SUBHEAD = (
-    "TTC, Metrolinx, Toronto Hydro, OLG, Hydro One, CBC and more than 40 other "
+    "City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 60 other "
     "public employers in Toronto and the GTA."
 )
 LISTINGS_HEADING = "Current openings"
@@ -71,6 +71,8 @@ SEARCH_ALIASES = {
     "Toronto and Region Conservation Authority": "TRCA",
     "Toronto Community Housing Corporation": "TCHC",
     "Toronto Parking Authority": "TPA",
+    "Toronto Police Service": "TPS",
+    "Regional Municipality of Halton": "Halton Region",
     "Toronto Transit Commission": "TTC",
     "Workplace Safety and Insurance Appeals Tribunal": "WSIAT",
     "Workplace Safety and Insurance Board": "WSIB",
@@ -610,6 +612,22 @@ PLACE_ADDRESS = {
     "etobicoke": ("Etobicoke", "ON", "CA"),
     "rexdale": ("Rexdale", "ON", "CA"),
     "mississauga": ("Mississauga", "ON", "CA"),
+    "brampton": ("Brampton", "ON", "CA"),
+    "caledon": ("Caledon", "ON", "CA"),
+    "aurora": ("Aurora", "ON", "CA"),
+    "east gwillimbury": ("East Gwillimbury", "ON", "CA"),
+    "queensville": ("Queensville", "ON", "CA"),
+    "sharon": ("Sharon", "ON", "CA"),
+    "king township": ("King", "ON", "CA"),
+    "king city": ("King City", "ON", "CA"),
+    "stouffville": ("Whitchurch-Stouffville", "ON", "CA"),
+    "uxbridge": ("Uxbridge", "ON", "CA"),
+    "port perry": ("Port Perry", "ON", "CA"),
+    "scugog": ("Scugog", "ON", "CA"),
+    "clarington": ("Clarington", "ON", "CA"),
+    "bowmanville": ("Bowmanville", "ON", "CA"),
+    "halton hills": ("Halton Hills", "ON", "CA"),
+    "richmondhill": ("Richmond Hill", "ON", "CA"),
     "vaughan": ("Vaughan", "ON", "CA"),
     "markham": ("Markham", "ON", "CA"),
     "richmond hill": ("Richmond Hill", "ON", "CA"),
@@ -845,7 +863,7 @@ def employment_types(raw: str) -> list[str]:
         add("PART_TIME")
     if re.search(r"\bcontracts?\b|\bcontractor\b", value):
         add("CONTRACTOR")
-    if re.search(r"\btemporary\b|\bfixed[\s-]?term\b", value):
+    if re.search(r"\btemporary\b|\bfixed[\s-]?term\b|\bseasonal\b", value):
         add("TEMPORARY")
     if re.search(r"\bintern(?:ship)?\b|\bco-?ops?\b", value):
         add("INTERN")
@@ -942,7 +960,41 @@ def salary_from_text(raw: str) -> dict | None:
             numbers["minValue"] = minimum
             numbers["maxValue"] = maximum
         return monetary_amount(match.group("cur"), match.group("unit"), numbers)
-    return None
+    return loose_salary_from_text(cleaned)
+
+
+LOOSE_UNIT_RE = (
+    (re.compile(r"\b(?:per\s+hour|hourly|/\s*(?:hour|hr))\b", re.I), "HOUR"),
+    (re.compile(r"\b(?:per\s+(?:annum|year)|annually|annual|yearly|/\s*(?:year|yr))\b", re.I), "YEAR"),
+)
+LOOSE_AMOUNT_RE = re.compile(r"\$\s?(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)")
+
+
+def loose_salary_from_text(cleaned: str) -> dict | None:
+    """Employer-stated CAD pay such as "$93,798.00 - $127,484.00" or "Starting at
+    $36.25 per hour". The unit must be stated, except that amounts of 20,000 or more
+    are read as yearly. Bi-weekly and other periods are left out."""
+    if re.search(r"bi-?weekly|semi-?monthly|per\s+(?:week|month|day)|monthly|weekly|daily", cleaned, re.I):
+        return None
+    if re.search(r"[-–—]\s*\$\s*$", cleaned):  # cut-off range such as "$123,900.46 - $"
+        return None
+    amounts = [float(a.replace(",", "")) for a in LOOSE_AMOUNT_RE.findall(cleaned)]
+    amounts = [a for a in amounts if a > 0]
+    if not amounts or len(amounts) > 2:
+        return None
+    unit = next((u for pattern, u in LOOSE_UNIT_RE if pattern.search(cleaned)), "")
+    if not unit and min(amounts) >= 20000:
+        unit = "YEAR"
+    if not unit:
+        return None
+    if unit == "HOUR" and max(amounts) > 500:
+        return None
+    if unit == "YEAR" and min(amounts) < 10000:
+        return None
+    num = lambda a: int(a) if a.is_integer() else a
+    lo, hi = min(amounts), max(amounts)
+    numbers = {"value": num(lo)} if lo == hi else {"minValue": num(lo), "maxValue": num(hi)}
+    return monetary_amount("CAD", unit, numbers)
 
 
 def base_salary(job: dict) -> dict | None:
@@ -985,7 +1037,7 @@ def apply_job_id(url: str) -> str:
         return ""
     parsed = urlparse(raw)
     query = parse_qs(parsed.query)
-    for key in ("career_job_req_id", "gh_jid", "jobId", "opportunityId"):
+    for key in ("career_job_req_id", "gh_jid", "jobId", "opportunityId", "rid", "JobOpeningId"):
         values = query.get(key) or []
         if values and text(values[0]):
             return text(values[0])
@@ -1078,7 +1130,10 @@ def parse_location_segment(part: str) -> list[dict]:
             segment = cut_match(segment, numbered)
     places = []
     seen_localities = set()
-    for match in PLACE_RE.finditer(segment):
+    # clean_location_segment drops "(...)", which can hold the only place name,
+    # e.g. "Allendale (Milton), Post Inn Village (Oakville)". Fall back to the raw text.
+    place_matches = list(PLACE_RE.finditer(segment)) or list(PLACE_RE.finditer(part))
+    for match in place_matches:
         locality, region, country = PLACE_ADDRESS[match.group(0).lower()]
         if locality in seen_localities:
             continue
@@ -1908,6 +1963,7 @@ SOURCE_LABELS = {
     "adp_workforce_now": "ADP Workforce Now",
     "bamboohr": "BambooHR",
     "beapplied": "BeApplied",
+    "comeet": "Comeet",
     "dayforce_geo": "Dayforce",
     "greenhouse": "Greenhouse",
     "hibob": "HiBob",
@@ -1915,8 +1971,11 @@ SOURCE_LABELS = {
     "jazzhr": "JazzHR",
     "jobvite": "Jobvite",
     "oracle_ce": "Oracle Candidate Experience",
+    "peoplesoft_tps": "Oracle PeopleSoft",
     "sf_classic": "SAP SuccessFactors",
     "sf_rmk": "SAP SuccessFactors",
+    "sf_rmk_search": "SAP SuccessFactors",
+    "taleo": "Oracle Taleo",
     "ukg_ultipro": "UKG UltiPro",
     "workable": "Workable",
     "workday_cxs": "Workday",
@@ -1987,7 +2046,7 @@ def render_privacy_page() -> str:
           <p>We use the Meta Pixel, a tool from Meta Platforms, Inc., to measure how well our ads on Facebook and Instagram work. When you visit PublicJobs.ca, the Meta Pixel may use cookies and similar technology to collect information such as the pages you view, whether you signed up for alerts, whether you clicked through to an employer's site, and technical details about your browser and device. Meta may use this information as described in its own privacy policy (<a href="https://facebook.com/privacy/policy">facebook.com/privacy/policy</a>). We do not send your email address to Meta. You can control ad personalization in your Facebook and Instagram ad settings, and you can block or delete cookies in your browser settings.</p>
           <h2>Site analytics and fonts</h2>
           <p>We use Cloudflare Web Analytics to count visits. It uses no cookies and does not track you across sites. It records things like the page you visited, the referring site, your browser, and your country.</p>
-          <p>This site loads fonts from Google Fonts. Loading those fonts sends your IP address to Google.</p>
+          <p>Our fonts are hosted on PublicJobs.ca itself, so loading them does not send your information to Google or any other font service.</p>
           <h2>Service providers</h2>
           <p>We use trusted service providers to run this site and our emails: Cloudflare (runs the signup form), Resend (stores the mailing list and sends the emails), and Meta (ad measurement, described above). These providers may store information outside Canada, including in the United States, where it may be subject to local laws.</p>
           <h2>Unsubscribing</h2>
@@ -2018,7 +2077,10 @@ def listing_source_names(jobs: list[dict]) -> list[str]:
     names: set[str] = set()
     for job in jobs:
         key = text(job.get("source")).split(":", 1)[0]
-        if key:
+        if key.startswith("site_"):
+            # Read from the careers page of the employer's own website, not an ATS.
+            names.add("employers' own websites")
+        elif key:
             names.add(SOURCE_LABELS.get(key, key))
     return sorted(names, key=str.casefold)
 
@@ -2051,7 +2113,7 @@ def render_about_page() -> str:
     body = f"""          <h2>Who runs this site</h2>
           <p>PublicJobs.ca is run independently by Osama Chaudhary. It is not a government website and is not affiliated with, endorsed by, or acting for any government or any employer listed on the site.</p>
           <h2>What the site covers</h2>
-          <p>The site lists current job openings from public employers in Toronto and the GTA, such as Crown corporations, provincial and federal agencies, City of Toronto agencies, and some public-interest regulators.</p>
+          <p>The site lists current job openings from public employers in Toronto and the GTA, such as the City of Toronto and other GTA cities, towns and regions, the Toronto Police Service, Crown corporations, provincial and federal agencies, City of Toronto agencies, and some public-interest regulators.</p>
           <p>We do not hire and we do not take applications. Every job page links to the employer's own posting, and you apply there. Browsing is free and needs no account. The homepage can search job titles and employer names. <a href="/jobs/">All current openings</a> are also listed on their own pages. The <a href="/employers/">employers page</a> names each organization and links to its openings. Email alerts are optional.</p>
           <p><a href="/match/">Match your resume</a> compares a resume with the current openings. The resume is read to find matches and is not stored. Matching is free, up to 3 times. Common questions are answered on the <a href="/faq/">FAQ</a>.</p>
           <h2>How listings are collected</h2>
@@ -2363,7 +2425,8 @@ def faq_sections(employer_count: int) -> list[dict]:
         ),
         faq_item(
             "What kinds of employers does PublicJobs.ca list?",
-            "PublicJobs.ca lists Crown corporations, provincial and federal agencies, City of Toronto agencies, and some public-interest regulators.",
+            "PublicJobs.ca lists GTA municipal governments (the City of Toronto and other cities, towns and regions), the Toronto Police Service, "
+            "Crown corporations, provincial and federal agencies, City of Toronto agencies, and some public-interest regulators.",
         ),
         faq_item(
             "Which employers are listed?",
@@ -2441,7 +2504,8 @@ def faq_sections(employer_count: int) -> list[dict]:
         ),
         faq_item(
             "Which levels of government do PublicJobs.ca employers belong to?",
-            "We list jobs from all three levels: federal Crown corporations, Ontario provincial agencies, and City of Toronto agencies and corporations. "
+            "We list jobs from all three levels: federal Crown corporations, Ontario provincial agencies, and municipal employers: "
+            "the City of Toronto and its agencies and corporations, the Toronto Police Service, and other GTA cities, towns and regions. "
             "We also list a few public-interest regulators that are not part of any government. "
             "See the full list on our [employers page](/employers/).",
         ),
@@ -2559,7 +2623,7 @@ def faq_sections(employer_count: int) -> list[dict]:
         ),
         faq_item(
             "Does PublicJobs.ca list Ontario ministry jobs?",
-            "Not right now. Our list focuses on Crown corporations, provincial agencies and City of Toronto organizations; you can find ministry jobs on Ontario Public Service Careers.",
+            "Not right now. Our list focuses on Crown corporations, provincial agencies, and GTA municipal employers such as the City of Toronto; you can find ministry jobs on Ontario Public Service Careers.",
         ),
         faq_item(
             "Who can work for a Crown corporation or agency?",
