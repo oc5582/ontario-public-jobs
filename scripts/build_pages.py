@@ -423,8 +423,9 @@ def pixel_snippet() -> str:
         return ""
     safe_js = js_quote(pixel_id)
     safe_url = escape(pixel_id, quote=True)
-    # The stub queues init, PageView, Lead, and ApplyClick immediately.
-    # fbevents.js is inserted after load, on idle, and then drains that queue.
+    # The stub queues init, PageView, Lead, ApplyClick, and MatchComplete
+    # immediately. fbevents.js is inserted on the window load event and then
+    # drains that queue, so calls made before the script arrives are not dropped.
     return f"""    <!-- Meta Pixel Code -->
     <script>
     !function(f,b,e,v,n,t,s)
@@ -434,9 +435,7 @@ def pixel_snippet() -> str:
     n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
     function load(){{if(load.done)return;load.done=!0;
     s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}}
-    function arm(){{if(f.requestIdleCallback)f.requestIdleCallback(load,{{timeout:2000}});
-    else f.setTimeout(load,1)}}
-    if(b.readyState==='complete')arm();else f.addEventListener('load',arm)
+    if(b.readyState==='complete')load();else f.addEventListener('load',load)
     }}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
     fbq('init', '{safe_js}');
