@@ -337,6 +337,13 @@ def job_is_closed(job: dict, today: date) -> bool:
     return date.fromisoformat(closing) < today
 
 
+def is_lcbo_holiday_csr(job: dict) -> bool:
+    return (
+        text(job.get("employer")) == "Liquor Control Board of Ontario (LCBO)"
+        and text(job.get("title")) == "Holiday Customer Service Representative (Fixed Term)"
+    )
+
+
 def job_lastmod(job: dict) -> str:
     # Posted date when we have one. Otherwise the day the listing was fetched.
     # Skip the tag when neither is a real date.
@@ -1876,7 +1883,7 @@ def render_signup() -> str:
         </section>"""
 
 
-def render_index(jobs: list[dict]) -> str:
+def render_index(jobs: list[dict], holiday_csr_count: int = 0) -> str:
     records = [listing_record(job) for job in jobs]
     count = len(records)
     pages = max(1, (count + PAGE_SIZE - 1) // PAGE_SIZE)
@@ -1885,6 +1892,13 @@ def render_index(jobs: list[dict]) -> str:
     description = META_DESCRIPTION
     title = f"{PAGE_TITLE} | {BRAND}"
     next_disabled = "" if pages > 1 else " disabled"
+    holiday_note = ""
+    if holiday_csr_count > 0:
+        holiday_note = (
+            '\n          <p class="listings-index">'
+            '<a href="/employers/liquor-control-board-of-ontario-lcbo/">'
+            f"Also: {holiday_csr_count} LCBO holiday customer service openings</a></p>"
+        )
     head = shared_head(title, description, SITE_URL + "/", "./styles.css")
     head = head.replace("\n  </head>", f"\n{home_json_ld()}\n  </head>", 1)
     return f"""{head}
@@ -1919,7 +1933,7 @@ def render_index(jobs: list[dict]) -> str:
 
         <section class="listings" aria-labelledby="listings-heading">
           <h2 id="listings-heading">{escape(LISTINGS_HEADING)}</h2>
-          <p class="listings-index"><a href="/jobs/">Browse all {count} {label}</a></p>
+          <p class="listings-index"><a href="/jobs/">Browse all {count} {label}</a></p>{holiday_note}
           <p id="listings-empty" class="listings-empty" aria-live="polite" hidden>No openings match that search.</p>
           <ul class="job-list" id="job-list" tabindex="-1">
 {first_rows}
@@ -3095,6 +3109,8 @@ def main() -> None:
     assign_paths(jobs)
     assign_page_seo(jobs)
     open_jobs = [job for job in jobs if not job_is_closed(job, today)]
+    homepage_jobs = [job for job in open_jobs if not is_lcbo_holiday_csr(job)]
+    holiday_csr_count = sum(1 for job in open_jobs if is_lcbo_holiday_csr(job))
 
     apply_to_path: dict[str, str] = {}
     published_targets: set[str] = set()
@@ -3153,7 +3169,10 @@ def main() -> None:
         path.write_text(render_redirect(target, apply_url), encoding="utf-8")
         written_redirects += 1
 
-    (ROOT / "index.html").write_text(render_index(open_jobs), encoding="utf-8")
+    (ROOT / "index.html").write_text(
+        render_index(homepage_jobs, holiday_csr_count=holiday_csr_count),
+        encoding="utf-8",
+    )
     write_info_pages()
     write_match_page()
     write_employers_page(jobs)
