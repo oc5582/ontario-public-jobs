@@ -337,10 +337,23 @@ def job_is_closed(job: dict, today: date) -> bool:
     return date.fromisoformat(closing) < today
 
 
-def is_lcbo_holiday_csr(job: dict) -> bool:
-    return (
-        text(job.get("employer")) == "Liquor Control Board of Ontario (LCBO)"
-        and text(job.get("title")) == "Holiday Customer Service Representative (Fixed Term)"
+# Postings the owner chose never to publish (decision 2026-10-06). Each rule is an
+# exact employer name plus a case-insensitive phrase that must appear in the title.
+# Matching rows are dropped from data/listings.json itself before anything is built,
+# so the feed, homepage, /jobs/, job pages, employer pages, sitemap, JobPosting data
+# and the weekly email (built from the feed) all stay consistent. The weekday refresh
+# merge (merge_refresh.py) applies the same rule upstream; this is the repo-side net.
+EXCLUDED_JOB_RULES: tuple[tuple[str, str], ...] = (
+    ("Liquor Control Board of Ontario (LCBO)", "holiday customer service"),
+)
+
+
+def is_excluded_job(job: dict) -> bool:
+    employer = text(job.get("employer"))
+    title = text(job.get("title")).casefold()
+    return any(
+        employer == rule_employer and phrase.casefold() in title
+        for rule_employer, phrase in EXCLUDED_JOB_RULES
     )
 
 
@@ -1883,7 +1896,7 @@ def render_signup() -> str:
         </section>"""
 
 
-def render_index(jobs: list[dict], holiday_csr_count: int = 0) -> str:
+def render_index(jobs: list[dict]) -> str:
     records = [listing_record(job) for job in jobs]
     count = len(records)
     pages = max(1, (count + PAGE_SIZE - 1) // PAGE_SIZE)
@@ -1892,13 +1905,6 @@ def render_index(jobs: list[dict], holiday_csr_count: int = 0) -> str:
     description = META_DESCRIPTION
     title = f"{PAGE_TITLE} | {BRAND}"
     next_disabled = "" if pages > 1 else " disabled"
-    holiday_note = ""
-    if holiday_csr_count > 0:
-        holiday_note = (
-            '\n          <p class="listings-index">'
-            '<a href="/employers/liquor-control-board-of-ontario-lcbo/">'
-            f"Also: {holiday_csr_count} LCBO holiday customer service openings</a></p>"
-        )
     head = shared_head(title, description, SITE_URL + "/", "./styles.css")
     head = head.replace("\n  </head>", f"\n{home_json_ld()}\n  </head>", 1)
     return f"""{head}
@@ -1933,7 +1939,7 @@ def render_index(jobs: list[dict], holiday_csr_count: int = 0) -> str:
 
         <section class="listings" aria-labelledby="listings-heading">
           <h2 id="listings-heading">{escape(LISTINGS_HEADING)}</h2>
-          <p class="listings-index"><a href="/jobs/">Browse all {count} {label}</a></p>{holiday_note}
+          <p class="listings-index"><a href="/jobs/">Browse all {count} {label}</a></p>
           <p id="listings-empty" class="listings-empty" aria-live="polite" hidden>No openings match that search.</p>
           <ul class="job-list" id="job-list" tabindex="-1">
 {first_rows}
@@ -3104,13 +3110,18 @@ def main() -> None:
     raw = json.loads(DATA_PATH.read_text(encoding="utf-8"))
     if not isinstance(raw, list):
         raise SystemExit("listings.json must be a JSON array")
+    kept = [job for job in raw if not is_excluded_job(job)]
+    excluded_count = len(raw) - len(kept)
+    if excluded_count:
+        # Rewrite the published feed so data/listings.json never carries excluded rows.
+        DATA_PATH.write_text(json.dumps(kept, indent=2, ensure_ascii=False), encoding="utf-8")
+        print(f"Excluded {excluded_count} listings by EXCLUDED_JOB_RULES; rewrote {DATA_PATH.name}")
+    raw = kept
     today = today_toronto()
     jobs = sort_jobs(raw)
     assign_paths(jobs)
     assign_page_seo(jobs)
     open_jobs = [job for job in jobs if not job_is_closed(job, today)]
-    homepage_jobs = [job for job in open_jobs if not is_lcbo_holiday_csr(job)]
-    holiday_csr_count = sum(1 for job in open_jobs if is_lcbo_holiday_csr(job))
 
     apply_to_path: dict[str, str] = {}
     published_targets: set[str] = set()
@@ -3169,10 +3180,7 @@ def main() -> None:
         path.write_text(render_redirect(target, apply_url), encoding="utf-8")
         written_redirects += 1
 
-    (ROOT / "index.html").write_text(
-        render_index(homepage_jobs, holiday_csr_count=holiday_csr_count),
-        encoding="utf-8",
-    )
+    (ROOT / "index.html").write_text(render_index(open_jobs), encoding="utf-8")
     write_info_pages()
     write_match_page()
     write_employers_page(jobs)
