@@ -30,9 +30,7 @@
     n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
     function load(){if(load.done)return;load.done=!0;
     s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
-    function arm(){if(f.requestIdleCallback)f.requestIdleCallback(load,{timeout:2000});
-    else f.setTimeout(load,1)}
-    if(b.readyState==='complete')arm();else f.addEventListener('load',arm)
+    if(b.readyState==='complete')load();else f.addEventListener('load',load)
     }(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
     fbq('init', '4654096711502773');
@@ -67,7 +65,7 @@
     <main>
       <div class="content">
         <section class="hero" aria-labelledby="page-heading">
-          <h1 id="page-heading">Government jobs in Toronto and the GTA</h1>
+          <h1 id="page-heading">Independent job board for government jobs in Toronto and the GTA</h1>
           <p class="subhead">City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 60 other public employers in Toronto and the GTA.</p>
           <div class="listings-toolbar">
             <div class="count-block" aria-live="polite">

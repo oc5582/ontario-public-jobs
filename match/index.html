@@ -30,9 +30,7 @@
     n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
     function load(){if(load.done)return;load.done=!0;
     s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
-    function arm(){if(f.requestIdleCallback)f.requestIdleCallback(load,{timeout:2000});
-    else f.setTimeout(load,1)}
-    if(b.readyState==='complete')arm();else f.addEventListener('load',arm)
+    if(b.readyState==='complete')load();else f.addEventListener('load',load)
     }(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
     fbq('init', '4654096711502773');
@@ -81,6 +79,7 @@
 
         <fieldset>
           <legend>2. Your resume</legend>
+          <p class="hint">We use your resume only to find matching jobs. <a href="/privacy/">Privacy policy</a></p>
           <label for="resume-file">Upload a PDF or Word file</label>
           <input type="file" id="resume-file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
           <p class="hint" id="file-status" aria-live="polite">Your file stays on your device. Only the text is read.</p>
@@ -137,6 +136,7 @@
         var statusEl = document.getElementById("status");
         var btn = document.getElementById("submit-btn");
         var fileText = "";
+        var leadTracked = false;
 
         function setStatus(msg, isError) {
           statusEl.textContent = msg;
@@ -228,6 +228,13 @@
             render("strong-list", "strong-wrap", data.strong);
             render("maybe-list", "maybe-wrap", data.maybe);
             document.getElementById("results").hidden = false;
+            if (typeof fbq === "function") {
+              if (!leadTracked) {
+                leadTracked = true;
+                fbq("track", "Lead");
+              }
+              fbq("trackCustom", "MatchComplete");
+            }
             document.getElementById("results-title").focus();
           } catch (err) {
             setStatus("Something went wrong. Please check your connection and try again.", true);

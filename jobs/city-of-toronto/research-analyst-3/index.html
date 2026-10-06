@@ -31,9 +31,7 @@
     n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
     function load(){if(load.done)return;load.done=!0;
     s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
-    function arm(){if(f.requestIdleCallback)f.requestIdleCallback(load,{timeout:2000});
-    else f.setTimeout(load,1)}
-    if(b.readyState==='complete')arm();else f.addEventListener('load',arm)
+    if(b.readyState==='complete')load();else f.addEventListener('load',load)
     }(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
     fbq('init', '4654096711502773');

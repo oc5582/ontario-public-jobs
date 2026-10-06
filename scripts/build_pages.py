@@ -44,7 +44,7 @@ META_DESCRIPTION = (
     "public employers in Toronto and the GTA, each hiring on its own website. "
     "Their openings, collected in one place."
 )
-H1 = "Government jobs in Toronto and the GTA"
+H1 = "Independent job board for government jobs in Toronto and the GTA"
 SUBHEAD = (
     "City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 60 other "
     "public employers in Toronto and the GTA."
@@ -423,8 +423,9 @@ def pixel_snippet() -> str:
         return ""
     safe_js = js_quote(pixel_id)
     safe_url = escape(pixel_id, quote=True)
-    # The stub queues init, PageView, Lead, and ApplyClick immediately.
-    # fbevents.js is inserted after load, on idle, and then drains that queue.
+    # The stub queues init, PageView, Lead, ApplyClick, and MatchComplete
+    # immediately. fbevents.js is inserted on the window load event and then
+    # drains that queue, so calls made before the script arrives are not dropped.
     return f"""    <!-- Meta Pixel Code -->
     <script>
     !function(f,b,e,v,n,t,s)
@@ -434,9 +435,7 @@ def pixel_snippet() -> str:
     n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
     function load(){{if(load.done)return;load.done=!0;
     s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}}
-    function arm(){{if(f.requestIdleCallback)f.requestIdleCallback(load,{{timeout:2000}});
-    else f.setTimeout(load,1)}}
-    if(b.readyState==='complete')arm();else f.addEventListener('load',arm)
+    if(b.readyState==='complete')load();else f.addEventListener('load',load)
     }}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
     fbq('init', '{safe_js}');
@@ -2025,7 +2024,7 @@ def render_info_page(
 
 
 def render_privacy_page() -> str:
-    body = """          <p>Last updated: October 4, 2026</p>
+    body = """          <p>Last updated: October 5, 2026</p>
           <p>PublicJobs.ca is an independent job board. It is not affiliated with any government or with any employer listed on the site. This page explains what personal information we collect, why, and how you can control it.</p>
           <h2>Who we are</h2>
           <p>PublicJobs.ca is operated by Osama Chaudhary, 65 Thorncliffe Park Drive, Apartment 603, Toronto, Ontario M4H 1L2, Canada. Contact: <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>.</p>
@@ -2040,15 +2039,22 @@ def render_privacy_page() -> str:
             <li>your answer to the optional question about paying for alerts, if you choose to answer</li>
           </ul>
           <p>We use this only to send you job alert emails from PublicJobs.ca and to understand interest in the service. We do not sell or rent your information, and we do not share it with employers.</p>
-          <h2>Resume match</h2>
-          <p>If you use the resume match tool, your resume is read to find matches and is not stored. We keep only a one-way code made from your email address to count your free uses.</p>
+          <h2>Resume matching</h2>
+          <p>If you use resume matching, we use your resume only to find matching jobs.</p>
+          <p>You can upload a PDF or Word file, or paste the text. The file stays on your device. The page reads the text in your browser and does not upload the file. For a PDF, it reads the first 10 pages. We send that text, your email address, and your agreement to job alert emails to our matching service. We cut the text off at 15,000 characters.</p>
+          <p>We use the text only to compare your experience with the current openings. We do not keep the file or the text. The text stays in memory while the match runs, then we discard it. We do not save it, and we do not write it to our logs. If matching fails, the log is a short error message, not your resume.</p>
+          <p>Cloudflare Workers AI processes the text to suggest matches. Cloudflare runs Workers and Workers AI on its global network, so this processing may happen outside Canada. Cloudflare does not keep your resume text after the match. It does not share it with other customers or use it to train AI models. We send the matches back to your browser. We do not store the matches.</p>
+          <p>We do not sell resumes or share them with employers.</p>
+          <p>To count your 3 free matches, we store a one-way code made from your email address, and a count, in Cloudflare D1. We also store a one-way code made from your IP address, and a count. We do not store the email address or the IP address itself in that database, and we do not store a match history. Those counts are not deleted on their own.</p>
+          <p>Resume matching also signs you up for job alert emails. We pass your email address to our signup service, which adds you to the mailing list and sends the welcome email, as described under Email alerts. The resume text is not part of that signup.</p>
+          <p>You can ask us to delete your resume data and match history by emailing <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>. We do not keep the resume file, the resume text, or the match results. We can delete the usage counts and remove your email alert contact.</p>
           <h2>Advertising and measurement</h2>
           <p>We use the Meta Pixel, a tool from Meta Platforms, Inc., to measure how well our ads on Facebook and Instagram work. When you visit PublicJobs.ca, the Meta Pixel may use cookies and similar technology to collect information such as the pages you view, whether you signed up for alerts, whether you clicked through to an employer's site, and technical details about your browser and device. Meta may use this information as described in its own privacy policy (<a href="https://facebook.com/privacy/policy">facebook.com/privacy/policy</a>). We do not send your email address to Meta. You can control ad personalization in your Facebook and Instagram ad settings, and you can block or delete cookies in your browser settings.</p>
           <h2>Site analytics and fonts</h2>
           <p>We use Cloudflare Web Analytics to count visits. It uses no cookies and does not track you across sites. It records things like the page you visited, the referring site, your browser, and your country.</p>
           <p>Our fonts are hosted on PublicJobs.ca itself, so loading them does not send your information to Google or any other font service.</p>
           <h2>Service providers</h2>
-          <p>We use trusted service providers to run this site and our emails: Cloudflare (runs the signup form), Resend (stores the mailing list and sends the emails), and Meta (ad measurement, described above). These providers may store information outside Canada, including in the United States, where it may be subject to local laws.</p>
+          <p>We use trusted service providers to run this site and our emails: Cloudflare (runs the signup form, matches resumes with Workers AI, and stores usage counts in D1), Resend (stores the mailing list and sends the emails), and Meta (ad measurement, described above). Cloudflare runs Workers and Workers AI on its global network, so resume matching may be processed outside Canada. These counts are stored by Cloudflare in eastern North America, which may be in the United States. These providers may store information outside Canada, including in the United States, where it may be subject to local laws.</p>
           <h2>Unsubscribing</h2>
           <p>Every alert email includes a one-click unsubscribe link. You can also email <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a> and we will remove you.</p>
           <h2>How long we keep it</h2>
@@ -2209,6 +2215,7 @@ MATCH_MAIN = """      <h1>Match your resume</h1>
 
         <fieldset>
           <legend>2. Your resume</legend>
+          <p class="hint">We use your resume only to find matching jobs. <a href="/privacy/">Privacy policy</a></p>
           <label for="resume-file">Upload a PDF or Word file</label>
           <input type="file" id="resume-file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
           <p class="hint" id="file-status" aria-live="polite">Your file stays on your device. Only the text is read.</p>
@@ -2253,6 +2260,7 @@ MATCH_SCRIPT = """    <script>
         var statusEl = document.getElementById("status");
         var btn = document.getElementById("submit-btn");
         var fileText = "";
+        var leadTracked = false;
 
         function setStatus(msg, isError) {
           statusEl.textContent = msg;
@@ -2344,6 +2352,13 @@ MATCH_SCRIPT = """    <script>
             render("strong-list", "strong-wrap", data.strong);
             render("maybe-list", "maybe-wrap", data.maybe);
             document.getElementById("results").hidden = false;
+            if (typeof fbq === "function") {
+              if (!leadTracked) {
+                leadTracked = true;
+                fbq("track", "Lead");
+              }
+              fbq("trackCustom", "MatchComplete");
+            }
             document.getElementById("results-title").focus();
           } catch (err) {
             setStatus("Something went wrong. Please check your connection and try again.", true);
