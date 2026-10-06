@@ -2261,6 +2261,7 @@ MATCH_SCRIPT = """    <script>
         var statusEl = document.getElementById("status");
         var btn = document.getElementById("submit-btn");
         var fileText = "";
+        var leadTracked = false;
 
         function setStatus(msg, isError) {
           statusEl.textContent = msg;
@@ -2352,6 +2353,13 @@ MATCH_SCRIPT = """    <script>
             render("strong-list", "strong-wrap", data.strong);
             render("maybe-list", "maybe-wrap", data.maybe);
             document.getElementById("results").hidden = false;
+            if (typeof fbq === "function") {
+              if (!leadTracked) {
+                leadTracked = true;
+                fbq("track", "Lead");
+              }
+              fbq("trackCustom", "MatchComplete");
+            }
             document.getElementById("results-title").focus();
           } catch (err) {
             setStatus("Something went wrong. Please check your connection and try again.", true);
