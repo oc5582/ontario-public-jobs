@@ -44,7 +44,7 @@ META_DESCRIPTION = (
     "public employers in Toronto and the GTA, each hiring on its own website. "
     "Their openings, collected in one place."
 )
-H1 = "Government jobs in Toronto and the GTA"
+H1 = "Independent job board for government jobs in Toronto and the GTA"
 SUBHEAD = (
     "City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 60 other "
     "public employers in Toronto and the GTA."
