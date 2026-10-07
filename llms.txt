@@ -6,7 +6,7 @@ PublicJobs.ca lists current openings collected from employers' public career sit
 
 A posting whose closing date has passed stays on its own page, marked closed, and is left off the homepage, /jobs/, and the employer pages.
 
-Listings are refreshed every weekday and published automatically. scripts/build_pages.py rebuilds the static pages from data/listings.json. The listings on the site now were fetched between October 5, 2026 and October 6, 2026. Contact: hello@publicjobs.ca.
+Listings are refreshed every weekday and published automatically. scripts/build_pages.py rebuilds the static pages from data/listings.json. The listings on the site now were fetched between October 6, 2026 and October 7, 2026. Contact: hello@publicjobs.ca.
 
 ## Pages
 
