@@ -1,157 +1,131 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://publicjobs.ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/privacy/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/about/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/faq/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/terms/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/match/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/2/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/3/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/4/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/5/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/6/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/7/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/8/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/9/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/10/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/11/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/12/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/13/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/14/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/15/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/16/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/17/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/18/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/19/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/20/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/21/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/22/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/23/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/24/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/25/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/26/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/27/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/28/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/29/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/30/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/page/31/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/alcohol-and-gaming-commission-of-ontario-agco/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/art-gallery-of-ontario/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/bank-of-canada/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/business-development-bank-of-canada-bdc/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/canada-development-investment-corporation-cdev/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/canada-infrastructure-bank/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/canada-mortgage-and-housing-corporation-cmhc/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/canada-pension-plan-investment-board-cppib/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/canada-post-corporation/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/canadian-broadcasting-corporation-cbc-radio-canada/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/chartered-professional-accountants-of-ontario-cpa-ontario/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/city-of-brampton/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/city-of-burlington/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/city-of-markham/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/city-of-mississauga/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/city-of-richmond-hill/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/city-of-toronto/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/createto/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/exhibition-place-board-of-governors-canadian-national-exhibition-association/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/export-development-canada-edc/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/farm-credit-canada/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/financial-services-regulatory-authority-of-ontario-fsra/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/home-construction-regulatory-authority-hcra/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/hydro-one-limited/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/independent-electricity-system-operator-ieso/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/infrastructure-ontario/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/investment-management-corporation-of-ontario-imco/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/law-society-of-ontario/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/liquor-control-board-of-ontario-lcbo/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/metrolinx/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/metropolitan-toronto-convention-centre-corporation/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/municipality-of-clarington/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/ontario-cannabis-retail-corporation-ontario-cannabis-store/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/ontario-centre-of-innovation/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/ontario-educational-communications-authority-tvo/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/ontario-energy-board/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/ontario-french-language-educational-communications-authority-tfo/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/ontario-health/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/ontario-lottery-and-gaming-corporation-olg/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/ontario-power-generation-inc/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/ontario-securities-commission/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/public-health-ontario-ontario-agency-for-health-protection-and-promotion/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/regional-municipality-of-halton/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/royal-ontario-museum/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/technical-standards-and-safety-authority-tssa/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/telefilm-canada/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/toronto-and-region-conservation-authority/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/toronto-atmospheric-fund/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/toronto-community-housing-corporation/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/toronto-hydro-corporation/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/toronto-parking-authority/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/toronto-police-service/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/toronto-transit-commission/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/toronto-zoo-board-of-management/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/town-of-ajax/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/town-of-aurora/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/town-of-east-gwillimbury/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/town-of-halton-hills/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/town-of-milton/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/town-of-oakville/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/town-of-whitby/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/township-of-king/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/township-of-scugog/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/township-of-uxbridge/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/workplace-safety-and-insurance-appeals-tribunal/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/employers/workplace-safety-and-insurance-board/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/city-of-toronto/administrative-assistant-2/</loc><lastmod>2026-09-24</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/city-of-toronto/application-tech-supp-spec-1/</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/regional-municipality-of-halton/change-management-specialist-transformation-sap/</loc><lastmod>2026-10-01</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/municipality-of-clarington/coordinator-projects-capital-planning/</loc><lastmod>2026-09-24</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/city-of-brampton/engineering-technologist/</loc><lastmod>2026-09-17</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/city-of-toronto/enterprise-technical-support-specialist-technology-asset-management/</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/city-of-mississauga/forestry-management-assistant/</loc><lastmod>2026-09-24</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/city-of-brampton/marriage-officiant/</loc><lastmod>2026-09-24</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/city-of-toronto/nutrition-manager/</loc><lastmod>2026-09-24</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/township-of-scugog/seasonal-dayshift-operator/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/town-of-oakville/supervisor-works-contracted-services/</loc><lastmod>2026-09-17</lastmod></url>
+  <url><loc>https://publicjobs.ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/privacy/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/about/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/faq/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/terms/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/match/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/2/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/3/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/4/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/5/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/6/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/7/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/8/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/9/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/10/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/11/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/12/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/13/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/14/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/15/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/16/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/17/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/18/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/19/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/20/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/21/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/22/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/23/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/24/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/25/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/26/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/27/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/28/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/29/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/30/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/page/31/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/alcohol-and-gaming-commission-of-ontario-agco/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/art-gallery-of-ontario/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/bank-of-canada/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/business-development-bank-of-canada-bdc/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/canada-development-investment-corporation-cdev/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/canada-infrastructure-bank/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/canada-mortgage-and-housing-corporation-cmhc/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/canada-pension-plan-investment-board-cppib/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/canada-post-corporation/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/canadian-broadcasting-corporation-cbc-radio-canada/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/chartered-professional-accountants-of-ontario-cpa-ontario/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/city-of-brampton/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/city-of-burlington/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/city-of-markham/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/city-of-mississauga/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/city-of-richmond-hill/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/city-of-toronto/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/createto/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/exhibition-place-board-of-governors-canadian-national-exhibition-association/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/export-development-canada-edc/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/farm-credit-canada/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/financial-services-regulatory-authority-of-ontario-fsra/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/home-construction-regulatory-authority-hcra/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/hydro-one-limited/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/independent-electricity-system-operator-ieso/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/infrastructure-ontario/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/investment-management-corporation-of-ontario-imco/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/law-society-of-ontario/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/liquor-control-board-of-ontario-lcbo/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/metrolinx/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/metropolitan-toronto-convention-centre-corporation/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/municipality-of-clarington/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/ontario-cannabis-retail-corporation-ontario-cannabis-store/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/ontario-centre-of-innovation/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/ontario-educational-communications-authority-tvo/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/ontario-energy-board/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/ontario-french-language-educational-communications-authority-tfo/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/ontario-health/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/ontario-lottery-and-gaming-corporation-olg/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/ontario-power-generation-inc/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/ontario-securities-commission/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/public-health-ontario-ontario-agency-for-health-protection-and-promotion/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/regional-municipality-of-halton/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/royal-ontario-museum/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/technical-standards-and-safety-authority-tssa/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/telefilm-canada/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/toronto-and-region-conservation-authority/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/toronto-atmospheric-fund/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/toronto-community-housing-corporation/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/toronto-hydro-corporation/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/toronto-parking-authority/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/toronto-police-service/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/toronto-transit-commission/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/toronto-zoo-board-of-management/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/town-of-ajax/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/town-of-aurora/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/town-of-east-gwillimbury/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/town-of-halton-hills/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/town-of-milton/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/town-of-oakville/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/town-of-whitby/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/township-of-king/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/township-of-scugog/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/township-of-uxbridge/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/workplace-safety-and-insurance-appeals-tribunal/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/employers/workplace-safety-and-insurance-board/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/animal-control-officer-1/</loc><lastmod>2026-09-26</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/business-development-bank-of-canada-bdc/associate-growth-venture-fund/</loc><lastmod>2026-09-25</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-health/administrative-assistant/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-brampton/analyst-recreation-business-systems/</loc><lastmod>2026-09-28</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/business-prog-solutions-specialist/</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/business-prog-solutions-specialist-full-stack-software-specialist/</loc><lastmod>2026-09-25</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-markham/building-inspector-i-18-months-contract/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-mississauga/co-op-student-traffic-operations/</loc><lastmod>2026-09-27</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/town-of-whitby/equipment-operator-grade-i-truck-driver/</loc><lastmod>2026-09-29</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/town-of-whitby/fire-chief/</loc><lastmod>2026-09-10</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/metrolinx/hr-generalist/</loc><lastmod>2026-09-17</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-richmond-hill/lead-stagehand/</loc><lastmod>2026-09-25</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/metrolinx/manager-customer-protection/</loc><lastmod>2026-09-23</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/policy-development-officer-housing-secretariat/</loc><lastmod>2026-09-24</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-markham/product-owner-ii-1-year-contract/</loc><lastmod>2026-09-28</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/regional-municipality-of-halton/project-manager-iii-engineering-construction-transportation-management/</loc><lastmod>2026-09-25</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/metrolinx/project-manager-traffic-transportation-ontario-line/</loc><lastmod>2026-09-25</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/registered-nurse-ltc/</loc><lastmod>2026-09-24</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-securities-commission/senior-litigation-counsel/</loc><lastmod>2026-09-24</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/workplace-safety-and-insurance-board/senior-software-developer-sharepoint-microsoft-power-apps/</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/city-of-brampton/senior-specialist-hvac/</loc><lastmod>2026-09-18</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-richmond-hill/stagehand/</loc><lastmod>2026-09-25</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/city-of-burlington/supervisor-service-burlington/</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-cannabis-retail-corporation-ontario-cannabis-store/systems-specialist/</loc><lastmod>2026-10-01</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-community-housing-corporation/advisor-it-security-and-risk-management-24110g-itq-0005/</loc><lastmod>2026-09-25</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-community-housing-corporation/associate-development-manager/</loc><lastmod>2026-09-25</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-ajax/crossing-guard-various-locations/</loc><lastmod>2026-09-28</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-ajax/crossing-guard-rover/</loc><lastmod>2026-09-30</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/alcohol-and-gaming-commission-of-ontario-agco/director-people-and-culture-strategy/</loc><lastmod>2026-09-24</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/business-development-bank-of-canada-bdc/manager-senior-manager-portfolio-management/</loc><lastmod>2026-09-28</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-community-housing-corporation/manager-digital-brand-and-design/</loc><lastmod>2026-09-25</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-community-housing-corporation/program-manager-building-security-systems/</loc><lastmod>2026-09-25</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/metrolinx/senior-contract-administrator/</loc><lastmod>2026-09-18</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/farm-credit-canada/senior-data-scientist/</loc><lastmod>2026-09-25</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-community-housing-corporation/senior-financial-analyst-system-transformation/</loc><lastmod>2026-09-25</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/alcohol-and-gaming-commission-of-ontario-agco/senior-human-resources-business-partner/</loc><lastmod>2026-06-26</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-securities-commission/senior-law-clerk/</loc><lastmod>2026-09-23</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-community-housing-corporation/senior-manager-procurement-transformation/</loc><lastmod>2026-09-25</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/metrolinx/senior-privacy-advisor/</loc><lastmod>2026-09-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/farm-credit-canada/senior-technology-auditor/</loc><lastmod>2026-09-25</lastmod></url>
@@ -186,7 +160,7 @@
   <url><loc>https://publicjobs.ca/jobs/business-development-bank-of-canada-bdc/winter-2027-student-thrive-venture-fund/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/accounting-assistant-1-606485317/</loc><lastmod>2026-09-25</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/administrative-assistant-to-director/</loc><lastmod>2026-09-25</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/township-of-scugog/arena-attendant-1/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/township-of-scugog/arena-attendant-1/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/construction-coordinator/</loc><lastmod>2026-09-24</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/infrastructure-ontario/capital-project-risk-management-specialist/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/metrolinx/co-op-student-deputy-chief-financial-officer-s-office/</loc><lastmod>2026-09-28</lastmod></url>
@@ -246,7 +220,7 @@
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/weighscale-operator-606617117/</loc><lastmod>2026-09-30</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-community-housing-corporation/workplace-investigator/</loc><lastmod>2026-09-24</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-mississauga/application-developer-it-java-cloud-applications/</loc><lastmod>2026-10-03</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/metrolinx/apprentice-coach-technician/</loc><lastmod>2026-10-05</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/metrolinx/apprentice-coach-technician-117534/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-burlington/building-inspector/</loc><lastmod>2026-09-24</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/business-development-bank-of-canada-bdc/client-support-coordinator-toronto-18-month-contract/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-securities-commission/compliance-accountants-regulatory-examinations/</loc><lastmod>2026-09-16</lastmod></url>
@@ -277,16 +251,16 @@
   <url><loc>https://publicjobs.ca/jobs/city-of-mississauga/supervisor-traffic-planning/</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-mississauga/supervisor-transit-vehicle-maintenance/</loc><lastmod>2026-09-19</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-whitby/temporary-building-permits-clerk-anticipated-for-up-3-months/</loc><lastmod>2026-10-06</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/town-of-halton-hills/tree-planting-project-technician-contract/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/town-of-halton-hills/tree-planting-project-technician-contract/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-mississauga/youth-engagement-coordinator/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/business-development-bank-of-canada-bdc/account-manager-financing/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/business-development-bank-of-canada-bdc/business-advisor-bdc-advisory-services-ops-efficiency-strategy/</loc><lastmod>2026-10-02</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/business-development-bank-of-canada-bdc/client-support-coordinator-virtual-business-centre-across-canada/</loc><lastmod>2026-10-02</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/business-development-bank-of-canada-bdc/client-support-coordinator-virtual-business-centre-across-canada/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/hr-consultant-health-rehab/</loc><lastmod>2026-09-11</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/farm-credit-canada/risk-specialist-risk-reporting/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/business-development-bank-of-canada-bdc/senior-business-advisor-business-strategy-toronto/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/telefilm-canada/senior-director-audience-strategies/</loc><lastmod>2026-09-25</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-securities-commission/senior-legal-counsel/</loc><lastmod>2026-10-02</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-securities-commission/senior-legal-counsel-jr100922/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-health/senior-specialist-quality-improvement/</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-milton/supervisor-accounting/</loc><lastmod>2026-09-25</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/business-transformation-consultant/</loc><lastmod>2026-10-02</lastmod></url>
@@ -318,6 +292,7 @@
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/accounting-assistant-1-606710417/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-brampton/associate-payroll-pension/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/infrastructure-ontario/accounts-receivable-analyst/</loc><lastmod>2026-10-07</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/metrolinx/apprentice-coach-technician-117211/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/infrastructure-ontario/capital-projects-cost-control-manager/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-community-housing-corporation/development-assistant/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/infrastructure-ontario/digital-media-specialist/</loc><lastmod>2026-10-07</lastmod></url>
@@ -335,8 +310,8 @@
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/public-health-nurse-606689117/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-brampton/programmer-generalist/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-whitby/receptionist-cashier-arenas/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/city-of-toronto/systems-integrator-1-606687417/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/systems-integrator-1-606701117/</loc><lastmod>2026-10-02</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/city-of-toronto/systems-integrator-1-606687417/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/systems-integrator-1-servicenow-developer/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-brampton/senior-advisor-finance-administration/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-ajax/temporary-full-time-customer-service-representative-recreation-3-month-contract/</loc><lastmod>2026-10-06</lastmod></url>
@@ -361,8 +336,11 @@
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/revenue-clerk-2/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/senior-change-management-consultant/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/senior-enterprise-technology-procurement-contract-specialist/</loc><lastmod>2026-10-06</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/town-of-whitby/senior-building-inspector/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/town-of-whitby/senior-mechanical-inspector/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-securities-commission/senior-security-architect/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-community-housing-corporation/site-lead-program-development-and-evaluation-mlse/</loc><lastmod>2026-10-06</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/city-of-mississauga/co-op-student-energy-management/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-and-region-conservation-authority/education-interpreter-site-representative/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-community-housing-corporation/legal-counsel-litigation-compliance-administrative-law/</loc><lastmod>2026-10-07</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/program-coordinator-technology-services/</loc><lastmod>2026-10-07</lastmod></url>
@@ -373,31 +351,47 @@
   <url><loc>https://publicjobs.ca/jobs/toronto-community-housing-corporation/senior-financial-analyst-grants/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/spatial-specialist-productivity-and-automation-specialist/</loc><lastmod>2026-10-07</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-mississauga/technologist-building-services/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/business-development-bank-of-canada-bdc/analyst-know-your-client-toronto/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/city-of-mississauga/co-op-student-facilities-maintenance/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-community-housing-corporation/data-entry-clerk-accounts-payable/</loc><lastmod>2026-10-07</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/environmental-compliance-officer/</loc><lastmod>2026-10-07</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-health/lead-clinical-programs-and-enterprise-planning/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/farm-credit-canada/manager-internal-audit/</loc><lastmod>2026-10-05</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/city-of-toronto/public-health-nurse-606881417/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/city-of-toronto/public-health-nurse-606881117/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/metrolinx/project-manager-adjacent-construction-review-adjacent-development/</loc><lastmod>2026-10-07</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/city-of-toronto/registered-nurse-ltc-bilingual-french-english/</loc><lastmod>2026-06-17</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/city-of-toronto/registered-nurse-ltc-bilingual-french-english/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-brampton/senior-advisor-museums-collections-integration/</loc><lastmod>2026-10-03</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/metrolinx/senior-advisor-sse/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-markham/senior-financial-analyst-erp-support-analyst-1-year-contract/</loc><lastmod>2026-10-06</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-health/senior-product-specialist-product-implementation/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/city-of-mississauga/specialist-systems-it/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/metrolinx/station-ambassador-pool-115318/</loc><lastmod>2026-10-01</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-securities-commission/business-and-market-data-analyst/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-lottery-and-gaming-corporation-olg/director-it-business-management/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/farm-credit-canada/director-ethics-regulatory-compliance-privacy-bilingual/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/alcohol-and-gaming-commission-of-ontario-agco/director-people-and-culture-strategy/</loc><lastmod>2026-09-24</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-securities-commission/investigator-ii/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-and-region-conservation-authority/law-clerk/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-securities-commission/senior-forensic-accountant/</loc><lastmod>2026-10-07</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/alcohol-and-gaming-commission-of-ontario-agco/senior-human-resources-business-partner/</loc><lastmod>2026-06-26</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-securities-commission/senior-legal-counsel-jr100875/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-burlington/supervisor-facilities-asset-management/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-ajax/temporary-senior-building-inspector/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/manager-communications-issues-management/</loc><lastmod>2026-09-30</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-health/manager-planning-and-implementation/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/metrolinx/senior-systems-analyst-compliance-oversight/</loc><lastmod>2026-09-29</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/township-of-uxbridge/equipment-operator-contract-position/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/city-of-toronto/complementary-care-assistant/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/city-of-toronto/engineer/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/township-of-uxbridge/equipment-operator-contract-position/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-brampton/firefighter-probationary/</loc><lastmod>2026-10-06</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/city-of-toronto/project-manager-ecs/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-richmond-hill/seasonal-labourer-parks/</loc><lastmod>2026-09-11</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/metrolinx/senior-i-it-project-manager/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/metrolinx/senior-legal-counsel/</loc><lastmod>2026-09-28</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/metrolinx/senior-manager-internal-audit-it-payments/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/metrolinx/senior-software-developer/</loc><lastmod>2026-10-05</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/city-of-brampton/senior-specialist-hvac/</loc><lastmod>2026-09-18</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/infrastructure-ontario/strategy-client-advisor-fixed-term-12-months/</loc><lastmod>2026-09-30</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/farm-credit-canada/student-fcc-capital/</loc><lastmod>2026-09-15</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/regional-municipality-of-halton/co-op-student-water-wastewater-treatment/</loc><lastmod>2026-10-06</lastmod></url>
@@ -406,11 +400,12 @@
   <url><loc>https://publicjobs.ca/jobs/ontario-health/chief-communications-and-corporate-affairs-officer/</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-east-gwillimbury/firefighter/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-health/lead-health-equity-and-priority-populations-indigenous/</loc><lastmod>2026-10-05</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/township-of-scugog/manager-human-resources/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/township-of-scugog/manager-human-resources/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/business-development-bank-of-canada-bdc/senior-commercial-account-manager-mississauga/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-brampton/deck-supervisor/</loc><lastmod>2026-10-03</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/metrolinx/senior-manager-go-expansion-operations/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-ajax/temporary-senior-financial-analyst-accounting/</loc><lastmod>2026-10-07</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/town-of-ajax/2027-camp-counsellor-for-march-break-camp/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-brampton/bartender-cultural-services/</loc><lastmod>2026-10-03</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-richmond-hill/director-corporate-services/</loc><lastmod>2026-10-04</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-oakville/drop-in-monitor/</loc><lastmod>2026-08-14</lastmod></url>
@@ -424,95 +419,92 @@
   <url><loc>https://publicjobs.ca/jobs/toronto-community-housing-corporation/dispatcher-eligibility-list/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-east-gwillimbury/health-active-living-plaza-halp-events-staff/</loc><lastmod>2026-08-31</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/metrolinx/rail-traffic-controller-talent-pool/</loc><lastmod>2026-09-15</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/town-of-oakville/assistant-town-solicitor/</loc><lastmod>2026-10-07</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-brampton/outdoor-skate-instructor/</loc><lastmod>2026-10-03</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/metrolinx/station-ambassador-pool-115316/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-milton/senior-economic-development-officer/</loc><lastmod>2026-10-05</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/agent-de-rel-ve-de-livraison-des-colis-1-etobicoke-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/agent-de-rel-ve-de-livraison-des-colis-1-scarborough-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/agent-de-rel-ve-de-livraison-des-colis-1-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/agent-gestion-des-risques-r-clamations-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/asset-investment-analyst-contract-18-months-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/associate-financial-analyst-capital-planning-reporting-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-mortgage-and-housing-corporation-cmhc/bilingual-account-representative-client-relations-multi-unit-toronto/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-mortgage-and-housing-corporation-cmhc/bilingual-manager-securitization-operations-toronto/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/building-system-technician-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/category-analyst-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/civil-maintainer-whitby-on-ca-l1n-9x1/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/college-co-op-student-area-distribution-engineering-technician-4-months-winter-2/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/commis-des-postes-1-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/commis-des-postes-1-1-1-1-1-1-1-1-1-1-1-1-1-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/customer-energy-management-partnerships-analyst-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/bank-of-canada/developer-ottawa-or-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/bank-of-canada/developer-senior-developer-payments-and-tokenization-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/dsgn-engineer-specialist-civil-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/bank-of-canada/d-veloppeuse-d-veloppeur-ottawa-ou-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/bank-of-canada/d-veloppeuse-d-veloppeur-ou-d-veloppeuse-principale-d-veloppeur-principal-paieme/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/engineer-toronto-on-ca-574239717/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/engineer-toronto-on-ca-606479917/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/environmental-advisor-pickering-on-ca-l1v-2r5/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/executive-administrative-assistant-oshawa-on-ca-l1h-8w8/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/executive-administrator-corporate-affairs-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/executive-producer-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/facteur-rural-et-suburbain-de-rel-ve-en-disponibilit-1-1-ajax-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/five-5-certified-power-cable-person-apprentices-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-mortgage-and-housing-corporation-cmhc/gestionnaire-bilingue-op-rations-de-titrisation-toronto/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/hr-business-partner-contract-up-to-14-months-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/hr-business-partner-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-markham/handball-instructor-thornhill-community-centre/</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/industrial-electrician-instrumentation-control-apprentice-durham-region-pickerin/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/industrial-millwright-apprentice-durham-region-pickering-on-ca-l1v-2r5/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/large-customer-and-key-accounts-consultant-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/lead-corporate-performance-reporting-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/mail-service-courier-class-3-5-or-class-d-driver-mississauga-mississauga-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/mail-service-courier-class-3-5-or-class-d-driver-scarborough-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/manager-customer-care-markham-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/manager-investment-operations-toronto-on-ca-m5g-1z5/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/manager-customer-energy-management-large-customers-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/manager-customer-energy-management-residential-small-commercial-programs-toronto/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/manager-project-execution-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/manager-stations-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/motion-designer-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/officer-fraud-intelligence-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/operations-analyst-12-month-contract-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/parcel-delivery-on-call-etobicoke-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/parcel-delivery-on-call-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/parcel-delivery-on-call-scarborough-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/postal-clerk-toronto-on-ca-604935017/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/postal-clerk-toronto-on-ca-604934617/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/principal-solution-architect-oshawa-on-ca-l1h-8w8/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/project-leader-oshawa-on-ca-l1h-8w8/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/real-estate-associate-markham-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-mortgage-and-housing-corporation-cmhc/repr-sentant-de-comptes-bilingue-relations-clients-immeubles-collectifs-toronto/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/rural-and-suburban-mail-carrier-on-call-relief-ajax-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/senior-advisor-financial-planning-analysis-fp-a-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/senior-cyber-security-consultant-oshawa-on-ca-l1h-8w8/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/senior-financial-analyst-oshawa-on-ca-l1h-8w8/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/senior-investment-analyst-toronto-on-ca-m5g-1z5/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/senior-manager-capital-projects-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/senior-technical-engineer-officer-mechanical-engineering-oshawa-on-ca-l1h-8w8/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-mortgage-and-housing-corporation-cmhc/specialist-analytics-and-reporting-toronto/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-mortgage-and-housing-corporation-cmhc/sp-cialiste-analytique-et-rapports-toronto/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/superviseur-rel-ve-traitement-du-courrier-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/supervisor-letter-carrier-or-plant-operations-term-developmental-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/truck-driver-radioactive-material-transport-whitby-on-ca-l1n-9x1/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-corporate-real-estate-12-months-winter-2027-markham-mar/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-customer-experience-analyst-12-months-winter-2027-toron/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-distribution-operations-management-12-months-winter-202/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-distribution-planning-12-months-winter-2027-toronto-tor/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-employee-experience-associate-8-months-winter-2027-toro/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-environmental-reporting-data-management-12months-winter/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-facilities-operations-12-months-winter-2027-markham-mar/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-key-accounts-business-analyst-winter-2027-toronto-toron/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-planning-12-months-winter-2027-toronto-toronto-on-ca/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-real-estate-12-months-winter-2027-markham-ma-1291566347/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-real-estate-12-months-winter-2027-markham-ma-1291566047/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-real-estate-12-months-winter-2027-markham-ma-1291566147/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-strategic-finance-12-months-winter-2027-toronto-toronto/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-telecom-operations-support-8-12-months-winter-2027-toro/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-equipment-engineering-and-transmission-asset-planning-1/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-customer-operations-innovation-analyst-12-months-winter/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-assistant-load-analyst-16-months-winter-2027-toronto-to/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/winter-2027-co-op-communications-indigenous-relations-media-design-durham-region/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/agent-de-rel-ve-de-livraison-des-colis-1-etobicoke-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/agent-de-rel-ve-de-livraison-des-colis-1-scarborough-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/agent-de-rel-ve-de-livraison-des-colis-1-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/asset-investment-analyst-contract-18-months-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/associate-financial-analyst-capital-planning-reporting-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-mortgage-and-housing-corporation-cmhc/bilingual-account-representative-client-relations-multi-unit-toronto/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/building-system-technician-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/category-analyst-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/civil-maintainer-whitby-on-ca-l1n-9x1/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/college-co-op-student-area-distribution-engineering-technician-4-months-winter-2/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/commis-des-postes-1-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/commis-des-postes-1-1-1-1-1-1-1-1-1-1-1-1-1-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/customer-energy-management-partnerships-analyst-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/bank-of-canada/developer-ottawa-or-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/bank-of-canada/developer-senior-developer-payments-and-tokenization-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/dsgn-engineer-specialist-civil-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/bank-of-canada/d-veloppeuse-d-veloppeur-ottawa-ou-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/bank-of-canada/d-veloppeuse-d-veloppeur-ou-d-veloppeuse-principale-d-veloppeur-principal-paieme/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/energy-market-affairs-supervisor-toronto-on-ca-m5g-1z5/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/engineer-toronto-on-ca-574239717/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/engineer-toronto-on-ca-606479917/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/environmental-advisor-pickering-on-ca-l1v-2r5/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/executive-administrative-assistant-oshawa-on-ca-l1h-8w8/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/executive-administrator-corporate-affairs-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/executive-producer-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/facteur-rural-et-suburbain-de-rel-ve-en-disponibilit-1-1-ajax-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/five-5-certified-power-cable-person-apprentices-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/hr-business-partner-contract-up-to-14-months-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/hr-business-partner-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/industrial-electrician-instrumentation-control-apprentice-durham-region-pickerin/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/industrial-millwright-apprentice-durham-region-pickering-on-ca-l1v-2r5/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/large-customer-and-key-accounts-consultant-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/lead-corporate-performance-reporting-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/mail-service-courier-class-3-5-or-class-d-driver-mississauga-mississauga-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/mail-service-courier-class-3-5-or-class-d-driver-scarborough-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/manager-customer-care-markham-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/manager-customer-energy-management-large-customers-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/manager-customer-energy-management-residential-small-commercial-programs-toronto/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/manager-project-execution-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/manager-stations-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/motion-designer-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/operations-analyst-12-month-contract-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/parcel-delivery-on-call-etobicoke-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/parcel-delivery-on-call-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/parcel-delivery-on-call-scarborough-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/postal-clerk-toronto-on-ca-604935017/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/postal-clerk-toronto-on-ca-604934617/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/principal-solution-architect-oshawa-on-ca-l1h-8w8/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/project-leader-oshawa-on-ca-l1h-8w8/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/real-estate-associate-markham-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-mortgage-and-housing-corporation-cmhc/repr-sentant-de-comptes-bilingue-relations-clients-immeubles-collectifs-toronto/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/rural-and-suburban-mail-carrier-on-call-relief-ajax-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/senior-advisor-financial-planning-analysis-fp-a-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/senior-cyber-security-consultant-oshawa-on-ca-l1h-8w8/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/senior-financial-analyst-oshawa-on-ca-l1h-8w8/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/senior-investment-analyst-toronto-on-ca-m5g-1z5/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-hydro-corporation/senior-manager-capital-projects-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/senior-technical-engineer-officer-mechanical-engineering-oshawa-on-ca-l1h-8w8/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-mortgage-and-housing-corporation-cmhc/specialist-analytics-and-reporting-toronto/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-mortgage-and-housing-corporation-cmhc/sp-cialiste-analytique-et-rapports-toronto/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/structural-design-engineer-intermediate-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/superviseur-rel-ve-traitement-du-courrier-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-post-corporation/supervisor-letter-carrier-or-plant-operations-term-developmental-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-power-generation-inc/truck-driver-radioactive-material-transport-whitby-on-ca-l1n-9x1/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-corporate-real-estate-12-months-winter-2027-markham-mar/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-customer-experience-analyst-12-months-winter-2027-toron/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-distribution-operations-management-12-months-winter-202/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-distribution-planning-12-months-winter-2027-toronto-tor/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-employee-experience-associate-8-months-winter-2027-toro/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-environmental-reporting-data-management-12months-winter/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-facilities-operations-12-months-winter-2027-markham-mar/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-key-accounts-business-analyst-winter-2027-toronto-toron/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-planning-12-months-winter-2027-toronto-toronto-on-ca/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-real-estate-12-months-winter-2027-markham-ma-1291566347/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-real-estate-12-months-winter-2027-markham-ma-1291566047/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-real-estate-12-months-winter-2027-markham-ma-1291566147/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-strategic-finance-12-months-winter-2027-toronto-toronto/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-telecom-operations-support-8-12-months-winter-2027-toro/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-equipment-engineering-and-transmission-asset-planning-1/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-customer-operations-innovation-analyst-12-months-winter/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/hydro-one-limited/university-co-op-student-assistant-load-analyst-16-months-winter-2027-toronto-to/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-burlington/specialized-program-instructor-rcc-bootcamp-part-time/</loc><lastmod>2026-09-23</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-burlington/specialized-program-instructor-rcc-tai-chi-qi-gong-part-time/</loc><lastmod>2026-09-23</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/metrolinx/customer-protection-officer-special-constable-talent-pool/</loc><lastmod>2026-09-24</lastmod></url>
@@ -529,6 +521,7 @@
   <url><loc>https://publicjobs.ca/jobs/toronto-parking-authority/maintenance-grade-2-nights/</loc><lastmod>2026-09-16</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/royal-ontario-museum/research-assistant-japan-gallery-24-month-contract/</loc><lastmod>2026-09-16</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/royal-ontario-museum/senior-conservator-18-month-contract/</loc><lastmod>2026-09-16</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/city-of-mississauga/fitness-instructor/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-richmond-hill/recreation-facility-receptionist/</loc><lastmod>2026-09-11</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-parking-authority/sr-manager-ev-network-development/</loc><lastmod>2026-09-21</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/metrolinx/310t-mechanic-oshawa-various-shifts-44-04-hourly-pool/</loc><lastmod>2026-09-22</lastmod></url>
@@ -583,6 +576,7 @@
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/ai-architect-t-i-telework-hybrid/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/ai-lead-architect-software-and-platforms-architecture-t-i-telework-hybrid/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/workplace-safety-and-insurance-appeals-tribunal/appeal-services-officer/</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/workplace-safety-and-insurance-board/actuarial-associate/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/chartered-professional-accountants-of-ontario-cpa-ontario/adjudicative-tribunals-coordinator-contract/</loc><lastmod>2026-09-30</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/export-development-canada-edc/administrateur-trice-ia-plateforme-m365-copilot-fr-328/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/administration-assistant-scripted-english-services/</loc><lastmod>2026-10-01</lastmod></url>
@@ -591,9 +585,7 @@
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/administrative-specialist-cbc-gem-english-services-1-year-contract-jr00009058/</loc><lastmod>2026-10-07</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/administrative-specialist-cbc-gem-english-services-1-year-contract-open/</loc><lastmod>2026-10-07</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/chartered-professional-accountants-of-ontario-cpa-ontario/admissions-specialist/</loc><lastmod>2026-09-30</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/independent-electricity-system-operator-ieso/advisor-program-performance/</loc><lastmod>2026-09-24</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-energy-board/advisor-consumer-communications/</loc><lastmod>2026-10-02</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-infrastructure-bank/advisor-corporate-communications/</loc><lastmod>2026-07-17</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-energy-board/advisor-engagement/</loc><lastmod>2026-09-25</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-french-language-educational-communications-authority-tfo/agent-e-aux-pr-achats-et-acquisitions-ii/</loc><lastmod>2026-09-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/independent-electricity-system-operator-ieso/analyst-meter-data-management/</loc><lastmod>2026-10-07</lastmod></url>
@@ -601,11 +593,13 @@
   <url><loc>https://publicjobs.ca/jobs/independent-electricity-system-operator-ieso/analyst-solutions-appian-developer/</loc><lastmod>2026-09-25</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-infrastructure-bank/analyst-asset-management-15-month-contract/</loc><lastmod>2026-08-10</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-infrastructure-bank/analyst-business-systems/</loc><lastmod>2026-10-06</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/analyst-expense-operations-8-month-contract/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/analyst-external-funds-operations/</loc><lastmod>2026-09-28</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/analyst-external-portfolio-management-12-month-contract/</loc><lastmod>2026-09-21</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-infrastructure-bank/analyst-investment-risk/</loc><lastmod>2026-09-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-infrastructure-bank/analyst-investments/</loc><lastmod>2026-09-14</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-infrastructure-bank/analyst-investments-bilingual/</loc><lastmod>2026-06-10</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-infrastructure-bank/analyst-investments-internship-indigenous-internship-program/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/analyst-private-alternative-asset-operations-12-month-contract/</loc><lastmod>2026-09-24</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/investment-management-corporation-of-ontario-imco/analyst-real-estate-fixed-term-contract/</loc><lastmod>2026-09-28</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/analyst-strategy-risk-operations-capital-markets-factor-investing-12-month-contr/</loc><lastmod>2026-09-23</lastmod></url>
@@ -627,11 +621,10 @@
   <url><loc>https://publicjobs.ca/jobs/law-society-of-ontario/auditor-spot-audit-remote-toronto/</loc><lastmod>2026-09-16</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/workplace-safety-and-insurance-appeals-tribunal/bilingual-customer-service-representative-designated/</loc><lastmod>2026-09-27</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-educational-communications-authority-tvo/bilingual-education-programs-coordinator-12-month-contract/</loc><lastmod>2026-10-01</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-educational-communications-authority-tvo/bilingual-interactive-illustrator-contract-until-march-2027/</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/law-society-of-ontario/bookkeeper-regulatory-services-hybrid/</loc><lastmod>2026-09-11</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/brand-ambassador-on-call-french-services-on-site/</loc><lastmod>2026-08-30</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/brand-ambassador-radio-canada-on-call-french-services/</loc><lastmod>2026-04-30</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/art-gallery-of-ontario/building-operator-1/</loc><lastmod>2026-04-16</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-centre-of-innovation/business-development-manager/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/cbc-money-senior-coordinating-producer-english-services-on-site/</loc><lastmod>2026-10-01</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/cbc-news-journalism-internship-program-winter-2027/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/coordinator-vendor-management/</loc><lastmod>2026-10-05</lastmod></url>
@@ -645,7 +638,9 @@
   <url><loc>https://publicjobs.ca/jobs/export-development-canada-edc/conseiller-principal-gestion-des-risques-environnementaux-et-sociaux-114-fr/</loc><lastmod>2026-09-24</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-french-language-educational-communications-authority-tfo/conseiller-re-ventes-publicitaires/</loc><lastmod>2026-08-19</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/export-development-canada-edc/conseill-re-principale-conseiller-principal-durabilit-fr-018/</loc><lastmod>2026-09-15</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/home-construction-regulatory-authority-hcra/consumer-advisory-council-volunteer/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/chartered-professional-accountants-of-ontario-cpa-ontario/controller/</loc><lastmod>2026-09-30</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/art-gallery-of-ontario/cook-2-events-part-time/</loc><lastmod>2026-04-27</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/law-society-of-ontario/coordinator-examination-accommodation-and-delivery/</loc><lastmod>2026-08-10</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/law-society-of-ontario/counsel-licensing-equity-initiatives-licensing-and-accreditation-hybrid-toronto/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-whitby/crossing-guard/</loc><lastmod>2025-05-23</lastmod></url>
@@ -655,7 +650,6 @@
   <url><loc>https://publicjobs.ca/jobs/liquor-control-board-of-ontario-lcbo/database-administrator/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-transit-commission/development-coordinator/</loc><lastmod>2026-09-30</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/chartered-professional-accountants-of-ontario-cpa-ontario/digital-marketing-manager/</loc><lastmod>2026-09-30</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/digital-operations-producer-french-services-on-site/</loc><lastmod>2026-09-25</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/independent-electricity-system-operator-ieso/director-corporate-strategy-and-sector-policy/</loc><lastmod>2026-10-07</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/director-data-enablement-data-platforms/</loc><lastmod>2026-07-15</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/director-data-scouting/</loc><lastmod>2026-10-01</lastmod></url>
@@ -663,7 +657,6 @@
   <url><loc>https://publicjobs.ca/jobs/ontario-educational-communications-authority-tvo/director-education-design-intelligence/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-educational-communications-authority-tvo/director-education-operations/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/law-society-of-ontario/director-enterprise-planning-and-performance-permanent/</loc><lastmod>2026-07-10</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/director-legal/</loc><lastmod>2026-09-18</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/createto/director-legal-services/</loc><lastmod>2026-08-24</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/director-product-evolution/</loc><lastmod>2026-09-23</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/chartered-professional-accountants-of-ontario-cpa-ontario/director-research-and-thought-leadership/</loc><lastmod>2026-09-30</lastmod></url>
@@ -671,7 +664,7 @@
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/director-security-architecture-engineering-information-corporate-security/</loc><lastmod>2026-09-24</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/director-security-operations-information-corporate-security/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-centre-of-innovation/director-strategic-partnerships/</loc><lastmod>2026-07-31</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/ontario-centre-of-innovation/director-strategic-programs/</loc><lastmod>2026-07-06</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/ontario-centre-of-innovation/director-strategic-programs/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/law-society-of-ontario/discipline-counsel-litigation-services-permanent/</loc><lastmod>2026-09-15</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/export-development-canada-edc/d-veloppeur-euse-principal-e-en-ia-fr-428/</loc><lastmod>2026-10-07</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/export-development-canada-edc/d-veloppeur-euse-principal-e-servicenow-csm-fr-395/</loc><lastmod>2026-09-02</lastmod></url>
@@ -694,9 +687,10 @@
   <url><loc>https://publicjobs.ca/jobs/chartered-professional-accountants-of-ontario-cpa-ontario/events-specialist/</loc><lastmod>2026-09-30</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/executive-assistant/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/independent-electricity-system-operator-ieso/executive-assistant/</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-infrastructure-bank/executive-assistant/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/executive-assistant-infrastructure/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-police-service/experienced-police-constable/</loc><lastmod>2026-01-01</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/art-gallery-of-ontario/f-b-outlet-server-ago-bistro-espresso-bar-members-lounge-part-time-food-beverage/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/art-gallery-of-ontario/f-b-outlet-server-ago-bistro-espresso-bar-members-lounge-part-time-food-beverage/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/law-society-of-ontario/facilities-student-facilities-and-planning-4-month-contract/</loc><lastmod>2026-09-23</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-aurora/facility-maintenance/</loc><lastmod>2026-08-26</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/public-health-ontario-ontario-agency-for-health-protection-and-promotion/finance-student/</loc><lastmod>2026-10-02</lastmod></url>
@@ -704,14 +698,16 @@
   <url><loc>https://publicjobs.ca/jobs/town-of-aurora/fitness-instructor-r2/</loc><lastmod>2026-06-29</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-aurora/fitness-instructor-r3/</loc><lastmod>2026-06-29</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-transit-commission/foreperson-wiring-and-service/</loc><lastmod>2026-10-01</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/royal-ontario-museum/future-career-opportunities-at-royal-ontario-museum-rom/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/royal-ontario-museum/future-career-opportunities-at-royal-ontario-museum-rom/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/export-development-canada-edc/gestionnaire-principal-e-partenariats-557-fr/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/export-development-canada-edc/gestionnaire-principal-e-premi-r-e-conseill-r-e-min-raux-critiques/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-east-gwillimbury/halp-aqua-fitness-instructor/</loc><lastmod>2026-08-19</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/town-of-east-gwillimbury/health-active-living-plaza-halp-fitness-instructor/</loc><lastmod>2025-03-11</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/human-resources-manager-english-services-people-culture/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/human-resources-manager-people-culture-english-services-hybrid-telework/</loc><lastmod>2026-10-06</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/home-construction-regulatory-authority-hcra/industry-advisory-council-volunteer/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/technical-standards-and-safety-authority-tssa/inspector-fuels/</loc><lastmod>2026-04-20</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/integrated-account-lead/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/law-society-of-ontario/intermediate-dynamics-365-developer-it-12-month-contract/</loc><lastmod>2026-06-01</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/intern-analyst-phd-systematic-strategies-group/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/intern-discover-investing-program-summer-2027/</loc><lastmod>2026-09-28</lastmod></url>
@@ -719,7 +715,6 @@
   <url><loc>https://publicjobs.ca/jobs/investment-management-corporation-of-ontario-imco/intern-tax/</loc><lastmod>2026-09-21</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/junior-specialist-employee-engagement-t-i-telework-hybrid/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/law-society-of-ontario/lso-connects-representative-6-month-contract/</loc><lastmod>2026-07-22</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/liquor-control-board-of-ontario-lcbo/labour-relations-analyst-contract/</loc><lastmod>2026-09-28</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/independent-electricity-system-operator-ieso/lead-data-scientist/</loc><lastmod>2026-10-01</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/lead-engineer-active-equities-public-markets-technology/</loc><lastmod>2026-10-01</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/lead-engineer-credit-investments-alternative-investments-technology/</loc><lastmod>2026-10-01</lastmod></url>
@@ -747,15 +742,14 @@
   <url><loc>https://publicjobs.ca/jobs/ontario-energy-board/manager-people-operations/</loc><lastmod>2026-09-25</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-infrastructure-bank/manager-portfolio-construction-and-risk/</loc><lastmod>2026-09-23</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-centre-of-innovation/manager-strategic-sponsorships/</loc><lastmod>2026-10-07</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/manager-strategy-execution/</loc><lastmod>2026-09-22</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/manager-technology-risk-management-information-corporate-security-12-month-contr/</loc><lastmod>2026-10-01</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-educational-communications-authority-tvo/manager-web-mobile-delivery-bilingual/</loc><lastmod>2026-09-10</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/managing-director-credit-restructuring/</loc><lastmod>2026-10-05</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/managing-director-technology-architecture-governance/</loc><lastmod>2026-09-15</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/public-health-ontario-ontario-agency-for-health-protection-and-promotion/medical-laboratory-technologist-1/</loc><lastmod>2026-08-26</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/public-health-ontario-ontario-agency-for-health-protection-and-promotion/medical-laboratory-technologist-1-jr102403/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/public-health-ontario-ontario-agency-for-health-protection-and-promotion/medical-laboratory-technologist-1-jr100100/</loc><lastmod>2026-08-26</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/chartered-professional-accountants-of-ontario-cpa-ontario/members-coordinator/</loc><lastmod>2026-10-01</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-transit-commission/operations-coordinator-job-req-id-13672/</loc><lastmod>2026-10-06</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-transit-commission/operations-coordinator-job-req-id-13674/</loc><lastmod>2026-10-01</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/toronto-transit-commission/operations-coordinator/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/personal-support-worker-ltc/</loc><lastmod>2026-09-12</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/project-coordinator/</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/public-health-nurse-606621217/</loc><lastmod>2026-09-30</lastmod></url>
@@ -779,7 +773,6 @@
   <url><loc>https://publicjobs.ca/jobs/chartered-professional-accountants-of-ontario-cpa-ontario/principal-advisor-professional-advisory-services/</loc><lastmod>2026-10-01</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/principal-engineer-risk-and-tfm-technologies/</loc><lastmod>2026-10-01</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/investment-management-corporation-of-ontario-imco/principal-client-portfolio-strategy-and-governance/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/export-development-canada-edc/principal-it-audit-461-en/</loc><lastmod>2026-09-24</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/investment-management-corporation-of-ontario-imco/principal-investment-insights/</loc><lastmod>2026-09-21</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/principal-sustainable-energies-infrastructure-credit/</loc><lastmod>2026-10-07</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/producer-olympics-paralympics-and-cbc-sports-partnership-content-la28/</loc><lastmod>2026-10-02</lastmod></url>
@@ -789,7 +782,6 @@
   <url><loc>https://publicjobs.ca/jobs/chartered-professional-accountants-of-ontario-cpa-ontario/professional-standards-coordinator/</loc><lastmod>2026-10-01</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/chartered-professional-accountants-of-ontario-cpa-ontario/professional-standards-counsel-regulatory-prosecutor/</loc><lastmod>2026-09-30</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-centre-of-innovation/program-accounting-analyst/</loc><lastmod>2026-09-11</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/toronto-transit-commission/program-manager-operations-support/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-centre-of-innovation/program-portfolio-manager-auto-mobility-9-month-contract/</loc><lastmod>2026-08-18</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-centre-of-innovation/program-specialist/</loc><lastmod>2026-09-22</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/project-coordinator-value-management-and-delivery-office-innovation-and-delivery/</loc><lastmod>2026-09-28</lastmod></url>
@@ -797,26 +789,24 @@
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/project-program-portfolio-manager-real-estate-projects-t-i-telework-hybrid/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/toronto-transit-commission/property-and-agreements-coordinator/</loc><lastmod>2026-09-30</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/liquor-control-board-of-ontario-lcbo/qa-laboratory-systems-analyst/</loc><lastmod>2026-10-05</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/royal-ontario-museum/romkids-studio-instructor-8-month-contract/</loc><lastmod>2026-10-08</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/township-of-scugog/recreation-staff/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/royal-ontario-museum/romkids-studio-instructor-8-month-contract/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/township-of-scugog/recreation-staff/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/reporter-editor-assigned-to-local-affairs-french-services-on-site/</loc><lastmod>2026-10-07</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/reporter-editor-assigned-to-the-economic-desk-french-services-on-site/</loc><lastmod>2026-10-07</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/law-society-of-ontario/representative-membership-services/</loc><lastmod>2026-09-03</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/export-development-canada-edc/research-associate-613-en/</loc><lastmod>2026-09-28</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/public-health-ontario-ontario-agency-for-health-protection-and-promotion/research-technician/</loc><lastmod>2026-10-05</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/export-development-canada-edc/responsable-produit-assurance-cr-dit-986-fr/</loc><lastmod>2026-09-17</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/art-gallery-of-ontario/restaurant-host/</loc><lastmod>2026-09-17</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/technical-standards-and-safety-authority-tssa/risk-advisor/</loc><lastmod>2026-09-18</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/city-of-toronto/social-worker-ssltc/</loc><lastmod>2026-09-24</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/township-of-scugog/school-crossing-guard-regular-and-spare/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/township-of-scugog/school-crossing-guard-regular-and-spare/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-educational-communications-authority-tvo/secondary-curriculum-specialist-physics-chemistry/</loc><lastmod>2026-09-21</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/independent-electricity-system-operator-ieso/sector-account-advisor/</loc><lastmod>2026-09-10</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/royal-ontario-museum/security-guard-various-opportunities-part-time-full-time/</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/royal-ontario-museum/security-guard-various-opportunities-part-time-full-time/</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/export-development-canada-edc/senior-ai-developer-en-428/</loc><lastmod>2026-10-07</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/independent-electricity-system-operator-ieso/senior-advisor-market-development/</loc><lastmod>2026-09-30</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/export-development-canada-edc/senior-advisor-environment-social-risk-management-114-en/</loc><lastmod>2026-09-24</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/independent-electricity-system-operator-ieso/senior-advisor-nuclear-development/</loc><lastmod>2026-10-07</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canadian-broadcasting-corporation-cbc-radio-canada/senior-advisor-strategic-change-and-transformation-engagement-t-i-telework-hybri/</loc><lastmod>2026-09-28</lastmod></url>
+  <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/senior-analyst-cash-collateral-settlements-operations-6-month-contract/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/senior-analyst-expense-operations-8-month-contract/</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/financial-services-regulatory-authority-of-ontario-fsra/senior-analyst-macro-surveillance-and-analytics/</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/senior-analyst-tfm-risk-total-fund-management-technology/</loc><lastmod>2026-09-16</lastmod></url>
@@ -828,7 +818,6 @@
   <url><loc>https://publicjobs.ca/jobs/canada-pension-plan-investment-board-cppib/senior-engineer-data-enablement-data-platforms/</loc><lastmod>2026-05-28</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-cannabis-retail-corporation-ontario-cannabis-store/senior-grc-specialist/</loc><lastmod>2026-08-11</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/chartered-professional-accountants-of-ontario-cpa-ontario/senior-investigator-forensic-accountant/</loc><lastmod>2026-10-02</lastmod></url>
-  <url><loc>https://publicjobs.ca/jobs/liquor-control-board-of-ontario-lcbo/senior-laboratory-technician/</loc><lastmod>2026-09-24</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/export-development-canada-edc/senior-manager-principal-critical-mineral-investments-371-en/</loc><lastmod>2026-10-06</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/ontario-cannabis-retail-corporation-ontario-cannabis-store/senior-manager-financial-reporting-policies-and-controls/</loc><lastmod>2026-09-28</lastmod></url>
   <url><loc>https://publicjobs.ca/jobs/canada-infrastructure-bank/senior-manager-it-operations/</loc><lastmod>2026-10-08</lastmod></url>
