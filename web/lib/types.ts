@@ -19,6 +19,7 @@ export type JobDetail = ListJob & {
   work_mode: string;
   salary: string;
   department: string;
+  description: string;
   paragraphs: string[];
   apply_url: string;
   category: string;

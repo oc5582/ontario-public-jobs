@@ -1824,3 +1824,53 @@ a.apply-btn.secondary {
     grid-template-columns: 1fr;
   }
 }
+
+.description h3 {
+  margin: 1.25rem 0 0.45rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+
+.description ul {
+  margin: 0 0 0.9rem;
+  padding-left: 1.25rem;
+}
+
+.description li {
+  margin: 0 0 0.35rem;
+}
+
+.description li:last-child {
+  margin-bottom: 0;
+}
+
+.description .desc-fields {
+  max-width: 40rem;
+  margin: 0 0 0.9rem;
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.description .desc-fields .meta-row {
+  grid-template-columns: 14rem minmax(0, 1fr);
+}
+
+@media (max-width: 767px) {
+  .description .desc-fields .meta-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.description .desc-fields dt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.description .desc-fields dd {
+  margin: 0;
+}

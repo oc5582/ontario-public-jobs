@@ -18,6 +18,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -192,6 +193,21 @@ def legacy_redirects(jobs: list[dict]) -> list[dict[str, str]]:
     return found
 
 
+def format_descriptions(texts: list[str]) -> list[dict]:
+    """Clean hard-wrapped descriptions with the same formatter the site renders."""
+    script = ROOT / "scripts" / "format_descriptions.ts"
+    proc = subprocess.run(
+        ["node", "--experimental-strip-types", str(script)],
+        input=json.dumps(texts),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise SystemExit(proc.stderr.strip() or "description formatter failed")
+    return json.loads(proc.stdout)
+
+
 def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
     today = bp.today_toronto()
     with conn.cursor() as cur:
@@ -214,14 +230,19 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
             employer_ids[slug] = cur.fetchone()[0]
 
         paths: list[str] = []
-        for job in jobs:
+        formatted = format_descriptions([bp.text(job.get("description")) for job in jobs])
+        for index, job in enumerate(jobs):
             salary = bp.base_salary(job)
             annual_min, annual_max, currency, unit = annual_bounds(salary)
             posting = bp.job_posting_data(job)
             if posting is not None:
                 posting = dict(posting)
                 posting["directApply"] = False
-            paragraphs = bp.html_to_paragraphs(bp.text(job.get("description")))
+            cleaned = formatted[index]
+            paragraphs = cleaned["paragraphs"]
+            description_html = cleaned["html"]
+            if posting is not None and description_html:
+                posting["description"] = description_html
             posted = bp.posting_date(job) or None
             closing = bp.closing_date(job) or None
             alias = bp.SEARCH_ALIASES.get(bp.text(job.get("employer")), "")
@@ -307,7 +328,7 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
                     bp.text(job.get("department")),
                     bp.text(job.get("description")),
                     Json(paragraphs),
-                    bp.job_description_html(job),
+                    description_html,
                     bp.text(job.get("apply_url")),
                     bp.text(job.get("tier")) or None,
                     bp.text(job.get("source")) or None,

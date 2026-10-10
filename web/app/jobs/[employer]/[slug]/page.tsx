@@ -1,6 +1,7 @@
 import { ApplyRow } from "@/components/ApplyRow";
 import { JobList } from "@/components/JobList";
 import { JsonLd } from "@/components/JsonLd";
+import { formatDescription } from "@/lib/description";
 import { formatLongDate } from "@/lib/format";
 import { jobPostingJsonLd } from "@/lib/jsonld";
 import { getJob, similarOpenJobs } from "@/lib/jobs";
@@ -47,6 +48,7 @@ export default async function JobPage({ params }: Props) {
   const similar = job.closed ? await similarOpenJobs(job) : [];
   const rows = metaRows(job);
   const posting = jobPostingJsonLd(job);
+  const descriptionHtml = formatDescription(job.description.trim() ? job.description : job.paragraphs.join("\n"));
 
   return (
     <main>
@@ -77,11 +79,7 @@ export default async function JobPage({ params }: Props) {
         <ApplyRow url={job.apply_url} />
         <section className="description" aria-labelledby="desc-heading">
           <h2 id="desc-heading">Job description</h2>
-          {job.paragraphs.length ? (
-            job.paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)
-          ) : (
-            <p>{UNAVAILABLE}</p>
-          )}
+          {descriptionHtml ? <div dangerouslySetInnerHTML={{ __html: descriptionHtml }} /> : <p>{UNAVAILABLE}</p>}
         </section>
         <ApplyRow url={job.apply_url} />
         {job.closed && similar.length ? (
