@@ -66,12 +66,16 @@ Every variable is listed in `.env.example`. Never commit `.env.local` or real se
 | `MATCH_TRUSTED_SECRET` | Server only. Shared with the Worker secret of the same name. Empty means `/match/` will not call the Worker. Never commit the value. |
 | `NEXT_PUBLIC_META_PIXEL_ID` | Optional. Same public id as the current site. Blank omits the pixel. |
 | `NEXT_PUBLIC_CF_ANALYTICS_TOKEN` | Optional. Blank omits Cloudflare Web Analytics. |
-| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Not used yet. Do not add them until checkout is implemented. |
+| `STRIPE_SECRET_KEY` | Server only. Stripe secret key. Use the test key until you switch the site live. Never `NEXT_PUBLIC_`. |
+| `STRIPE_WEBHOOK_SECRET` | Server only. Signing secret for `POST /api/stripe/webhook/`. |
+| `STRIPE_PRICE_MONTHLY` | Server only. Price id for CA$14.99 per month. |
+| `STRIPE_PRICE_QUARTERLY` | Server only. Price id for CA$29.99 every 3 months. |
+| `STRIPE_PRICE_YEARLY` | Server only. Price id for CA$59 per year. |
 
 ## Supabase (hosted)
 
-1. Create a project. In the SQL editor, run `supabase/migrations/20261010160000_init.sql`. Do not run `supabase/seed.sql`.
-2. The migration enables RLS on `employers`, `jobs`, `profiles`, and `resume_match_usage`. `anon` and `authenticated` have no `SELECT` on jobs, employers, or match usage, so the Data API cannot bulk-read the list. `authenticated` can `SELECT` its own `profiles` row. Membership columns are not client-writable. `private.handle_new_user` inserts a profile when `auth.users` exists.
+1. Create a project. In the SQL editor, run `supabase/migrations/20261010160000_init.sql`, then `supabase/migrations/20261010200000_stripe_billing.sql`. Do not run `supabase/seed.sql`.
+2. The migrations enable RLS on `employers`, `jobs`, `profiles`, `resume_match_usage`, and `stripe_events`. `anon` and `authenticated` have no `SELECT` on jobs, employers, match usage, or Stripe event ids, so the Data API cannot bulk-read the list. `authenticated` can `SELECT` its own `profiles` row. Membership columns are not client-writable. `private.handle_new_user` inserts a profile when `auth.users` exists.
 3. The Next.js server connects with `DATABASE_URL` as the table owner, which bypasses RLS unless you force it. That is intentional: list queries run on the server, and the 10-job cap is applied there. Do not use the anon key as `DATABASE_URL`.
 4. Authentication → URL configuration:
    - Site URL: `https://publicjobs.ca` (add the Vercel preview origin as well while you are testing).
@@ -109,22 +113,34 @@ ALLOW_LOCAL_LOGIN=false
 NEXT_PUBLIC_SIGNUP_ENDPOINT=https://ontario-public-jobs-signup.publicjobs.workers.dev
 MATCH_WORKER_URL=https://publicjobs-resume-match.publicjobs.workers.dev/match
 MATCH_TRUSTED_SECRET=<same value as the Worker secret; leave empty until that Worker is deployed>
+STRIPE_SECRET_KEY=<sk_test_... until go-live>
+STRIPE_WEBHOOK_SECRET=<signing secret for /api/stripe/webhook/>
+STRIPE_PRICE_MONTHLY=<price id, CA$14.99/month>
+STRIPE_PRICE_QUARTERLY=<price id, CA$29.99 every 3 months>
+STRIPE_PRICE_YEARLY=<price id, CA$59/year>
 ```
 
-Leave `AUTH_SECRET` unset on Vercel. Leave the Stripe variables unset. Add the pixel id and Cloudflare token only if you want those tags on the preview.
+Leave `AUTH_SECRET` unset on Vercel. Set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_QUARTERLY`, and `STRIPE_PRICE_YEARLY` on Preview and Production. Do not add a `NEXT_PUBLIC_` Stripe key. Checkout is hosted, so the browser never sees the secret key. Add the pixel id and Cloudflare token only if you want those tags on the preview.
 
 3. Deploy. Do not point `publicjobs.ca` at Vercel until the GitHub Pages site is ready to be retired. Cloudflare stays as DNS.
 4. After the first preview URL exists, add `https://<preview>.vercel.app/auth/callback/` to the Supabase redirect allow list, and add that origin in the Google OAuth client if you test Google there.
 
-## Stripe (later, not in this phase)
+## Stripe
 
-`web/lib/billing.ts` is the only place that should talk to Stripe:
+Checkout and the customer portal run in test mode until `STRIPE_SECRET_KEY` is a live key. The browser never talks to Stripe directly. There is no publishable key.
 
-- `createCheckoutSession` — Checkout in subscription mode, no trial. Success URL `/account/`, cancel URL `/pricing/`. `client_reference_id` is the profile id.
-- `createPortalSession` — Customer Portal so a member can cancel without emailing.
-- Webhook `POST /api/stripe/webhook` — today it returns 501 and does not write the database. When implemented, verify `STRIPE_WEBHOOK_SECRET` and update `profiles` only from `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, and `invoice.paid`. Never trust a membership flag sent by the browser.
+- Account first. `/pricing/` sends a signed-out visitor to `/login/?next=/pricing/`. Checkout is refused without a profile.
+- `createCheckoutSession` creates a Stripe customer, stores `profiles.stripe_customer_id`, then opens hosted Checkout (`mode=subscription`) for `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_QUARTERLY`, or `STRIPE_PRICE_YEARLY`. No trial, no promotion codes, no optional items. Success returns to `/account/?checkout=success`. Cancel returns to `/pricing/`.
+- `createPortalSession` opens the Customer Portal on the account’s default configuration (cancel at period end, switch plan, update card, invoices). Return URL is `/account/`.
+- Webhook `POST /api/stripe/webhook/` (trailing slash, because the no-slash path 308s and Stripe does not follow redirects). Verify `STRIPE_WEBHOOK_SECRET` against the raw body. The route is outside middleware, so it is not part of session refresh. `?x-vercel-protection-bypass=` may be present; the handler ignores it.
+- Handled events: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`. Each event id is inserted into `stripe_events` in the same transaction as the profile update. A repeat is a no-op. An older `event.created` does not overwrite a newer one. A different subscription does not cancel an active one.
+- `membership_status=active` with `current_period_end` still in the future opens the full lists and the member match limit. `past_due` and `canceled` do not. Cancel at period end stays `active` until `cancel_at`, and the account page says when it cancels. A renewing plan shows the renewal date.
+- The 14-day refund is still a manual Stripe dashboard refund. The pricing page copy for that policy is unchanged.
+- Prices must not include a free trial. A `trialing` subscription is not treated as a member.
 
-`/pricing/` already shows CA$14.99/month, CA$29.99/3 months, and CA$59/year, plus the 14-day refund and self-serve cancel terms. The account is created before payment. Checkout buttons call the stub and show “Stripe Checkout is not connected yet.”
+```bash
+node --import ./scripts/register-ts.mjs --experimental-strip-types scripts/test_stripe_billing.mts
+```
 
 ## Resume matching
 

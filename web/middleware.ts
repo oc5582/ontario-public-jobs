@@ -27,5 +27,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2|css|js)$).*)"],
+  // Stripe posts to /api/stripe/webhook/ (trailing slash). That path is not
+  // signed in and must not pass through session refresh or any auth redirect.
+  matcher: [
+    "/((?!_next/static|_next/image|api/stripe/webhook|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2|css|js)$).*)",
+  ],
 };

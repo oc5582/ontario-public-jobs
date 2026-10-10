@@ -1,7 +1,8 @@
 import { getViewer } from "@/lib/auth";
+import { membershipPeriodLabel } from "@/lib/membership";
 import { pageMetadata } from "@/lib/seo";
-import { PLANS } from "@/lib/site";
-import { startCheckout } from "../../billing/actions";
+import { PLANS, type PlanId } from "@/lib/site";
+import { openPortal, startCheckout } from "../../billing/actions";
 
 export const metadata = pageMetadata({
   title: "Membership | PublicJobs.ca",
@@ -18,6 +19,12 @@ export default async function PricingPage({
   const params = await searchParams;
   const viewer = await getViewer();
   const notice = typeof params.notice === "string" ? params.notice : "";
+  const profile = viewer.profile;
+  const subscribed = Boolean(
+    profile?.stripe_subscription_id &&
+      (profile.membership_status === "active" || profile.membership_status === "past_due"),
+  );
+  const current = PLANS.find((item) => item.id === profile?.plan);
 
   return (
     <main>
@@ -31,9 +38,14 @@ export default async function PricingPage({
             Every job page is free, and Apply goes to the employer. A membership opens the full filtered list of
             openings. Employers are never charged.
           </p>
+          {subscribed && current && profile ? (
+            <p>
+              Your plan is {current.name} ({current.price} {current.period}). {membershipPeriodLabel(profile)}
+            </p>
+          ) : null}
           {notice === "stripe" ? (
             <p className="status err" role="status">
-              Stripe Checkout is not connected yet. Your account is ready. Payment will be added later.
+              Billing is not available right now.
             </p>
           ) : null}
           {notice === "plan" ? (
@@ -49,18 +61,15 @@ export default async function PricingPage({
                   {plan.price} {plan.period}
                 </span>
                 <span>{plan.detail}</span>
-                {viewer.email ? (
-                  <form action={startCheckout}>
-                    <input type="hidden" name="plan" value={plan.id} />
-                    <button className="apply-btn" type="submit">
-                      Continue
-                    </button>
-                  </form>
-                ) : (
-                  <a className="apply-btn" href={`/login/?next=/pricing/`}>
-                    Sign in to continue
-                  </a>
-                )}
+                <PlanAction
+                  planId={plan.id}
+                  signedIn={Boolean(viewer.email)}
+                  subscribed={subscribed}
+                  currentPlan={profile?.plan === plan.id}
+                  currentAndRenewing={
+                    subscribed && profile?.plan === plan.id && profile.membership_status === "active" && !profile.cancel_at
+                  }
+                />
               </li>
             ))}
           </ul>
@@ -72,11 +81,51 @@ export default async function PricingPage({
             <a href="mailto:hello@publicjobs.ca">hello@publicjobs.ca</a>.
           </p>
           <p>
-            The weekly email stays free. Resume matching on this site still uses the current free limit until payments
-            are connected.
+            The weekly email stays free. An active membership includes 20 resume matches a day. A free account includes
+            one match.
           </p>
         </section>
       </article>
     </main>
+  );
+}
+
+function PlanAction({
+  planId,
+  signedIn,
+  subscribed,
+  currentPlan,
+  currentAndRenewing,
+}: {
+  planId: PlanId;
+  signedIn: boolean;
+  subscribed: boolean;
+  currentPlan: boolean;
+  currentAndRenewing: boolean;
+}) {
+  if (!signedIn) {
+    return (
+      <a className="apply-btn" href="/login/?next=/pricing/">
+        Sign in to continue
+      </a>
+    );
+  }
+  if (currentAndRenewing) return <span className="plan-current">Current plan</span>;
+  if (subscribed) {
+    return (
+      <form action={openPortal}>
+        <button className="apply-btn secondary" type="submit">
+          {currentPlan ? "Manage billing" : "Change plan"}
+        </button>
+      </form>
+    );
+  }
+  return (
+    <form action={startCheckout}>
+      <input type="hidden" name="plan" value={planId} />
+      <button className="apply-btn" type="submit">
+        Continue
+      </button>
+    </form>
   );
 }

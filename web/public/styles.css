@@ -1824,7 +1824,8 @@ a.apply-btn.secondary:visited,
   font-weight: 600;
 }
 
-.plan-list .plan-price {
+.plan-list .plan-price,
+.plan-list .plan-current {
   font-weight: 600;
 }
 

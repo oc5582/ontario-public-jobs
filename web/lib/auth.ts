@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { cookies, headers } from "next/headers";
 import { query } from "./db";
+import { grantsMemberAccess } from "./membership";
 import type { Profile, Viewer } from "./types";
 
 const COOKIE = "pj_local";
@@ -14,6 +15,7 @@ type ProfileRow = {
   stripe_subscription_id: string | null;
   plan: string | null;
   current_period_end: string | null;
+  cancel_at: string | null;
 };
 
 export function publishableKey(): string {
@@ -42,15 +44,13 @@ export async function requestOrigin(): Promise<string> {
 }
 
 function memberActive(profile: Profile | null): boolean {
-  if (!profile || profile.membership_status !== "active") return false;
-  if (!profile.current_period_end) return true;
-  return new Date(profile.current_period_end).getTime() > Date.now();
+  return grantsMemberAccess(profile);
 }
 
 async function profileById(id: string): Promise<Profile | null> {
   const rows = await query<ProfileRow>(
     `select id, email, membership_status, stripe_customer_id, stripe_subscription_id, plan,
-            current_period_end::text as current_period_end
+            current_period_end::text as current_period_end, cancel_at::text as cancel_at
      from profiles where id = $1`,
     [id],
   );
@@ -60,7 +60,7 @@ async function profileById(id: string): Promise<Profile | null> {
 async function profileByEmail(email: string): Promise<Profile | null> {
   const rows = await query<ProfileRow>(
     `select id, email, membership_status, stripe_customer_id, stripe_subscription_id, plan,
-            current_period_end::text as current_period_end
+            current_period_end::text as current_period_end, cancel_at::text as cancel_at
      from profiles where lower(email) = lower($1)`,
     [email],
   );

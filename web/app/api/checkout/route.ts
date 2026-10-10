@@ -1,5 +1,5 @@
 import { getViewer, requestOrigin } from "@/lib/auth";
-import { BillingNotConfiguredError, createCheckoutSession } from "@/lib/billing";
+import { AlreadySubscribedError, BillingNotConfiguredError, createCheckoutSession } from "@/lib/billing";
 import type { PlanId } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +33,9 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof BillingNotConfiguredError) {
       return Response.json({ error: error.message }, { status: 501 });
+    }
+    if (error instanceof AlreadySubscribedError) {
+      return Response.json({ error: error.message }, { status: 409 });
     }
     throw error;
   }

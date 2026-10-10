@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getViewer } from "@/lib/auth";
-import { formatLongDate } from "@/lib/format";
+import { membershipPeriodLabel } from "@/lib/membership";
 import { pageMetadata } from "@/lib/seo";
 import { PLANS } from "@/lib/site";
 import { signOut } from "../../account/actions";
@@ -31,6 +31,8 @@ export default async function AccountPage({
   const profile = viewer.profile;
   const plan = PLANS.find((item) => item.id === profile.plan);
   const notice = typeof params.notice === "string" ? params.notice : "";
+  const checkout = typeof params.checkout === "string" ? params.checkout : "";
+  const period = membershipPeriodLabel(profile);
 
   return (
     <main>
@@ -48,12 +50,25 @@ export default async function AccountPage({
             {plan ? ` (${plan.name}, ${plan.price})` : ""}.
             {viewer.isMember ? " The full filtered list is open." : " The lists still show the newest 10."}
           </p>
-          {profile.current_period_end ? (
-            <p>Current period ends {formatLongDate(profile.current_period_end.slice(0, 10))}.</p>
+          {period ? <p>{period}</p> : null}
+          {checkout === "success" && viewer.isMember ? (
+            <p className="status ok" role="status">
+              Payment received. This membership is active.
+            </p>
           ) : null}
-          {notice === "stripe" || notice === "portal" ? (
+          {checkout === "success" && !viewer.isMember ? (
+            <p className="status" role="status">
+              Stripe is confirming the payment. Refresh this page if the membership is not active yet.
+            </p>
+          ) : null}
+          {notice === "stripe" ? (
             <p className="status err" role="status">
-              The Stripe customer portal is not connected yet.
+              Billing is not available right now.
+            </p>
+          ) : null}
+          {notice === "portal" ? (
+            <p className="status err" role="status">
+              There is no billing account yet. Choose a membership first.
             </p>
           ) : null}
           <p className="login-actions">

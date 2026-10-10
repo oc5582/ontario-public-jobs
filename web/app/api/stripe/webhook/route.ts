@@ -1,15 +1,14 @@
+import { handleStripeWebhook } from "@/lib/stripe-webhook";
+
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Stripe is not connected. This route refuses every request, including
- * unsigned ones. When Stripe is added, verify STRIPE_WEBHOOK_SECRET and then
- * update profiles only from these events:
- *   checkout.session.completed
- *   customer.subscription.updated
- *   customer.subscription.deleted
- *   invoice.paid
- * Membership status must not be taken from the browser.
+ * Stripe signs the raw body. The app uses trailingSlash, so the live endpoint
+ * is POST /api/stripe/webhook/ (the slash form is served, not redirected).
+ * Vercel Authentication may add ?x-vercel-protection-bypass=... The query
+ * string is ignored. Membership is updated only after the signature matches.
  */
-export async function POST() {
-  return Response.json({ error: "Stripe webhook is not connected yet." }, { status: 501 });
+export async function POST(request: Request) {
+  return handleStripeWebhook(request);
 }

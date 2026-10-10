@@ -2,7 +2,12 @@
 
 import { redirect } from "next/navigation";
 import { getViewer, requestOrigin } from "@/lib/auth";
-import { BillingNotConfiguredError, createCheckoutSession, createPortalSession } from "@/lib/billing";
+import {
+  AlreadySubscribedError,
+  BillingNotConfiguredError,
+  createCheckoutSession,
+  createPortalSession,
+} from "@/lib/billing";
 import type { PlanId } from "@/lib/site";
 
 function isPlan(value: string): value is PlanId {
@@ -26,6 +31,7 @@ export async function startCheckout(formData: FormData) {
     url = session.url;
   } catch (error) {
     if (error instanceof BillingNotConfiguredError) redirect("/pricing/?notice=stripe");
+    if (error instanceof AlreadySubscribedError) redirect("/account/");
     throw error;
   }
   redirect(url);

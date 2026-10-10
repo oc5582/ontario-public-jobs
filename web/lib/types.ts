@@ -39,6 +39,7 @@ export type Profile = {
   stripe_subscription_id: string | null;
   plan: string | null;
   current_period_end: string | null;
+  cancel_at: string | null;
 };
 
 export type Viewer = {
