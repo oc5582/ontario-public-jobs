@@ -1,4 +1,5 @@
 import { formatDescription } from "./description";
+import { LEGAL } from "./legal-config";
 import { SITE_URL } from "./site";
 import type { JobDetail, ListJob } from "./types";
 
@@ -16,7 +17,7 @@ export function homeJsonLd(): unknown {
         "@id": orgId,
         name: "PublicJobs.ca",
         url: `${SITE_URL}/`,
-        email: "hello@publicjobs.ca",
+        email: LEGAL.supportEmail,
         founder: {
           "@type": "Person",
           name: "Osama Chaudhary",
@@ -67,7 +68,7 @@ export function jobPostingJsonLd(job: JobDetail): unknown | null {
   if (org && typeof org === "object") {
     const organization = { ...(org as Record<string, unknown>) };
     if (job.website) organization.sameAs = job.website;
-    if (job.logo_url) organization.logo = job.logo_url;
+    delete organization.logo;
     data.hiringOrganization = organization;
   }
   return data;

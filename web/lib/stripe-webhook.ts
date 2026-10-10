@@ -1,7 +1,9 @@
 import type { PoolClient } from "pg";
 import Stripe from "stripe";
+import { fulfillCheckoutAgreement } from "./agreement-mail";
 import { getStripe, planForPrice } from "./billing";
 import { withTransaction } from "./db";
+import { sendDueRenewalReminders } from "./renewal-reminders";
 import type { PlanId } from "./site";
 
 const HANDLED = new Set([
@@ -10,6 +12,7 @@ const HANDLED = new Set([
   "customer.subscription.updated",
   "customer.subscription.deleted",
   "invoice.payment_failed",
+  "invoice.upcoming",
 ]);
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -264,6 +267,7 @@ async function loadCheckoutSubscription(event: Stripe.Event): Promise<Stripe.Sub
 }
 
 async function applyEvent(client: PoolClient, event: Stripe.Event, subscription: Stripe.Subscription | null): Promise<void> {
+  if (event.type === "invoice.upcoming") return;
   if (event.type === "invoice.payment_failed") {
     await applyPaymentFailed(client, event);
     return;
@@ -328,6 +332,14 @@ export async function handleStripeWebhook(request: Request): Promise<Response> {
       return { duplicate: false };
     });
     console.info(JSON.stringify({ event: "stripe_webhook", type: event.type, duplicate: result.duplicate }));
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const unix = subscription ? periodEndUnix(subscription) : null;
+      await fulfillCheckoutAgreement(session, unix ? new Date(unix * 1000) : null);
+    }
+    if (event.type === "invoice.upcoming") {
+      await sendDueRenewalReminders();
+    }
     return Response.json({ received: true });
   } catch (error) {
     console.error(

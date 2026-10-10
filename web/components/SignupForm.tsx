@@ -1,4 +1,7 @@
+import { homepageConsentText } from "@/lib/legal-copy";
+
 export function SignupForm() {
+  const consent = homepageConsentText();
   return (
     <section className="signup signup-compact" aria-labelledby="signup-heading">
       <form id="signup-form" method="post" noValidate>
@@ -29,11 +32,11 @@ export function SignupForm() {
         </div>
         <label className="checkbox signup-compact-consent" htmlFor="consent">
           <input type="checkbox" id="consent" name="casl_consent" value="yes" required />
-          <span id="casl-label">
-            I agree to receive job alert emails from PublicJobs.ca at this address. I can unsubscribe anytime.
+          <span id="casl-label" data-keep-casl="1">
+            {consent}
           </span>
           <span className="b2-phone b2-consent">
-            I agree to job alert emails from PublicJobs.ca. Unsubscribe anytime. <a href="/privacy/">Privacy</a>
+            {consent} <a href="/privacy/">Privacy</a>
           </span>
           <span className="signup-compact-links">
             <a href="/privacy/">Privacy</a> <a href="/terms/">Terms</a>

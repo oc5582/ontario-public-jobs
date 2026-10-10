@@ -109,8 +109,8 @@ export function capResults(strong: MatchHit[], maybe: MatchHit[], isMember: bool
 
 function summaryText(total: number, jobsChecked: number, locked: number, isMember: boolean, alerts: boolean): string {
   const found = total
-    ? `We found ${total} ${total === 1 ? "job" : "jobs"} out of ${jobsChecked} that could fit you.`
-    : "We did not find a close fit right now.";
+    ? `We compared your resume with ${jobsChecked} current openings and found ${total} ${total === 1 ? "suggestion" : "suggestions"}. Matches are suggestions and can be wrong.`
+    : `We compared your resume with ${jobsChecked} current openings and did not find a close suggestion. Matches can be wrong.`;
   const scope = isMember ? "" : locked > 0 ? " This free match shows the top 5." : " This was your free match.";
   const inbox = alerts ? " New jobs will come to your inbox every week." : "";
   const browse = total ? "" : " You can browse all openings below.";

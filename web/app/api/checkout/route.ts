@@ -14,11 +14,16 @@ export async function POST(request: Request) {
     return Response.json({ error: "Sign in before checkout." }, { status: 401 });
   }
   let plan: PlanId;
+  let customerName = "";
   try {
-    const body = (await request.json()) as { plan?: unknown; agree?: unknown };
+    const body = (await request.json()) as { plan?: unknown; agree?: unknown; customer_name?: unknown };
     if (!isPlan(body.plan)) return Response.json({ error: "Unknown plan." }, { status: 400 });
-    if (body.agree !== true) {
+    if (body.agree !== true && body.agree !== body.plan) {
       return Response.json({ error: "Agree to the Terms before checkout." }, { status: 400 });
+    }
+    customerName = String(body.customer_name || "").trim();
+    if (customerName.length < 2 || customerName.length > 120) {
+      return Response.json({ error: "Enter the name to put on the agreement." }, { status: 400 });
     }
     plan = body.plan;
   } catch {
@@ -31,6 +36,7 @@ export async function POST(request: Request) {
       email: viewer.email,
       plan,
       origin,
+      customerName,
     });
     return Response.json(session);
   } catch (error) {

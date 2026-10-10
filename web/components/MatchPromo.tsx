@@ -1,7 +1,7 @@
 export function MatchPromo({ count }: { count: number }) {
   const noun = count === 1 ? "opening" : "openings";
-  const lead = `Upload your resume and we'll check it against all ${count} ${noun}. You get your best matches, each with a reason why it fits.`;
-  const steps = ["Upload your resume", "We check every opening", "See your matches"];
+  const lead = `We compare your resume with each current opening (${count} ${noun} right now) and show the ones that look like a fit, with a short reason. Matches are suggestions and can be wrong.`;
+  const steps = ["Upload your resume", "We compare it with current openings", "See suggestions"];
   return (
     <section className="match-promo" aria-labelledby="match-promo-heading">
       <div className="match-promo-panel">
@@ -9,7 +9,9 @@ export function MatchPromo({ count }: { count: number }) {
           <p className="match-promo-kicker">New on PublicJobs.ca</p>
           <h2 id="match-promo-heading">See which jobs fit your resume</h2>
           <p className="match-promo-lead b2-desktop">{lead}</p>
-          <p className="match-promo-lead b2-phone">Get your best matches from every opening, with a reason for each.</p>
+          <p className="match-promo-lead b2-phone">
+            See openings that look like a fit, with a short reason. Suggestions can be wrong.
+          </p>
           <a className="match-promo-btn" href="/match/">
             Match my resume
           </a>

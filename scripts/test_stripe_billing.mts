@@ -117,6 +117,9 @@ assert.equal(params.subscription_data?.trial_period_days, undefined);
 assert.equal(params.line_items?.[0]?.price, "price_month");
 assert.equal(params.success_url, "https://publicjobs.ca/account/?checkout=success");
 assert.equal(params.cancel_url, "https://publicjobs.ca/pricing/");
+assert.equal(params.billing_address_collection, "required");
+assert.equal(params.consent_collection?.terms_of_service, "required");
+assert.equal(params.metadata?.terms_version, "2026-10-10");
 assert.equal(priceIdForPlan("quarter"), "price_quarter");
 
 const portal = portalSessionCreateParams({ stripeCustomerId: "cus_1", origin: "https://publicjobs.ca" });
@@ -451,6 +454,14 @@ const session = await createCheckoutSession(
 );
 assert.equal(session.url, "https://checkout.stripe.com/c/pay/cs_test_session");
 assert.equal(creates, 1);
+const agreements = await query<{ plan: string; price_label: string; terms_version: string }>(
+  `select plan, price_label, terms_version from agreement_acceptances where profile_id = $1`,
+  [PROFILE],
+);
+assert.equal(agreements.length, 1);
+assert.equal(agreements[0].plan, "year");
+assert.equal(agreements[0].terms_version, "2026-10-10");
+assert.match(agreements[0].price_label, /CA\$59 a year/);
 row = await profile();
 assert.equal(row?.stripe_customer_id, "cus_created");
 assert.equal(row?.membership_status, "none");
@@ -470,6 +481,7 @@ await assert.rejects(
 assert.equal(creates, 1);
 
 await query(`delete from stripe_events where id like 'evt_test_%'`);
+await query(`delete from agreement_acceptances where profile_id = $1 or email = 'stripe-test@example.com'`, [PROFILE]);
 await query(`delete from profiles where id = $1`, [PROFILE]);
 
 const appRole = await query<{ ok: number }>(`select 1 as ok from pg_roles where rolname = 'publicjobs_app'`);

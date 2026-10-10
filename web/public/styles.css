@@ -1598,7 +1598,7 @@ button[type="submit"]:disabled {
   .signup.signup-compact .checkbox {
     margin-top: 0.45rem;
     gap: 0.5rem;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     line-height: 1.4;
   }
 
@@ -1949,4 +1949,98 @@ a.apply-btn.secondary:visited,
 
 .description .desc-fields dd {
   margin: 0;
+}
+
+.legal-box {
+  margin: 1.25rem 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.legal-box h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.125rem;
+  letter-spacing: -0.02em;
+}
+
+.legal-box p,
+.legal-box li {
+  font-size: 0.95rem;
+}
+
+.checkout-name {
+  display: block;
+  margin: 0.75rem 0;
+  font-weight: 600;
+}
+
+.checkout-name input,
+.report-form input,
+.report-form textarea {
+  display: block;
+  width: 100%;
+  max-width: 32rem;
+  margin: 0.35rem 0 0.9rem;
+  padding: 0.55rem 0.65rem;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+}
+
+.report-form label,
+.account-delete h2 {
+  font-weight: 600;
+}
+
+.account-delete {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+
+.account-delete .checkbox {
+  margin: 0.75rem 0;
+}
+
+.source-note {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.ad-notice {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  padding: 0.9rem 1rem 1rem;
+  background: var(--paper);
+  color: var(--ink);
+  border-top: 1px solid var(--rule);
+}
+
+.ad-notice p {
+  margin: 0 0 0.65rem;
+  font-size: 0.9375rem;
+}
+
+.ad-notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.footer-nav .footer-text-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--civic);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
 }

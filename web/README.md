@@ -61,7 +61,7 @@ Every variable is listed in `.env.example`. Never commit `.env.local` or real se
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable key. `NEXT_PUBLIC_SUPABASE_ANON_KEY` is accepted as a fallback. Never put the service role key in a `NEXT_PUBLIC_` variable. |
 | `AUTH_SECRET` | Signs the local-only cookie. Required only when `ALLOW_LOCAL_LOGIN=true`. |
 | `ALLOW_LOCAL_LOGIN` | `true` only on your machine. Must stay `false` or unset on Vercel. |
-| `GOOGLE_SIGN_IN` | Server only. Set to `true` only after the Supabase Google provider is configured. Unset or any other value hides Continue with Google. |
+| `GOOGLE_SIGN_IN` | Server only. Continue with Google is shown unless this is exactly `false`. |
 | `NEXT_PUBLIC_SIGNUP_ENDPOINT` | Existing signup Worker. Default is the production Worker URL. |
 | `MATCH_WORKER_URL` | Server only. Resume-match Worker URL. The browser does not call it. |
 | `MATCH_TRUSTED_SECRET` | Server only. Shared with the Worker secret of the same name. Empty means `/match/` will not call the Worker. Never commit the value. |
@@ -116,16 +116,16 @@ What that command does:
 
 ### Google sign-in
 
-Continue with Google is hidden, and `signInWithGoogle` refuses to run, unless `GOOGLE_SIGN_IN=true`. Leave that variable unset on Vercel until the provider below is actually turned on. The Search Console verification meta tag is separate and stays in the layout.
+Continue with Google is shown, and `signInWithGoogle` runs, unless `GOOGLE_SIGN_IN=false`. Set that only to hide the button. The Search Console verification meta tag is separate and stays in the layout.
 
-When you are ready to turn it on:
+The provider still has to be configured:
 
 1. In Google Cloud Console, create an OAuth client of type **Web application**.
 2. Authorized redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback`
 3. Authorized JavaScript origins: `https://publicjobs.ca` and the Vercel preview origin.
 4. In Supabase → Authentication → Providers → Google, turn the provider on and paste the client id and secret.
 5. Add the same site origins under Authentication → URL configuration, as in the list above.
-6. Set `GOOGLE_SIGN_IN=true` on the server. The sign-in page then posts to `signInWithOAuth({ provider: "google" })`. Supabase sends the user back to `/auth/callback/`.
+6. Leave `GOOGLE_SIGN_IN` unset. The sign-in page posts to `signInWithOAuth({ provider: "google" })`. Supabase sends the user back to `/auth/callback/`. Set `GOOGLE_SIGN_IN=false` to hide the button.
 
 ## Vercel
 
@@ -147,12 +147,15 @@ STRIPE_WEBHOOK_SECRET=<signing secret for /api/stripe/webhook/>
 STRIPE_PRICE_MONTHLY=<price id, CA$14.99/month>
 STRIPE_PRICE_QUARTERLY=<price id, CA$29.99 every 3 months>
 STRIPE_PRICE_YEARLY=<price id, CA$59/year>
+STRIPE_AUTOMATIC_TAX=true
+RESEND_API_KEY=<Resend key for membership@publicjobs.ca>
+CRON_SECRET=<random string; Vercel sends it as Authorization: Bearer>
 ```
 
 Leave `AUTH_SECRET` unset on Vercel. Set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_QUARTERLY`, and `STRIPE_PRICE_YEARLY` on Preview and Production. Do not add a `NEXT_PUBLIC_` Stripe key. Checkout is hosted, so the browser never sees the secret key. Add the pixel id and Cloudflare token only if you want those tags on the preview.
 
 3. Deploy. Do not point `publicjobs.ca` at Vercel until the GitHub Pages site is ready to be retired. Cloudflare stays as DNS.
-4. After the first preview URL exists, add `https://<preview>.vercel.app/auth/callback/` to the Supabase redirect allow list. Do not add a Google OAuth client until `GOOGLE_SIGN_IN=true`.
+4. After the first preview URL exists, add `https://<preview>.vercel.app/auth/callback/` to the Supabase redirect allow list. Google sign-in stays visible unless `GOOGLE_SIGN_IN=false`.
 
 ## Stripe
 
@@ -162,9 +165,13 @@ Checkout and the customer portal run in test mode until `STRIPE_SECRET_KEY` is a
 - `createCheckoutSession` creates a Stripe customer, stores `profiles.stripe_customer_id`, then opens hosted Checkout (`mode=subscription`) for `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_QUARTERLY`, or `STRIPE_PRICE_YEARLY`. No trial, no promotion codes, no optional items. Success returns to `/account/?checkout=success`. Cancel returns to `/pricing/`.
 - `createPortalSession` opens the Customer Portal on the account’s default configuration (cancel at period end, switch plan, update card, invoices). Return URL is `/account/`.
 - Webhook `POST /api/stripe/webhook/` (trailing slash, because the no-slash path 308s and Stripe does not follow redirects). Verify `STRIPE_WEBHOOK_SECRET` against the raw body. The route is outside middleware, so it is not part of session refresh. `?x-vercel-protection-bypass=` may be present; the handler ignores it.
-- Handled events: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`. Each event id is inserted into `stripe_events` in the same transaction as the profile update. A repeat is a no-op. An older `event.created` does not overwrite a newer one. A different subscription does not cancel an active one.
+- Handled events: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`, `invoice.upcoming`. Each event id is inserted into `stripe_events` in the same transaction as the profile update. A repeat is a no-op. An older `event.created` does not overwrite a newer one. A different subscription does not cancel an active one. `invoice.upcoming` also runs the renewal-reminder scan.
+- Checkout collects the buyer's name and billing address, records agreement consent (time, terms version, plan, price, disclosure text) in `agreement_acceptances`, and asks Stripe for `consent_collection.terms_of_service` when the Dashboard terms URL is set. If Stripe rejects the session because that URL is missing, checkout retries without that flag and logs `stripe_terms_url_missing`. `automatic_tax` is sent only when `STRIPE_AUTOMATIC_TAX=true`.
+- After `checkout.session.completed`, a transactional agreement email is sent from `PublicJobs.ca <membership@publicjobs.ca>` when `RESEND_API_KEY` is set. A duplicate event does not send a second copy.
+- Renewal reminders for the 3-month plan (about 7 days out) and the yearly plan (about 30 days out) are sent by the daily cron `GET /api/cron/renewal-reminders/` (`CRON_SECRET`) and by `invoice.upcoming`. Monthly plans are not reminded. Stripe's own customer renewal email should be turned off so members do not get two reminders.
 - `membership_status=active` with `current_period_end` still in the future opens the full lists and the member match limit. `past_due` and `canceled` do not. Cancel at period end stays `active` until `cancel_at`, and the account page says when it cancels. A renewing plan shows the renewal date.
-- The 14-day refund is still a manual Stripe dashboard refund. The pricing page copy for that policy is unchanged.
+- The 14-day refund (first purchase and each renewal, once per account in any 12 months) is still issued from the Stripe dashboard. The pricing page, terms, and agreement email state that policy. Owner facts that are still placeholders live only in `web/lib/legal-config.ts`. A production build (`VERCEL_ENV=production`) fails while any placeholder remains. Preview builds warn and continue.
+- Do not edit the live signup Worker in this app's deploy. It still writes the homepage consent sentence into Resend. The Next app records the page URL and the canonical consent wording in `alert_consents`. The welcome template `job-alerts-welcome` still needs the CASL footer (mailing address, identification, unsubscribe) edited in Resend, not in this repo.
 - Prices must not include a free trial. A `trialing` subscription is not treated as a member.
 
 ```bash

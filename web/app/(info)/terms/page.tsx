@@ -1,6 +1,5 @@
 import { JsonLd } from "@/components/JsonLd";
-import { LegalTodo } from "@/components/LegalTodo";
-import { readContent } from "@/lib/content";
+import { TermsDocument } from "@/components/legal/TermsDocument";
 import { pageMetadata } from "@/lib/seo";
 import { BRAND, SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
@@ -15,7 +14,6 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function TermsPage() {
-  const html = readContent("terms-body.html");
   return (
     <main>
       <JsonLd
@@ -32,8 +30,7 @@ export default function TermsPage() {
           <a href="/">All openings</a>
         </p>
         <h1>Terms of use</h1>
-        <section className="description" dangerouslySetInnerHTML={{ __html: html }} />
-        <LegalTodo page="terms" />
+        <TermsDocument />
       </article>
     </main>
   );

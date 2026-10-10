@@ -9,8 +9,6 @@
   var statusEl = document.getElementById("status");
   var btn = document.getElementById("submit-btn");
   var fileText = "";
-  var leadTracked = false;
-
   function setStatus(msg, isError, href, label) {
     statusEl.replaceChildren();
     if (msg) statusEl.appendChild(document.createTextNode(msg + (href ? " " : "")));
@@ -135,7 +133,7 @@
     }
     btn.disabled = true;
     btn.textContent = "Checking jobs...";
-    setStatus("Checking your resume against every current opening. This takes about 30 to 60 seconds. Please keep this page open.", false);
+    setStatus("Comparing your resume with current openings. This takes about 30 to 60 seconds. Please keep this page open. Matches are suggestions and can be wrong.", false);
     try {
       var res = await fetch(ENDPOINT, {
         method: "POST",
@@ -159,13 +157,6 @@
       render("maybe-list", "maybe-wrap", data.maybe || []);
       renderUnlock(data.locked || 0);
       document.getElementById("results").hidden = false;
-      if (typeof fbq === "function") {
-        if (!leadTracked) {
-          leadTracked = true;
-          fbq("track", "Lead");
-        }
-        fbq("trackCustom", "MatchComplete");
-      }
       document.getElementById("results-title").focus();
     } catch (err) {
       setStatus("Something went wrong. Please check your connection and try again.", true);

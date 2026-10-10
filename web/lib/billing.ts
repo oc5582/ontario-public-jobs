@@ -1,6 +1,8 @@
 import Stripe from "stripe";
 import { query } from "./db";
-import type { PlanId } from "./site";
+import { disclosureText, stripeSubmitMessage, stripeTermsMessage } from "./legal-copy";
+import { LEGAL } from "./legal-config";
+import { planPriceLine, type PlanId } from "./site";
 
 export class BillingNotConfiguredError extends Error {
   constructor(message = "Billing is not available right now.") {
@@ -21,6 +23,8 @@ export type CheckoutInput = {
   email: string;
   plan: PlanId;
   origin: string;
+  customerName?: string;
+  agreementId?: string;
 };
 
 export type PortalInput = {
@@ -77,6 +81,13 @@ export function checkoutSessionCreateParams(
   customerId: string,
   priceId: string,
 ): Stripe.Checkout.SessionCreateParams {
+  const metadata: Stripe.MetadataParam = {
+    profile_id: input.profileId,
+    plan: input.plan,
+    terms_version: LEGAL.termsVersion,
+  };
+  if (input.agreementId) metadata.agreement_id = input.agreementId;
+  const automaticTax = process.env.STRIPE_AUTOMATIC_TAX === "true";
   return {
     mode: "subscription",
     customer: customerId,
@@ -86,9 +97,17 @@ export function checkoutSessionCreateParams(
     cancel_url: `${input.origin}/pricing/`,
     allow_promotion_codes: false,
     payment_method_collection: "always",
-    metadata: { profile_id: input.profileId, plan: input.plan },
+    billing_address_collection: "required",
+    customer_update: { name: "auto", address: "auto" },
+    consent_collection: { terms_of_service: "required" },
+    custom_text: {
+      terms_of_service_acceptance: { message: stripeTermsMessage(input.plan) },
+      submit: { message: stripeSubmitMessage() },
+    },
+    automatic_tax: automaticTax ? { enabled: true } : undefined,
+    metadata,
     subscription_data: {
-      metadata: { profile_id: input.profileId, plan: input.plan },
+      metadata: { profile_id: input.profileId, plan: input.plan, terms_version: LEGAL.termsVersion },
     },
   };
 }
@@ -143,7 +162,34 @@ export async function createCheckoutSession(input: CheckoutInput, stripe = getSt
     throw new AlreadySubscribedError();
   }
   const customerId = await ensureCustomer(stripe, input, profile.stripe_customer_id);
-  const session = await stripe.checkout.sessions.create(checkoutSessionCreateParams(input, customerId, priceId));
+  const name = (input.customerName || "").trim();
+  if (name) {
+    await stripe.customers.update(customerId, { name });
+    await query(`update profiles set customer_name = $2, updated_at = now() where id = $1`, [input.profileId, name]);
+  }
+  const inserted = await query<{ id: string }>(
+    `insert into agreement_acceptances
+       (profile_id, email, customer_name, plan, price_label, terms_version, disclosure_text)
+     values ($1, $2, $3, $4, $5, $6, $7)
+     returning id`,
+    [input.profileId, input.email, name || null, input.plan, planPriceLine(input.plan), LEGAL.termsVersion, disclosureText(input.plan)],
+  );
+  const agreementId = inserted[0]?.id;
+  const params = checkoutSessionCreateParams({ ...input, agreementId }, customerId, priceId);
+  let session: Stripe.Checkout.Session;
+  try {
+    session = await stripe.checkout.sessions.create(params);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (!/terms of service/i.test(message)) throw error;
+    console.error(JSON.stringify({ event: "stripe_terms_url_missing" }));
+    const withoutTerms = { ...params };
+    delete withoutTerms.consent_collection;
+    session = await stripe.checkout.sessions.create(withoutTerms);
+  }
+  if (agreementId && session.id) {
+    await query(`update agreement_acceptances set stripe_session_id = $2 where id = $1`, [agreementId, session.id]);
+  }
   if (!session.url) throw new Error("Stripe Checkout did not return a URL.");
   return { url: session.url };
 }

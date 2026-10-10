@@ -78,6 +78,12 @@ export async function JobView({ employer, slug }: { employer: string; slug: stri
           {descriptionHtml ? <div dangerouslySetInnerHTML={{ __html: descriptionHtml }} /> : <p>{UNAVAILABLE}</p>}
         </section>
         <ApplyRow url={job.apply_url} />
+        <p className="source-note">
+          Collected from {job.employer ? `${job.employer}'s` : "the employer's"} public careers site
+          {job.fetched ? ` on ${formatLongDate(job.fetched)}` : ""}. PublicJobs.ca is not affiliated with this
+          employer. The employer can ask us to correct or remove a listing.{" "}
+          <a href={`/report/?job=${encodeURIComponent(job.path)}`}>Report a fake or suspicious job</a>
+        </p>
         {job.closed && similar.length ? (
           <section className="similar-jobs" aria-labelledby="similar-heading">
             <h2 id="similar-heading">Similar open jobs</h2>

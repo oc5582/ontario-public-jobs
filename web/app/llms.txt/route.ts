@@ -1,5 +1,6 @@
 import { englishList } from "@/lib/format";
 import { listingFacts } from "@/lib/jobs";
+import { LEGAL } from "@/lib/legal-config";
 import { SITE_URL } from "@/lib/site";
 
 export const revalidate = 900;
@@ -13,11 +14,11 @@ export async function GET() {
 
 PublicJobs.ca lists current openings collected from employers' public career sites. The listings file records the system each posting came from: ${sources}. The site does not take applications. Each job page links to the employer's posting, and you apply there. Job pages are free and need no account.
 
-Lists on the homepage, /jobs/, and employer pages show the newest 10 openings to visitors who are not members, plus the total. The rest of a filtered list is a membership: CA$14.99 a month, CA$29.99 for 3 months, or CA$59 a year. Weekly email alerts stay free. Match your resume at /match/ compares a resume with current openings. The resume is not stored. Sign in to use it. One match is free and shows the top 5 jobs. A membership includes more matches, up to 20 a day.
+Lists on the homepage, /jobs/, and employer pages show the newest 10 openings to visitors who are not members, plus the total. The rest of a filtered list is a membership: CA$14.99 a month, CA$29.99 every 3 months (about CA$10 a month), or CA$59 a year (about CA$4.92 a month). Weekly email alerts stay free. Match your resume at /match/ compares a resume with current openings and shows suggestions, which can be wrong. The resume is not stored. Sign in to use it. One match is free and shows the top 5 jobs. A membership includes more matches, up to 20 a day. Matching does not require the weekly email.
 
 A posting whose closing date has passed stays on its own page, marked no longer available, and is left off the homepage, /jobs/, and the employer pages. Closed jobs are not in the sitemap.
 
-Listings are refreshed every weekday. ${facts.fetched} Contact: hello@publicjobs.ca.
+Listings are refreshed every weekday. ${facts.fetched} Contact: ${LEGAL.supportEmail}.
 
 ## Pages
 

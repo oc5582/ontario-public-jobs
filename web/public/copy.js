@@ -3,11 +3,11 @@ window.COPY = {
   productName: "PublicJobs.ca",
   pageHeading: "Government jobs in Toronto and the GTA",
   subhead:
-    "City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 60 other public employers in Toronto and the GTA.",
+    "City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 50 other public employers in Toronto and the GTA.",
   whoItsFor:
-    "City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 60 other public employers in Toronto and the GTA, each hiring on its own website. Their openings, collected in one place.",
+    "City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 50 other public employers in Toronto and the GTA, each hiring on its own website. Their openings, collected in one place.",
   promise:
-    "City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 60 other public employers in Toronto and the GTA, each hiring on its own website. Their openings, collected in one place.",
+    "City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 50 other public employers in Toronto and the GTA, each hiring on its own website. Their openings, collected in one place.",
   caslConsent:
     "I agree to receive job alert emails from PublicJobs.ca at this address. I can unsubscribe anytime.",
   softPayAsk:

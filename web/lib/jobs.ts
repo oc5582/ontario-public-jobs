@@ -148,6 +148,7 @@ type DetailRow = {
   location: string;
   closing: string | null;
   posted: string | null;
+  fetched: string | null;
   employment_type: string;
   work_mode: string;
   salary: string;
@@ -199,6 +200,7 @@ function toDetail(row: DetailRow): JobDetail {
     page_title: row.page_title,
     meta_description: row.meta_description,
     posted: (row.posted || "").slice(0, 10),
+    fetched: (row.fetched || "").slice(0, 10),
     employment_type: row.employment_type || "",
     work_mode: row.work_mode || "",
     salary: row.salary || "",
@@ -218,7 +220,7 @@ function toDetail(row: DetailRow): JobDetail {
 
 const DETAIL_SQL = `select j.id, j.title, e.name as employer_name, j.employer_slug, j.job_slug,
   j.path, j.page_title, j.meta_description, j.location, j.closing_date::text as closing,
-  j.posted_date::text as posted, j.employment_type, j.work_mode, j.salary, j.department,
+  j.posted_date::text as posted, j.fetched_at::date::text as fetched, j.employment_type, j.work_mode, j.salary, j.department,
   j.description, j.paragraphs, j.apply_url, j.category, j.fully_remote, e.website, e.logo_url, j.jobposting,
   (j.removed_at is not null) as removed,
   (j.removed_at is not null or (j.closing_date is not null and j.closing_date < (timezone('America/Toronto', now()))::date)) as closed

@@ -16,7 +16,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     title: `All job openings | ${BRAND}`,
     description: filtering
       ? "Filtered public-sector job openings in Toronto and the GTA listed on PublicJobs.ca."
-      : "Every current public-sector job opening in Toronto and the GTA listed on PublicJobs.ca.",
+      : "All current openings listed on PublicJobs.ca, collected from public employers' career sites.",
     path: "/jobs/",
     index: !filtering,
   });

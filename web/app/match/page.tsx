@@ -1,4 +1,5 @@
 import { getViewer } from "@/lib/auth";
+import { matchConsentText } from "@/lib/legal-copy";
 import { pageMetadata } from "@/lib/seo";
 import { BRAND } from "@/lib/site";
 import type { Metadata } from "next";
@@ -18,8 +19,9 @@ export default async function MatchPage() {
     <main className="match">
       <h1>Match your resume</h1>
       <p className="lede">
-        Add your resume and we will check it against every current opening on PublicJobs.ca. We show any job you might
-        qualify for, so you do not miss one. Free, 1 match. Sign in to use it.
+        Add your resume. We compare it with the current openings on PublicJobs.ca and show the ones that look like a
+        fit, with a short reason. Matches are suggestions and can be wrong. One match is free and shows the top 5. Sign
+        in to use it. Matching does not require job alerts.
       </p>
 
       {signedIn ? (
@@ -34,7 +36,7 @@ export default async function MatchPage() {
             )}
             <label className="checkbox" htmlFor="consent">
               <input type="checkbox" id="consent" name="casl_consent" value="yes" />
-              <span>Email me new jobs once a week. I can unsubscribe anytime.</span>
+              <span>{matchConsentText()}</span>
             </label>
             <p className="hint">Optional. Matching does not add you to the weekly email unless you check this.</p>
           </fieldset>

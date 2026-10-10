@@ -1,5 +1,6 @@
 "use client";
 
+import { turnOffAdTracking } from "@/components/AdNotice";
 import { usePathname } from "next/navigation";
 import { FOOTER } from "@/lib/site";
 
@@ -22,6 +23,10 @@ export function SiteFooter() {
           {link("Frequently asked questions", "/faq/", "/faq")}
           {link("Privacy", "/privacy/", "/privacy")}
           {link("Terms", "/terms/", "/terms")}
+          {link("Report a fake or suspicious job", "/report/", "/report")}
+          <button type="button" className="footer-text-btn" onClick={turnOffAdTracking}>
+            Turn off ad tracking
+          </button>
         </nav>
       </div>
     </footer>

@@ -4,6 +4,7 @@ import { membershipPeriodLabel } from "@/lib/membership";
 import { pageMetadata } from "@/lib/seo";
 import { PLANS } from "@/lib/site";
 import { signOut } from "../../account/actions";
+import { deleteMyAccount } from "../../account/delete-action";
 import { openPortal } from "../../billing/actions";
 
 export const metadata = pageMetadata({
@@ -84,6 +85,31 @@ export default async function AccountPage({
           <form action={signOut}>
             <button className="apply-btn secondary" type="submit">
               Sign out
+            </button>
+          </form>
+          {notice === "delete" ? (
+            <p className="status err" role="alert">
+              Check the box to confirm you want the account deleted.
+            </p>
+          ) : null}
+          {notice === "cancel-first" ? (
+            <p className="status err" role="alert">
+              Cancel the membership from Manage billing before deleting the account.
+            </p>
+          ) : null}
+          <form action={deleteMyAccount} className="account-delete">
+            <h2>Delete account</h2>
+            <p>
+              This removes your profile and match history. Billing records the law requires, such as payment records,
+              are kept. If a membership is still renewing, we cancel it first. If that cancellation cannot be completed,
+              deletion waits until you cancel from Manage billing.
+            </p>
+            <label className="checkbox">
+              <input type="checkbox" name="confirm" value="yes" required />
+              <span>I understand this deletes my account.</span>
+            </label>
+            <button className="apply-btn secondary" type="submit">
+              Delete account
             </button>
           </form>
         </section>

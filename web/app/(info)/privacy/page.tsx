@@ -1,5 +1,4 @@
-import { LegalTodo } from "@/components/LegalTodo";
-import { readContent } from "@/lib/content";
+import { PrivacyDocument } from "@/components/legal/PrivacyDocument";
 import { pageMetadata } from "@/lib/seo";
 import { BRAND } from "@/lib/site";
 import type { Metadata } from "next";
@@ -12,7 +11,6 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function PrivacyPage() {
-  const html = readContent("privacy-body.html");
   return (
     <main>
       <article className="job-page content">
@@ -20,8 +18,7 @@ export default function PrivacyPage() {
           <a href="/">All openings</a>
         </p>
         <h1>Privacy policy</h1>
-        <section className="description" dangerouslySetInnerHTML={{ __html: html }} />
-        <LegalTodo page="privacy" />
+        <PrivacyDocument />
       </article>
     </main>
   );

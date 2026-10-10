@@ -1,4 +1,5 @@
-import { getViewer } from "@/lib/auth";
+import { recordMatchAlertConsent } from "@/lib/alert-consent";
+import { getViewer, requestOrigin } from "@/lib/auth";
 import { MSG, runMatch } from "@/lib/match";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,10 @@ export async function POST(request: Request) {
   }
 
   const consent = data.casl_consent === true || ["yes", "true", "on"].includes(String(data.casl_consent || ""));
+  if (consent) {
+    const origin = await requestOrigin();
+    await recordMatchAlertConsent(viewer.email, `${origin}/match/`);
+  }
   const result = await runMatch({
     profileId: viewer.profile.id,
     email: viewer.email,

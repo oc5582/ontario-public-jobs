@@ -1,6 +1,7 @@
 import { JsonLd } from "@/components/JsonLd";
 import { faqEntities, readContent } from "@/lib/content";
 import { listingFacts } from "@/lib/jobs";
+import { LEGAL, isPlaceholder } from "@/lib/legal-config";
 import { pageMetadata } from "@/lib/seo";
 import { BRAND, SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
@@ -17,7 +18,12 @@ export const metadata: Metadata = pageMetadata({
 export default async function FaqPage() {
   const facts = await listingFacts();
   const noun = facts.employerCount === 1 ? "public employer" : "public employers";
-  const html = readContent("faq-body.html").replace("{{EMPLOYER_COUNT}}", `${facts.employerCount} ${noun}`);
+  const contact = isPlaceholder(LEGAL.supportEmail)
+    ? LEGAL.supportEmail
+    : `<a href="mailto:${LEGAL.supportEmail}">${LEGAL.supportEmail}</a>`;
+  const html = readContent("faq-body.html")
+    .replace("{{EMPLOYER_COUNT}}", `${facts.employerCount} ${noun}`)
+    .replace(/<a href="mailto:hello@publicjobs\.ca">hello@publicjobs\.ca<\/a>/g, contact);
   const entities = faqEntities(html);
   return (
     <main>

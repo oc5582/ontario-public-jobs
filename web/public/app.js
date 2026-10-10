@@ -30,7 +30,7 @@
     if (lead && C.signup && C.signup.lead) lead.textContent = C.signup.lead;
 
     const casl = $("#casl-label");
-    if (casl && C.caslConsent) casl.textContent = C.caslConsent;
+    if (casl && C.caslConsent && !casl.hasAttribute("data-keep-casl")) casl.textContent = C.caslConsent;
     const payAsk = $("#soft-pay-ask");
     if (payAsk && C.softPayAsk) payAsk.textContent = C.softPayAsk;
     const emailLabel = $("#email-label");
@@ -153,6 +153,18 @@
               fbq("track", "Lead");
             }
             showStatus(status, C.signup.successSent, true);
+            const label = $("#casl-label");
+            const consentText = label ? label.textContent || "" : "";
+            fetch("/api/alerts/consent/", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Accept: "application/json" },
+              credentials: "same-origin",
+              body: JSON.stringify({
+                email: email,
+                page_url: window.location.href,
+                consent_text: consentText,
+              }),
+            }).catch(function () {});
             $("#email").value = "";
             $("#consent").checked = false;
           });

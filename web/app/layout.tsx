@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { AdNotice } from "@/components/AdNotice";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteScripts } from "@/components/SiteScripts";
 import { BRAND, META_DESCRIPTION, PAGE_TITLE, SITE_URL } from "@/lib/site";
@@ -30,38 +31,15 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-function Tracking() {
-  const pixel = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+function CloudflareAnalytics() {
   const token = process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN;
-  if (!pixel && !token) return null;
+  if (!token) return null;
   return (
-    <>
-      {pixel ? (
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
-function load(){if(load.done)return;load.done=!0;
-s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
-if(b.readyState==='complete')load();else f.addEventListener('load',load)
-}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', ${JSON.stringify(pixel)});
-fbq('track', 'PageView');`,
-          }}
-        />
-      ) : null}
-      {token ? (
-        <script
-          defer
-          src="https://static.cloudflareinsights.com/beacon.min.js"
-          data-cf-beacon={JSON.stringify({ token })}
-        />
-      ) : null}
-    </>
+    <script
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon={JSON.stringify({ token })}
+    />
   );
 }
 
@@ -78,11 +56,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           fetchPriority="high"
         />
         <link rel="stylesheet" href="/styles.css" />
-        <Tracking />
+        <CloudflareAnalytics />
       </head>
       <body>
         {children}
         <SiteFooter />
+        <AdNotice pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID || ""} />
         <SiteScripts />
       </body>
     </html>

@@ -15,6 +15,7 @@ export type JobDetail = ListJob & {
   page_title: string;
   meta_description: string;
   posted: string;
+  fetched: string;
   employment_type: string;
   work_mode: string;
   salary: string;

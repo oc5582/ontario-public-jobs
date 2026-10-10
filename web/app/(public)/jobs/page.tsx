@@ -5,7 +5,7 @@ import { BRAND } from "@/lib/site";
 
 export const metadata = pageMetadata({
   title: `All job openings | ${BRAND}`,
-  description: "Every current public-sector job opening in Toronto and the GTA listed on PublicJobs.ca.",
+  description: "All current openings listed on PublicJobs.ca, collected from public employers' career sites.",
   path: "/jobs/",
 });
 

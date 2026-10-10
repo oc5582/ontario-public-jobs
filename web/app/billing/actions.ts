@@ -19,7 +19,9 @@ export async function startCheckout(formData: FormData) {
   if (!viewer.email || !viewer.profile) redirect("/login/?next=/pricing/");
   const plan = String(formData.get("plan") || "");
   if (!isPlan(plan)) redirect("/pricing/?notice=plan");
-  if (formData.get("agree") !== "yes") redirect("/pricing/?notice=terms");
+  if (formData.get("agree") !== plan) redirect("/pricing/?notice=terms");
+  const customerName = String(formData.get("customer_name") || "").trim();
+  if (customerName.length < 2 || customerName.length > 120) redirect("/pricing/?notice=name");
   let url = "";
   try {
     const origin = await requestOrigin();
@@ -28,6 +30,7 @@ export async function startCheckout(formData: FormData) {
       email: viewer.email,
       plan,
       origin,
+      customerName,
     });
     url = session.url;
   } catch (error) {
