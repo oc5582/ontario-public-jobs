@@ -58,7 +58,7 @@ export default async function AccountPage({
           ) : null}
           <p className="login-actions">
             <a className="apply-btn" href="/pricing/">
-              {viewer.isMember ? "See membership" : "Choose a membership"}
+              See membership plans
             </a>
           </p>
           <form action={openPortal}>

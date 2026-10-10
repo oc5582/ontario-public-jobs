@@ -3,6 +3,22 @@
   color: var(--civic);
 }
 
+.description a.apply-btn,
+.description a.apply-btn:hover,
+.description a.apply-btn:visited {
+  background: var(--civic);
+  color: #fff;
+  text-decoration: none;
+}
+
+.description a.apply-btn.secondary,
+.description a.apply-btn.secondary:hover,
+.description a.apply-btn.secondary:visited {
+  background: var(--surface);
+  color: var(--civic);
+  border: 1px solid var(--civic);
+}
+
 .description {
   overflow-wrap: break-word;
 }

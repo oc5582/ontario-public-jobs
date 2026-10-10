@@ -1728,6 +1728,37 @@ a.apply-btn.secondary {
   border: 1px solid var(--civic);
 }
 
+/* Link color rules (.description a, .match a) are more specific than .apply-btn
+   and were painting the label the same navy as the button fill. */
+a.apply-btn,
+a.apply-btn:hover,
+a.apply-btn:visited,
+.description a.apply-btn,
+.description a.apply-btn:hover,
+.description a.apply-btn:visited,
+.match a.apply-btn,
+.match a.apply-btn:hover,
+.match a.apply-btn:visited {
+  background: var(--civic);
+  color: #fff;
+  text-decoration: none;
+}
+
+a.apply-btn.secondary,
+a.apply-btn.secondary:hover,
+a.apply-btn.secondary:visited,
+.description a.apply-btn.secondary,
+.description a.apply-btn.secondary:hover,
+.description a.apply-btn.secondary:visited,
+.match a.apply-btn.secondary,
+.match a.apply-btn.secondary:hover,
+.match a.apply-btn.secondary:visited {
+  background: var(--surface);
+  color: var(--civic);
+  border: 1px solid var(--civic);
+  text-decoration: none;
+}
+
 .unlock {
   margin: 0;
   padding: 1.25rem 1rem 1.35rem;
