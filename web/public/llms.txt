@@ -1,0 +1,24 @@
+# PublicJobs.ca
+
+> Independent job board for government and public-sector openings in Toronto and the GTA. Run by Osama Chaudhary. Not affiliated with any government or listed employer.
+
+PublicJobs.ca lists current openings collected from employers' public career sites. The listings file records the system each posting came from: ADP Workforce Now, BambooHR, BeApplied, Comeet, Dayforce, employers' own websites, Greenhouse, HiBob, Humi, JazzHR, Jobvite, Oracle Candidate Experience, Oracle PeopleSoft, Oracle Taleo, SAP SuccessFactors, UKG UltiPro, Workable, and Workday. The site does not take applications. Each job page links to the employer's posting, and you apply there. Each job page is public and needs no account. List pages show the 10 newest openings unless you have a membership. The homepage can search titles and employers. Every current opening is also linked from /jobs/, and each employer has a page under /employers/. Match your resume at /match/ compares a resume with current openings. The resume is not stored. Matching currently follows the existing worker (free, up to 3 times). Email alerts are optional and stay free.
+
+A posting whose closing date has passed stays on its own page, marked closed, and is left off the homepage, /jobs/, and the employer pages.
+
+Listings are refreshed every weekday and published automatically. scripts/build_pages.py rebuilds the static pages from data/listings.json. The listings on the site now were fetched between October 6, 2026 and October 9, 2026. Contact: hello@publicjobs.ca.
+
+## Pages
+
+- [Home](https://publicjobs.ca/): Current openings, with search by job title and employer.
+- [All openings](https://publicjobs.ca/jobs/): Every current opening, split across pages of links.
+- [Employers](https://publicjobs.ca/employers/): Public employers, each with a page of its current openings.
+- [Match your resume](https://publicjobs.ca/match/): Compare a resume with current openings. The resume is not stored. Free, up to 3 times.
+- [About](https://publicjobs.ca/about/): Who runs the site, what it covers, how listings are collected, and how often they are updated.
+- [FAQ](https://publicjobs.ca/faq/): Answers to common questions about the site.
+- [Sitemap](https://publicjobs.ca/sitemap.xml): Every published URL.
+
+## Optional
+
+- [Privacy](https://publicjobs.ca/privacy/): What personal information the site collects and how email alerts work.
+- [Terms](https://publicjobs.ca/terms/): Terms of use.
