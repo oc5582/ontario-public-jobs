@@ -13,7 +13,7 @@ export async function GET() {
 
 PublicJobs.ca lists current openings collected from employers' public career sites. The listings file records the system each posting came from: ${sources}. The site does not take applications. Each job page links to the employer's posting, and you apply there. Job pages are free and need no account.
 
-Lists on the homepage, /jobs/, and employer pages show the newest 10 openings to visitors who are not members, plus the total. The rest of a filtered list is a membership: CA$14.99 a month, CA$29.99 for 3 months, or CA$59 a year. Weekly email alerts stay free. Match your resume at /match/ compares a resume with current openings. The resume is not stored. That matcher still allows 3 runs.
+Lists on the homepage, /jobs/, and employer pages show the newest 10 openings to visitors who are not members, plus the total. The rest of a filtered list is a membership: CA$14.99 a month, CA$29.99 for 3 months, or CA$59 a year. Weekly email alerts stay free. Match your resume at /match/ compares a resume with current openings. The resume is not stored. Sign in to use it. One match is free and shows the top 5 jobs. A membership includes more matches, up to 20 a day.
 
 A posting whose closing date has passed stays on its own page, marked no longer available, and is left off the homepage, /jobs/, and the employer pages. Closed jobs are not in the sitemap.
 
@@ -24,7 +24,7 @@ Listings are refreshed every weekday. ${facts.fetched} Contact: hello@publicjobs
 - [Home](${SITE_URL}/): Newest openings, with search by job title and employer. Visitors see 10. Members see the filtered list.
 - [All openings](${SITE_URL}/jobs/): Current openings. Visitors see the newest 10. Members see the full filtered list.
 - [Employers](${SITE_URL}/employers/): Public employers, each with a page of its current openings.
-- [Match your resume](${SITE_URL}/match/): Compare a resume with current openings. The resume is not stored. The current matcher allows 3 runs.
+- [Match your resume](${SITE_URL}/match/): Compare a resume with current openings. The resume is not stored. Sign in to use it. One match is free and shows the top 5 jobs. Members can match up to 20 times a day.
 - [Membership](${SITE_URL}/pricing/): Prices, and the cancel and refund terms.
 - [About](${SITE_URL}/about/): Who runs the site, what it covers, how listings are collected, and how often they are updated.
 - [FAQ](${SITE_URL}/faq/): Answers to common questions about the site.

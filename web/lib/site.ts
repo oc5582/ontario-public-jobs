@@ -4,9 +4,6 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://publicjobs
 export const SIGNUP_ENDPOINT =
   process.env.NEXT_PUBLIC_SIGNUP_ENDPOINT ||
   "https://ontario-public-jobs-signup.publicjobs.workers.dev";
-export const MATCH_ENDPOINT =
-  process.env.NEXT_PUBLIC_MATCH_ENDPOINT ||
-  "https://publicjobs-resume-match.publicjobs.workers.dev/match";
 
 export const PAGE_TITLE = "Independent job board for government jobs in Toronto and the GTA";
 export const META_DESCRIPTION =

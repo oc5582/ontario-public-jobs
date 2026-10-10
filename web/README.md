@@ -11,7 +11,7 @@ Payments are a stub. There are no Stripe keys in this project.
 - The homepage, `/jobs/`, employer pages, and filtered lists return the newest 10 open jobs and the total for visitors. The other jobs are not in the HTML or in `/api/jobs`. `?page=2` is ignored for visitors (the page redirects back to the same list without `page`). A member gets the full filtered list.
 - Filters: location, employer, category, job type, salary (annual CAD), posted since, closes by. Only the clean homepage, `/jobs/`, and `/employers/{slug}/` URLs are indexable. Any other filter combination is `noindex`.
 - Old job URLs in `legacy-redirects.json` and `/jobs/page/2` (and the rest of the old paginated index) 301 to the current URL.
-- `/match/` calls the existing Cloudflare Worker. This app does not change that Worker.
+- `/match/` requires a signed-in account. The server counts uses in `resume_match_usage` and calls the resume-match Worker only when `MATCH_TRUSTED_SECRET` is set. The weekly email form still posts to the existing signup Worker.
 - The homepage email form posts to the existing signup Worker, through the same `signup.config.js`, `copy.js`, and `app.js`.
 
 ## Local setup
@@ -47,7 +47,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. Sign in at `/login/` with `test@example.com`. No email is sent. That cookie is accepted only when `ALLOW_LOCAL_LOGIN=true` and the host is `localhost` or `127.0.0.1`.
+Open http://localhost:3000. Sign in at `/login/` with `test@example.com` (member) or `free-match@example.com` (one free match). No email is sent. That cookie is accepted only when `ALLOW_LOCAL_LOGIN=true` and the host is `localhost` or `127.0.0.1`.
 
 ## Environment variables
 
@@ -62,7 +62,8 @@ Every variable is listed in `.env.example`. Never commit `.env.local` or real se
 | `AUTH_SECRET` | Signs the local-only cookie. Required only when `ALLOW_LOCAL_LOGIN=true`. |
 | `ALLOW_LOCAL_LOGIN` | `true` only on your machine. Must stay `false` or unset on Vercel. |
 | `NEXT_PUBLIC_SIGNUP_ENDPOINT` | Existing signup Worker. Default is the production Worker URL. |
-| `NEXT_PUBLIC_MATCH_ENDPOINT` | Existing resume-match Worker. The page script has the URL hardcoded as well, matching the live site. |
+| `MATCH_WORKER_URL` | Server only. Resume-match Worker URL. The browser does not call it. |
+| `MATCH_TRUSTED_SECRET` | Server only. Shared with the Worker secret of the same name. Empty means `/match/` will not call the Worker. Never commit the value. |
 | `NEXT_PUBLIC_META_PIXEL_ID` | Optional. Same public id as the current site. Blank omits the pixel. |
 | `NEXT_PUBLIC_CF_ANALYTICS_TOKEN` | Optional. Blank omits Cloudflare Web Analytics. |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Not used yet. Do not add them until checkout is implemented. |
@@ -106,7 +107,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable key>
 ALLOW_LOCAL_LOGIN=false
 NEXT_PUBLIC_SIGNUP_ENDPOINT=https://ontario-public-jobs-signup.publicjobs.workers.dev
-NEXT_PUBLIC_MATCH_ENDPOINT=https://publicjobs-resume-match.publicjobs.workers.dev/match
+MATCH_WORKER_URL=https://publicjobs-resume-match.publicjobs.workers.dev/match
+MATCH_TRUSTED_SECRET=<same value as the Worker secret; leave empty until that Worker is deployed>
 ```
 
 Leave `AUTH_SECRET` unset on Vercel. Leave the Stripe variables unset. Add the pixel id and Cloudflare token only if you want those tags on the preview.
@@ -124,18 +126,25 @@ Leave `AUTH_SECRET` unset on Vercel. Leave the Stripe variables unset. Add the p
 
 `/pricing/` already shows CA$14.99/month, CA$29.99/3 months, and CA$59/year, plus the 14-day refund and self-serve cancel terms. The account is created before payment. Checkout buttons call the stub and show “Stripe Checkout is not connected yet.”
 
-## Resume matching limits (later)
+## Resume matching
 
-`/match/` still posts straight to `https://publicjobs-resume-match.publicjobs.workers.dev/match`. Do not change that Worker for this phase. It still enforces its own lifetime limit of 3 runs per email and per IP, including the known shared-message bug.
+`/match/` posts to `POST /api/match/` on this app. The route requires a signed-in account.
 
-The table `resume_match_usage` is ready and is not written yet. The later enforcement, without changing the Worker, is a server route that:
+- A free account (`membership_status` is not `active`) gets 1 match. The response keeps the top 5 jobs. The page shows an unlock card for the rest, linking to `/pricing/`.
+- An active member gets 20 matches per day, dated in America/Toronto. The next one returns “You've hit today's member limit. Try again tomorrow.”
+- A second free match returns “You've used your free match.” with a link to `/pricing/`.
+- A failed Worker call, a partial batch, or a crash does not insert a `resume_match_usage` row.
+- The weekly email is sent only when the checkbox is checked. The route forwards that choice to the Worker. It does not call the signup Worker itself.
+- Which limit fired is logged as JSON: `{ "event": "resume_match_limit", "limit": "free_used" | "member_daily" | "worker_daily" | "worker_spend" | "worker_ip" | "worker_person" }`.
 
-1. Identifies the viewer (or the free email).
-2. Allows a visitor 1 match and returns only the top 5 results.
-3. Allows a member unlimited matches, capped at 20 per day, counted in `resume_match_usage`.
-4. Then calls the existing Worker.
+The server calls `MATCH_WORKER_URL` with header `X-PublicJobs-Trusted: $MATCH_TRUSTED_SECRET`. That header skips the Worker's per-email and per-IP counters. The Worker still enforces its daily cap and monthly AI spend cap. If the secret or the URL is empty, the route returns “Resume matching is not available right now” and does not call the Worker. That avoids the Worker that is live today, which still counts 3 lifetime uses per IP.
 
-Until that route exists, the page copy stays “Free, up to 3 times,” because that is what the Worker still does.
+The Worker source to deploy later is `workers/resume-match/`. Do not deploy it as part of shipping this app. See that folder's README for the secret and the deploy command. Direct calls (the current publicjobs.ca `/match/` page) keep working if that source is deployed first: 3 lifetime matches per email, 10 per network per day, separate messages, signup only after the checks, and no charge when matching fails.
+
+```bash
+node --import ./scripts/register-ts.mjs --experimental-strip-types scripts/test_match_limits.mts
+node workers/resume-match/worker.test.mjs
+```
 
 ## Row level security check
 

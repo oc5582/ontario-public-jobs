@@ -1142,6 +1142,15 @@ button[type="submit"]:disabled {
   border-left-color: var(--urgent);
 }
 
+.match .status a {
+  font-weight: 600;
+}
+
+.match .unlock {
+  margin-top: 1.25rem;
+  border: 1px solid var(--rule);
+}
+
 .match ol.results {
   list-style: none;
   padding: 0;

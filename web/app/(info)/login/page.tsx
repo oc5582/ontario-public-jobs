@@ -15,7 +15,7 @@ const ERRORS: Record<string, string> = {
   email: "Enter a valid email address.",
   send: "The sign-in link could not be sent. Try again in a minute.",
   config: "Sign-in is not configured on this server yet.",
-  local: "That email is not a local test account. On this computer, use test@example.com. No email is sent.",
+  local: "That email is not a local test account. On this computer, use test@example.com or free-match@example.com. No email is sent.",
   google: "Google sign-in needs a Supabase project with the Google provider turned on.",
 };
 

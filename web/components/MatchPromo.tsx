@@ -14,9 +14,9 @@ export function MatchPromo({ count }: { count: number }) {
             Match my resume
           </a>
           <p className="match-promo-fine b2-desktop">
-            Free, up to 3 matches. Needs your email for job alerts. Your resume is not stored.
+            Free, 1 match. Sign in to use it. Your resume is not stored.
           </p>
-          <p className="match-promo-fine b2-phone">Free, up to 3 matches.</p>
+          <p className="match-promo-fine b2-phone">Free, 1 match.</p>
         </div>
         <ol className="match-promo-steps">
           {steps.map((label, index) => (
