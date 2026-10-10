@@ -4,52 +4,24 @@ import { MatchPromo } from "@/components/MatchPromo";
 import { SearchField } from "@/components/SearchField";
 import { SignupForm } from "@/components/SignupForm";
 import { UnlockCard } from "@/components/UnlockCard";
-import { getViewer } from "@/lib/auth";
-import { emptyFilters, filtersFromSearch, hasFilters, hasPageParam, searchWithoutPage } from "@/lib/filters";
+import { emptyFilters, queryFromFilters, type JobFilters } from "@/lib/filters";
 import { countNoun } from "@/lib/format";
 import { homeJsonLd, itemListJsonLd } from "@/lib/jsonld";
 import { searchJobs } from "@/lib/jobs";
-import { pageMetadata } from "@/lib/seo";
-import { BRAND, H1, META_DESCRIPTION, PAGE_TITLE, SITE_URL, SUBHEAD } from "@/lib/site";
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { H1, SITE_URL, SUBHEAD } from "@/lib/site";
 
-type Props = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
-
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const params = await searchParams;
-  const filters = filtersFromSearch(params);
-  return pageMetadata({
-    title: `${PAGE_TITLE} | ${BRAND}`,
-    description: META_DESCRIPTION,
-    path: "/",
-    index: !hasFilters(filters),
-  });
-}
-
-export default async function HomePage({ searchParams }: Props) {
-  const params = await searchParams;
-  if (hasPageParam(params)) {
-    const query = searchWithoutPage(params);
-    redirect(query ? `/?${query}` : "/");
-  }
-  const filters = filtersFromSearch(params);
-  const filtering = hasFilters(filters);
-  const viewer = await getViewer();
-  const result = await searchJobs(filters, viewer.isMember);
+export async function HomeView({ filters, member }: { filters: JobFilters; member: boolean }) {
+  const filtering = Boolean(queryFromFilters(filters));
+  const result = await searchJobs(filters, member);
   const openTotal = filtering ? (await searchJobs(emptyFilters(), false)).total : result.total;
   const label = countNoun(result.total, filtering);
-  const browseQuery = searchWithoutPage(params);
+  const browseQuery = queryFromFilters(filters);
   const browseHref = browseQuery ? `/jobs/?${browseQuery}` : "/jobs/";
 
   return (
     <main>
       <JsonLd data={homeJsonLd()} />
-      <JsonLd
-        data={itemListJsonLd("Current openings", `${SITE_URL}/`, result.jobs)}
-      />
+      <JsonLd data={itemListJsonLd("Current openings", `${SITE_URL}/`, result.jobs)} />
       <div className="content">
         <section className="hero" aria-labelledby="page-heading">
           <h1 id="page-heading">{H1}</h1>
@@ -87,7 +59,7 @@ export default async function HomePage({ searchParams }: Props) {
             </p>
           )}
           <JobList jobs={result.jobs} id="job-list" />
-          {viewer.isMember ? null : <UnlockCard total={result.total} shown={result.jobs.length} />}
+          {member ? null : <UnlockCard total={result.total} shown={result.jobs.length} />}
         </section>
       </div>
     </main>

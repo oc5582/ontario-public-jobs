@@ -1,21 +1,13 @@
 import { JsonLd } from "@/components/JsonLd";
 import { listEmployers } from "@/lib/jobs";
-import { pageMetadata } from "@/lib/seo";
-import { BRAND, SITE_URL } from "@/lib/site";
-import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/site";
 
-export const metadata: Metadata = pageMetadata({
-  title: `Employers | ${BRAND}`,
-  description:
-    "The full list of public employers in Toronto and the GTA whose current job openings PublicJobs.ca collects. You apply on each employer's own website.",
-  path: "/employers/",
-});
-
-export default async function EmployersPage() {
+export async function EmployersView() {
   const employers = await listEmployers();
   const names = employers.map((employer) => employer.name);
   return (
     <main>
+      <link rel="stylesheet" href="/pages.css" />
       <JsonLd
         data={{
           "@context": "https://schema.org",

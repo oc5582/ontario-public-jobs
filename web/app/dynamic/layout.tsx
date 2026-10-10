@@ -2,10 +2,13 @@ import { ViewerHeader } from "@/components/ViewerHeader";
 
 export const dynamic = "force-dynamic";
 
-export default async function InfoLayout({ children }: { children: React.ReactNode }) {
+export const metadata = {
+  robots: { index: false, follow: false },
+};
+
+export default async function LiveLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <link rel="stylesheet" href="/pages.css" />
       <ViewerHeader />
       {children}
     </>

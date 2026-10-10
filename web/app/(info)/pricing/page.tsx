@@ -53,6 +53,11 @@ export default async function PricingPage({
               Choose one of the three memberships below.
             </p>
           ) : null}
+          {notice === "terms" ? (
+            <p className="status err" role="alert">
+              Check the box to agree to the Terms before continuing.
+            </p>
+          ) : null}
           <ul className="plan-list">
             {PLANS.map((plan) => (
               <li key={plan.id}>
@@ -123,6 +128,12 @@ function PlanAction({
   return (
     <form action={startCheckout}>
       <input type="hidden" name="plan" value={planId} />
+      <label className="checkbox terms-ack">
+        <input type="checkbox" name="agree" value="yes" required />
+        <span>
+          I agree to the <a href="/terms/">Terms</a> (auto-renews, cancel anytime, 14-day refund)
+        </span>
+      </label>
       <button className="apply-btn" type="submit">
         Continue
       </button>

@@ -1,16 +1,26 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { hasListFilter, isListPath, livePathFor } from "@/lib/cache-paths";
 
-export async function middleware(request: NextRequest) {
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-pathname", request.nextUrl.pathname);
-  const response = NextResponse.next({ request: { headers: requestHeaders } });
+function hasSessionCookie(request: NextRequest): boolean {
+  return request.cookies.getAll().some((cookie) => {
+    if (cookie.name === "pj_local") return true;
+    return cookie.name.startsWith("sb-") && cookie.name.includes("auth-token");
+  });
+}
 
+function privateNoStore(response: NextResponse): NextResponse {
+  response.headers.set("Cache-Control", "private, no-store");
+  response.headers.set("CDN-Cache-Control", "private, no-store");
+  response.headers.set("Vercel-CDN-Cache-Control", "private, no-store");
+  return response;
+}
+
+async function refreshSession(request: NextRequest, response: NextResponse): Promise<NextResponse> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return response;
-
   const supabase = createServerClient(url, key, {
     cookies: {
       getAll() {
@@ -23,6 +33,40 @@ export async function middleware(request: NextRequest) {
     },
   });
   await supabase.auth.getUser();
+  return response;
+}
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Rewrites land here too. Passing through avoids a redirect loop back to the
+  // public URL. robots.txt disallows /dynamic, and the layout is noindex.
+  if (pathname === "/dynamic" || pathname.startsWith("/dynamic/")) {
+    const response = NextResponse.next();
+    privateNoStore(response);
+    if (hasSessionCookie(request)) await refreshSession(request, response);
+    return response;
+  }
+
+  const session = hasSessionCookie(request);
+  const live = livePathFor(pathname);
+  const rewriteToLive = Boolean(live && (session || (isListPath(pathname) && hasListFilter(request.nextUrl.searchParams))));
+
+  if (!session && !rewriteToLive) {
+    // Anonymous public pages must not Set-Cookie, or the CDN will not cache them.
+    return NextResponse.next();
+  }
+
+  let response: NextResponse;
+  if (rewriteToLive && live) {
+    const url = request.nextUrl.clone();
+    url.pathname = live;
+    response = NextResponse.rewrite(url);
+  } else {
+    response = NextResponse.next();
+  }
+  privateNoStore(response);
+  if (session) await refreshSession(request, response);
   return response;
 }
 

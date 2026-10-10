@@ -1,8 +1,10 @@
-import { headers } from "next/headers";
-import { getViewer } from "@/lib/auth";
+"use client";
+
+import { usePathname } from "next/navigation";
 
 function currentKey(pathname: string): string {
-  const path = pathname.replace(/\/$/, "") || "/";
+  const raw = pathname.replace(/\/$/, "") || "/";
+  const path = raw.startsWith("/dynamic") ? raw.slice("/dynamic".length) || "/" : raw;
   if (path === "/match") return "match";
   if (path === "/employers" || path.startsWith("/employers/")) return "employers";
   if (path === "/about") return "about";
@@ -15,12 +17,11 @@ function currentKey(pathname: string): string {
   return "";
 }
 
-export async function SiteHeader() {
-  const h = await headers();
-  const current = currentKey(h.get("x-pathname") || "/");
-  const viewer = await getViewer();
-  const accountHref = viewer.email ? "/account/" : "/login/";
-  const accountLabel = viewer.email ? "Account" : "Sign in";
+export function SiteHeader({ signedIn }: { signedIn: boolean }) {
+  const pathname = usePathname() || "/";
+  const current = currentKey(pathname);
+  const accountHref = signedIn ? "/account/" : "/login/";
+  const accountLabel = signedIn ? "Account" : "Sign in";
 
   function nav(label: string, href: string, key: string) {
     return (
@@ -55,7 +56,7 @@ export async function SiteHeader() {
               <li>{nav("Privacy", "/privacy/", "privacy")}</li>
               <li>{nav("Terms", "/terms/", "terms")}</li>
               <li>{nav("Pricing", "/pricing/", "pricing")}</li>
-              <li>{nav(accountLabel, accountHref, viewer.email ? "account" : "login")}</li>
+              <li>{nav(accountLabel, accountHref, signedIn ? "account" : "login")}</li>
             </ul>
           </div>
         </nav>

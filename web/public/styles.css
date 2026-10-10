@@ -1829,6 +1829,41 @@ a.apply-btn.secondary:visited,
   font-weight: 600;
 }
 
+.plan-list form {
+  flex: 1 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+
+.plan-list .terms-ack {
+  flex: 1 1 16rem;
+  margin: 0.35rem 0 0;
+}
+
+.plan-list .terms-ack a {
+  color: inherit;
+}
+
+.legal-todo {
+  margin: 2rem 0 0;
+  padding: 1rem 1.1rem;
+  border: 2px dashed var(--rule);
+  background: var(--paper);
+}
+
+.legal-todo h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.legal-todo p,
+.legal-todo li {
+  font-size: 0.95rem;
+}
+
 .login-form {
   max-width: 32rem;
   margin-top: 1.25rem;

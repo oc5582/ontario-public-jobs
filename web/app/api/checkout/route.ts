@@ -15,8 +15,11 @@ export async function POST(request: Request) {
   }
   let plan: PlanId;
   try {
-    const body = (await request.json()) as { plan?: unknown };
+    const body = (await request.json()) as { plan?: unknown; agree?: unknown };
     if (!isPlan(body.plan)) return Response.json({ error: "Unknown plan." }, { status: 400 });
+    if (body.agree !== true) {
+      return Response.json({ error: "Agree to the Terms before checkout." }, { status: 400 });
+    }
     plan = body.plan;
   } catch {
     return Response.json({ error: "Expected JSON." }, { status: 400 });

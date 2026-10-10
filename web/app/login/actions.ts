@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { localLoginAllowed, requestOrigin, safeNext, setLocalSession, supabaseConfigured } from "@/lib/auth";
+import { googleSignInEnabled } from "@/lib/google-sign-in";
 import { query } from "@/lib/db";
 import { createClient } from "@/lib/supabase";
 
@@ -41,7 +42,7 @@ export async function signInWithEmail(formData: FormData) {
 
 export async function signInWithGoogle(formData: FormData) {
   const next = safeNext(String(formData.get("next") || ""), "/account/");
-  if (!supabaseConfigured()) {
+  if (!googleSignInEnabled() || !supabaseConfigured()) {
     redirect(`/login/?error=google&next=${encodeURIComponent(next)}`);
   }
   const supabase = await createClient();

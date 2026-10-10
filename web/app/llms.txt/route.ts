@@ -2,7 +2,7 @@ import { englishList } from "@/lib/format";
 import { listingFacts } from "@/lib/jobs";
 import { SITE_URL } from "@/lib/site";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 export async function GET() {
   const facts = await listingFacts();
@@ -36,6 +36,9 @@ Listings are refreshed every weekday. ${facts.fetched} Contact: hello@publicjobs
 - [Terms](${SITE_URL}/terms/): Terms of use.
 `;
   return new Response(body, {
-    headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=3600" },
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "public, s-maxage=900, stale-while-revalidate=86400",
+    },
   });
 }

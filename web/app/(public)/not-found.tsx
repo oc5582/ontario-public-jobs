@@ -1,17 +1,5 @@
-import type { Metadata } from "next";
-import { SiteHeader } from "@/components/SiteHeader";
-import { BRAND } from "@/lib/site";
-
-export const metadata: Metadata = {
-  title: { absolute: `Page not found | ${BRAND}` },
-  description: "This page may have moved, or the job may have closed.",
-  robots: { index: false, follow: true },
-};
-
 export default function NotFound() {
   return (
-    <>
-    <SiteHeader signedIn={false} />
     <main>
       <div className="content not-found">
         <h1>Page not found</h1>
@@ -29,6 +17,5 @@ export default function NotFound() {
         </p>
       </div>
     </main>
-    </>
   );
 }

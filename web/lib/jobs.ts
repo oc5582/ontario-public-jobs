@@ -1,7 +1,19 @@
+import { unstable_cache } from "next/cache";
 import { query } from "./db";
+import { hasFilters, type JobFilters } from "./filters";
 import { FREE_LIST_LIMIT } from "./site";
-import type { JobFilters } from "./filters";
 import type { Facets, JobDetail, ListJob } from "./types";
+
+const PUBLIC_REVALIDATE_SECONDS = 900;
+
+function publicCache<T>(key: string[], fn: () => Promise<T>): Promise<T> {
+  return unstable_cache(fn, key, { revalidate: PUBLIC_REVALIDATE_SECONDS })();
+}
+
+/** Unfiltered lists, and an employer page with no other filters, are shared. */
+function listIsShared(filters: JobFilters): boolean {
+  return !hasFilters({ ...filters, employer: "" });
+}
 
 const OPEN = `j.removed_at is null
   and (j.closing_date is null or j.closing_date >= (timezone('America/Toronto', now()))::date)`;
@@ -79,7 +91,7 @@ function toListJob(row: ListRow): ListJob {
   };
 }
 
-export async function searchJobs(
+async function searchJobsUncached(
   filters: JobFilters,
   member: boolean,
 ): Promise<{ jobs: ListJob[]; total: number }> {
@@ -98,6 +110,17 @@ export async function searchJobs(
   );
   const total = rows.length ? Number(rows[0].total_count) : await countJobs(filters);
   return { jobs: rows.map(toListJob), total };
+}
+
+export function searchJobs(
+  filters: JobFilters,
+  member: boolean,
+): Promise<{ jobs: ListJob[]; total: number }> {
+  if (!listIsShared(filters)) return searchJobsUncached(filters, member);
+  return publicCache(
+    ["search-jobs", JSON.stringify(filters), member ? "member" : "public"],
+    () => searchJobsUncached(filters, member),
+  );
 }
 
 async function countJobs(filters: JobFilters): Promise<number> {
@@ -202,7 +225,7 @@ const DETAIL_SQL = `select j.id, j.title, e.name as employer_name, j.employer_sl
   from jobs j
   join employers e on e.id = j.employer_id`;
 
-export async function getJob(employer: string, slug: string): Promise<JobDetail | null> {
+async function getJobUncached(employer: string, slug: string): Promise<JobDetail | null> {
   const rows = await query<DetailRow>(
     `${DETAIL_SQL} where j.employer_slug = $1 and j.job_slug = $2 limit 1`,
     [employer, slug],
@@ -210,7 +233,11 @@ export async function getJob(employer: string, slug: string): Promise<JobDetail 
   return rows[0] ? toDetail(rows[0]) : null;
 }
 
-export async function similarOpenJobs(job: JobDetail): Promise<ListJob[]> {
+export function getJob(employer: string, slug: string): Promise<JobDetail | null> {
+  return publicCache(["job", employer, slug], () => getJobUncached(employer, slug));
+}
+
+async function similarOpenJobsUncached(job: JobDetail): Promise<ListJob[]> {
   const rows = await query<ListRow>(
     `select j.title, e.name as employer_name, j.location, j.closing_date::text as closing,
             j.employment_type, j.path, '0' as total_count
@@ -226,7 +253,11 @@ export async function similarOpenJobs(job: JobDetail): Promise<ListJob[]> {
   return rows.map(toListJob);
 }
 
-export async function getFacets(): Promise<Facets> {
+export function similarOpenJobs(job: JobDetail): Promise<ListJob[]> {
+  return publicCache(["similar", job.id], () => similarOpenJobsUncached(job));
+}
+
+async function getFacetsUncached(): Promise<Facets> {
   const [locations, employers, categories, types] = await Promise.all([
     query<{ city: string }>(
       `select distinct city from (
@@ -256,7 +287,11 @@ export async function getFacets(): Promise<Facets> {
   };
 }
 
-export async function listEmployers(): Promise<{ slug: string; name: string; open_count: number }[]> {
+export function getFacets(): Promise<Facets> {
+  return publicCache(["facets"], () => getFacetsUncached());
+}
+
+async function listEmployersUncached(): Promise<{ slug: string; name: string; open_count: number }[]> {
   const rows = await query<{ slug: string; name: string; open_count: number | string }>(
     `select e.slug, e.name,
             count(j.id) filter (where ${OPEN})::int as open_count
@@ -268,7 +303,13 @@ export async function listEmployers(): Promise<{ slug: string; name: string; ope
   return rows.map((row) => ({ ...row, open_count: Number(row.open_count) }));
 }
 
-export async function employerBySlug(slug: string): Promise<{ slug: string; name: string; website: string; logo_url: string } | null> {
+export function listEmployers(): Promise<{ slug: string; name: string; open_count: number }[]> {
+  return publicCache(["employers"], () => listEmployersUncached());
+}
+
+async function employerBySlugUncached(
+  slug: string,
+): Promise<{ slug: string; name: string; website: string; logo_url: string } | null> {
   const rows = await query<{ slug: string; name: string; website: string | null; logo_url: string | null }>(
     `select slug, name, website, logo_url from employers where slug = $1`,
     [slug],
@@ -276,6 +317,12 @@ export async function employerBySlug(slug: string): Promise<{ slug: string; name
   const row = rows[0];
   if (!row) return null;
   return { slug: row.slug, name: row.name, website: row.website || "", logo_url: row.logo_url || "" };
+}
+
+export function employerBySlug(
+  slug: string,
+): Promise<{ slug: string; name: string; website: string; logo_url: string } | null> {
+  return publicCache(["employer", slug], () => employerBySlugUncached(slug));
 }
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -300,7 +347,7 @@ const SOURCE_LABELS: Record<string, string> = {
   workday_cxs: "Workday",
 };
 
-export async function listingFacts(): Promise<{ sources: string[]; fetched: string; employerCount: number }> {
+async function listingFactsUncached(): Promise<{ sources: string[]; fetched: string; employerCount: number }> {
   const sources = await query<{ source: string | null }>(
     `select distinct source from jobs where removed_at is null`,
   );
@@ -331,13 +378,17 @@ export async function listingFacts(): Promise<{ sources: string[]; fetched: stri
   };
 }
 
+export function listingFacts(): Promise<{ sources: string[]; fetched: string; employerCount: number }> {
+  return publicCache(["listing-facts"], () => listingFactsUncached());
+}
+
 function formatFetched(iso: string): string {
   const [year, month, day] = iso.split("-").map(Number);
   const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   return `${months[month - 1]} ${day}, ${year}`;
 }
 
-export async function sitemapJobs(): Promise<{ path: string; lastmod: string }[]> {
+function sitemapJobsUncached(): Promise<{ path: string; lastmod: string }[]> {
   return query<{ path: string; lastmod: string }>(
     `select j.path,
             coalesce(j.posted_date::text, j.fetched_at::date::text, '') as lastmod
@@ -347,9 +398,17 @@ export async function sitemapJobs(): Promise<{ path: string; lastmod: string }[]
   );
 }
 
-export async function sitemapEmployers(): Promise<string[]> {
+export function sitemapJobs(): Promise<{ path: string; lastmod: string }[]> {
+  return publicCache(["sitemap-jobs"], () => sitemapJobsUncached());
+}
+
+async function sitemapEmployersUncached(): Promise<string[]> {
   const rows = await query<{ slug: string }>(
     `select slug from employers order by slug`,
   );
   return rows.map((row) => row.slug);
+}
+
+export function sitemapEmployers(): Promise<string[]> {
+  return publicCache(["sitemap-employers"], () => sitemapEmployersUncached());
 }

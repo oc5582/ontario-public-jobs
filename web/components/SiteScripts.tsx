@@ -1,13 +1,16 @@
-import { headers } from "next/headers";
+"use client";
 
-export async function SiteScripts() {
-  const h = await headers();
-  const path = (h.get("x-pathname") || "/").replace(/\/$/, "") || "/";
+import { usePathname } from "next/navigation";
+
+export function SiteScripts() {
+  const raw = (usePathname() || "/").replace(/\/$/, "") || "/";
+  const path = raw.startsWith("/dynamic") ? raw.slice("/dynamic".length) || "/" : raw;
   const pixel = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+  const onHome = path === "/";
   return (
     <>
       <script src="/nav.js" />
-      {path === "/" ? (
+      {onHome ? (
         <>
           <script src="/signup.config.js" />
           <script src="/copy.js" />

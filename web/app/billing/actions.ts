@@ -19,6 +19,7 @@ export async function startCheckout(formData: FormData) {
   if (!viewer.email || !viewer.profile) redirect("/login/?next=/pricing/");
   const plan = String(formData.get("plan") || "");
   if (!isPlan(plan)) redirect("/pricing/?notice=plan");
+  if (formData.get("agree") !== "yes") redirect("/pricing/?notice=terms");
   let url = "";
   try {
     const origin = await requestOrigin();

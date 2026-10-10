@@ -1,3 +1,4 @@
+import { LegalTodo } from "@/components/LegalTodo";
 import { readContent } from "@/lib/content";
 import { pageMetadata } from "@/lib/seo";
 import { BRAND } from "@/lib/site";
@@ -20,6 +21,7 @@ export default function PrivacyPage() {
         </p>
         <h1>Privacy policy</h1>
         <section className="description" dangerouslySetInnerHTML={{ __html: html }} />
+        <LegalTodo page="privacy" />
       </article>
     </main>
   );

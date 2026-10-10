@@ -55,12 +55,13 @@ Every variable is listed in `.env.example`. Never commit `.env.local` or real se
 
 | Variable | Where |
 | --- | --- |
-| `DATABASE_URL` | Server only. Local Postgres, or the Supabase **session pooler** URI (port 5432) with `sslmode=require`. This role must own the tables (the `postgres` user on Supabase). It is not the anon key. |
+| `DATABASE_URL` | Server only. Local Postgres, or the Supabase **transaction pooler** URI (port **6543**, `sslmode=require`). The Next.js pool uses 1 connection, with connect, statement, and idle timeouts. Do not use the session pooler (port 5432) on Vercel. The role is `publicjobs_app` (it owns the tables). It is not the anon key. |
 | `NEXT_PUBLIC_SITE_URL` | Canonical origin for links, sitemap, JSON-LD, and `llms.txt`. Use `https://publicjobs.ca` on Vercel until the domain is switched, so a preview does not publish a second origin. |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL. Leave blank to run without hosted Auth. |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable key. `NEXT_PUBLIC_SUPABASE_ANON_KEY` is accepted as a fallback. Never put the service role key in a `NEXT_PUBLIC_` variable. |
 | `AUTH_SECRET` | Signs the local-only cookie. Required only when `ALLOW_LOCAL_LOGIN=true`. |
 | `ALLOW_LOCAL_LOGIN` | `true` only on your machine. Must stay `false` or unset on Vercel. |
+| `GOOGLE_SIGN_IN` | Server only. Set to `true` only after the Supabase Google provider is configured. Unset or any other value hides Continue with Google. |
 | `NEXT_PUBLIC_SIGNUP_ENDPOINT` | Existing signup Worker. Default is the production Worker URL. |
 | `MATCH_WORKER_URL` | Server only. Resume-match Worker URL. The browser does not call it. |
 | `MATCH_TRUSTED_SECRET` | Server only. Shared with the Worker secret of the same name. Empty means `/match/` will not call the Worker. Never commit the value. |
@@ -74,7 +75,7 @@ Every variable is listed in `.env.example`. Never commit `.env.local` or real se
 
 ## Supabase (hosted)
 
-1. Create a project. In the SQL editor, run `supabase/migrations/20261010160000_init.sql`, then `supabase/migrations/20261010200000_stripe_billing.sql`. Do not run `supabase/seed.sql`.
+1. Create a project. In the SQL editor, run `supabase/migrations/20261010160000_init.sql`, then `supabase/migrations/20261010200000_stripe_billing.sql`, then `supabase/migrations/20261010223000_grant_publicjobs_app_stripe_events.sql`. Do not run `supabase/seed.sql`.
 2. The migrations enable RLS on `employers`, `jobs`, `profiles`, `resume_match_usage`, and `stripe_events`. `anon` and `authenticated` have no `SELECT` on jobs, employers, match usage, or Stripe event ids, so the Data API cannot bulk-read the list. `authenticated` can `SELECT` its own `profiles` row. Membership columns are not client-writable. `private.handle_new_user` inserts a profile when `auth.users` exists.
 3. The Next.js server connects with `DATABASE_URL` as the table owner, which bypasses RLS unless you force it. That is intentional: list queries run on the server, and the 10-job cap is applied there. Do not use the anon key as `DATABASE_URL`.
 4. Authentication → URL configuration:
@@ -84,20 +85,47 @@ Every variable is listed in `.env.example`. Never commit `.env.local` or real se
 6. Import the listings from a machine that has the repo and `psycopg2`:
 
 ```bash
-DATABASE_URL='postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:5432/postgres?sslmode=require' \
+DATABASE_URL='postgresql://publicjobs_app.[ref]:[password]@aws-0-ca-central-1.pooler.supabase.com:5432/postgres?sslmode=require' \
   python3 scripts/import_listings.py
 ```
 
-Use the session pooler (port 5432). The weekday refresh can call this script later instead of committing `listings.json`.
+That command is the GitHub Pages checkout path. It still checks `jobs/*/index.html` and rewrites `web/legacy-redirects.json`. Do not point the weekday refresh at it yet.
+
+### Weekday feed into Supabase (prepared, not switched)
+
+The static site publish (`scripts/build_pages.py`, committing `data/listings.json` and the HTML) stays as it is. When the weekday job should fill Supabase, call the import below and leave `build_pages.py` unchanged.
+
+1. The scrape writes the day's feed to a private JSON file with the same array shape as `data/listings.json`. Do not commit that file.
+2. From the repo root, with Node on `PATH` (the description formatter) and `psycopg2` installed:
+
+```bash
+DATABASE_URL='postgresql://publicjobs_app.qshleqzngbstqnthhxzw:[password]@HOST:6543/postgres?sslmode=require' \
+  python3 scripts/import_listings.py --feed /path/to/private-feed.json --supabase-only
+```
+
+`HOST` is the same pooler host already in the app's `DATABASE_URL` (`aws-0-ca-central-1.pooler.supabase.com` or `aws-1-ca-central-1.pooler.supabase.com`). Keep the user `publicjobs_app.qshleqzngbstqnthhxzw` and the current password. Port **6543** is the transaction pooler. The only query parameter is `sslmode=require`. Do not rotate the password.
+
+What that command does:
+
+- It does not read `jobs/*/index.html` and does not write `web/legacy-redirects.json`.
+- It does not insert `test@example.com`.
+- It runs `scripts/format_descriptions.ts`, then upserts each job on `path`.
+- It sets `removed_at` on rows that are still open and whose path is not in the file.
+- It is idempotent: a second run with the same file leaves the same rows.
+- It writes nothing if the file has fewer than 80% of the current non-removed jobs, or if an employer that currently has a non-removed job would drop to zero.
 
 ### Google sign-in
+
+Continue with Google is hidden, and `signInWithGoogle` refuses to run, unless `GOOGLE_SIGN_IN=true`. Leave that variable unset on Vercel until the provider below is actually turned on. The Search Console verification meta tag is separate and stays in the layout.
+
+When you are ready to turn it on:
 
 1. In Google Cloud Console, create an OAuth client of type **Web application**.
 2. Authorized redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback`
 3. Authorized JavaScript origins: `https://publicjobs.ca` and the Vercel preview origin.
 4. In Supabase → Authentication → Providers → Google, turn the provider on and paste the client id and secret.
 5. Add the same site origins under Authentication → URL configuration, as in the list above.
-6. The sign-in page posts to `signInWithOAuth({ provider: "google" })`. Supabase sends the user back to `/auth/callback/`, which exchanges the code and then opens the account page.
+6. Set `GOOGLE_SIGN_IN=true` on the server. The sign-in page then posts to `signInWithOAuth({ provider: "google" })`. Supabase sends the user back to `/auth/callback/`.
 
 ## Vercel
 
@@ -105,11 +133,12 @@ Use the session pooler (port 5432). The weekday refresh can call this script lat
 2. Environment variables for Preview and Production:
 
 ```
-DATABASE_URL=<Supabase session pooler URI with sslmode=require>
+DATABASE_URL=postgresql://publicjobs_app.qshleqzngbstqnthhxzw:[password]@HOST:6543/postgres?sslmode=require
 NEXT_PUBLIC_SITE_URL=https://publicjobs.ca
 NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable key>
 ALLOW_LOCAL_LOGIN=false
+GOOGLE_SIGN_IN=
 NEXT_PUBLIC_SIGNUP_ENDPOINT=https://ontario-public-jobs-signup.publicjobs.workers.dev
 MATCH_WORKER_URL=https://publicjobs-resume-match.publicjobs.workers.dev/match
 MATCH_TRUSTED_SECRET=<same value as the Worker secret; leave empty until that Worker is deployed>
@@ -123,7 +152,7 @@ STRIPE_PRICE_YEARLY=<price id, CA$59/year>
 Leave `AUTH_SECRET` unset on Vercel. Set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_QUARTERLY`, and `STRIPE_PRICE_YEARLY` on Preview and Production. Do not add a `NEXT_PUBLIC_` Stripe key. Checkout is hosted, so the browser never sees the secret key. Add the pixel id and Cloudflare token only if you want those tags on the preview.
 
 3. Deploy. Do not point `publicjobs.ca` at Vercel until the GitHub Pages site is ready to be retired. Cloudflare stays as DNS.
-4. After the first preview URL exists, add `https://<preview>.vercel.app/auth/callback/` to the Supabase redirect allow list, and add that origin in the Google OAuth client if you test Google there.
+4. After the first preview URL exists, add `https://<preview>.vercel.app/auth/callback/` to the Supabase redirect allow list. Do not add a Google OAuth client until `GOOGLE_SIGN_IN=true`.
 
 ## Stripe
 

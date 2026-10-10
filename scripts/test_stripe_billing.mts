@@ -8,7 +8,7 @@ import {
   portalSessionCreateParams,
   priceIdForPlan,
 } from "../web/lib/billing.ts";
-import { query } from "../web/lib/db.ts";
+import { getPool, query } from "../web/lib/db.ts";
 import { grantsMemberAccess, membershipPeriodLabel } from "../web/lib/membership.ts";
 import { handleStripeWebhook, membershipState, periodEndUnix, subscriptionWrite } from "../web/lib/stripe-webhook.ts";
 
@@ -471,5 +471,28 @@ assert.equal(creates, 1);
 
 await query(`delete from stripe_events where id like 'evt_test_%'`);
 await query(`delete from profiles where id = $1`, [PROFILE]);
+
+const appRole = await query<{ ok: number }>(`select 1 as ok from pg_roles where rolname = 'publicjobs_app'`);
+if (!appRole.length) {
+  console.log("app-role webhook check skipped: publicjobs_app is not on this database");
+} else {
+  const client = await getPool().connect();
+  try {
+    await client.query("begin");
+    await client.query("set local role publicjobs_app");
+    await client.query(`insert into stripe_events (id, type) values ($1, 'role.probe')`, [
+      `evt_role_${Date.now()}`,
+    ]);
+    await client.query(`update profiles set updated_at = updated_at where false`);
+    await client.query(
+      `insert into resume_match_usage (profile_id, email_hash, used_on)
+       select id, 'probe', current_date from profiles where false`,
+    );
+    await client.query("rollback");
+  } finally {
+    client.release();
+  }
+  console.log("app role can write stripe_events, profiles, and resume_match_usage");
+}
 
 console.log("stripe billing tests passed");

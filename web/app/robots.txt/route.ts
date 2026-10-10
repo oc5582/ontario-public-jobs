@@ -1,6 +1,6 @@
 import { SITE_URL } from "@/lib/site";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 export function GET() {
   const body = [
@@ -11,6 +11,7 @@ export function GET() {
     "Disallow: /auth",
     "Disallow: /api",
     "Disallow: /checkout",
+    "Disallow: /dynamic",
     "",
     "Content-Signal: search=yes, ai-input=yes, ai-train=yes",
     "",
@@ -18,6 +19,9 @@ export function GET() {
     "",
   ].join("\n");
   return new Response(body, {
-    headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=3600" },
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "public, s-maxage=900, stale-while-revalidate=86400",
+    },
   });
 }

@@ -1,10 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { SiteFooter } from "@/components/SiteFooter";
-import { SiteHeader } from "@/components/SiteHeader";
 import { SiteScripts } from "@/components/SiteScripts";
 import { BRAND, META_DESCRIPTION, PAGE_TITLE, SITE_URL } from "@/lib/site";
-
-export const dynamic = "force-dynamic";
 
 const OG_ALT = "PublicJobs.ca: government jobs in Toronto and the GTA";
 
@@ -84,7 +81,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Tracking />
       </head>
       <body>
-        <SiteHeader />
         {children}
         <SiteFooter />
         <SiteScripts />

@@ -1,4 +1,5 @@
 import { JsonLd } from "@/components/JsonLd";
+import { LegalTodo } from "@/components/LegalTodo";
 import { readContent } from "@/lib/content";
 import { pageMetadata } from "@/lib/seo";
 import { BRAND, SITE_URL } from "@/lib/site";
@@ -32,6 +33,7 @@ export default function TermsPage() {
         </p>
         <h1>Terms of use</h1>
         <section className="description" dangerouslySetInnerHTML={{ __html: html }} />
+        <LegalTodo page="terms" />
       </article>
     </main>
   );

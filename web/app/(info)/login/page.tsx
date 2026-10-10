@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getViewer, localLoginAllowed, safeNext, supabaseConfigured } from "@/lib/auth";
+import { googleSignInEnabled } from "@/lib/google-sign-in";
 import { pageMetadata } from "@/lib/seo";
 import { signInWithEmail, signInWithGoogle } from "../../login/actions";
 
@@ -30,6 +31,7 @@ export default async function LoginPage({
   if (viewer.email) redirect(next);
   const h = await headers();
   const localOnly = !supabaseConfigured() && localLoginAllowed(h.get("host"));
+  const google = googleSignInEnabled();
   const errorKey = typeof params.error === "string" ? params.error : "";
   const sent = params.sent === "1";
 
@@ -48,7 +50,7 @@ export default async function LoginPage({
           {localOnly ? (
             <p>On this computer, sign-in uses a local test account. No email is sent.</p>
           ) : (
-            <p>We email you a sign-in link. You can also use Google.</p>
+            <p>We email you a sign-in link.{google ? " You can also use Google." : ""}</p>
           )}
           {sent ? (
             <p className="status ok" role="status">
@@ -79,14 +81,16 @@ export default async function LoginPage({
               </button>
             </div>
           </form>
-          <form action={signInWithGoogle}>
-            <input type="hidden" name="next" value={next} />
-            <div className="login-actions">
-              <button className="apply-btn secondary" type="submit">
-                Continue with Google
-              </button>
-            </div>
-          </form>
+          {google ? (
+            <form action={signInWithGoogle}>
+              <input type="hidden" name="next" value={next} />
+              <div className="login-actions">
+                <button className="apply-btn secondary" type="submit">
+                  Continue with Google
+                </button>
+              </div>
+            </form>
+          ) : null}
         </section>
       </article>
     </main>

@@ -1,6 +1,16 @@
+import { attachDatabasePool } from "@vercel/functions";
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
 
 const globalForPg = globalThis as unknown as { pool?: Pool };
+
+// One client per serverless instance. The hosted DATABASE_URL must be the
+// Supabase transaction pooler (port 6543), not the session pooler (port 5432).
+// Session mode caps the whole project at a small pool (15 on the preview) and
+// a handful of instances exhaust it. Timeouts release a stuck client.
+const POOL_MAX = 1;
+const CONNECT_TIMEOUT_MS = 5_000;
+const IDLE_TIMEOUT_MS = 5_000;
+const STATEMENT_TIMEOUT_MS = 8_000;
 
 export function getPool(): Pool {
   const connectionString = process.env.DATABASE_URL;
@@ -11,7 +21,19 @@ export function getPool(): Pool {
     const ssl = /supabase\.(co|com)|sslmode=require/.test(connectionString)
       ? { rejectUnauthorized: false as const }
       : undefined;
-    globalForPg.pool = new Pool({ connectionString, ssl, max: 5 });
+    const pool = new Pool({
+      connectionString,
+      ssl,
+      max: POOL_MAX,
+      connectionTimeoutMillis: CONNECT_TIMEOUT_MS,
+      idleTimeoutMillis: IDLE_TIMEOUT_MS,
+      // Client-side statement timeout. A server startup `statement_timeout` is
+      // rejected by some transaction poolers, so the limit is enforced here.
+      query_timeout: STATEMENT_TIMEOUT_MS,
+      allowExitOnIdle: true,
+    });
+    if (process.env.VERCEL) attachDatabasePool(pool);
+    globalForPg.pool = pool;
   }
   return globalForPg.pool;
 }

@@ -1,9 +1,10 @@
-import { headers } from "next/headers";
+"use client";
+
+import { usePathname } from "next/navigation";
 import { FOOTER } from "@/lib/site";
 
-export async function SiteFooter() {
-  const h = await headers();
-  const path = (h.get("x-pathname") || "/").replace(/\/$/, "") || "/";
+export function SiteFooter() {
+  const path = (usePathname() || "/").replace(/\/$/, "") || "/";
   function link(label: string, href: string, key: string) {
     const current = path === key ? "page" : undefined;
     return (

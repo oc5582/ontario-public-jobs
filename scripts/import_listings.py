@@ -1,15 +1,33 @@
 #!/usr/bin/env python3
-"""Upsert data/listings.json into Postgres (local or Supabase).
+"""Upsert a listings feed into Postgres (local or Supabase).
 
 Uses scripts/build_pages.py for slugs, salary, locations and page titles so
 job URLs stay the same as the GitHub Pages site. Does not rewrite listings.json
 and does not run the static page build.
 
+The GitHub Pages path is unchanged:
+
   DATABASE_URL=postgres://publicjobs:publicjobs_local@127.0.0.1:5432/publicjobs \\
     python3 scripts/import_listings.py
 
-On localhost the script also upserts the fake member test@example.com.
-Pass --no-seed-member to skip that. Pass --seed-member to force it.
+That checks slugs against the built HTML under jobs/ and rewrites
+web/legacy-redirects.json. On localhost it also upserts the fake member
+test@example.com. Pass --no-seed-member to skip that. Pass --seed-member to force it.
+
+The weekday refresh should not use that path for Supabase. Call this instead,
+after the scrape has written a private JSON file in the listings.json shape.
+Node must be on PATH because the description formatter runs. Do not commit the
+feed, and do not change scripts/build_pages.py.
+
+  DATABASE_URL='postgresql://postgres.[ref]:[password]@aws-0-ca-central-1.pooler.supabase.com:6543/postgres?sslmode=require' \\
+    python3 scripts/import_listings.py --feed /path/to/private-feed.json --supabase-only
+
+--supabase-only skips the HTML check and the redirect file, never seeds
+test@example.com, runs the description formatter, upserts by path, and sets
+removed_at on open rows whose path is not in the feed. It aborts without
+writing if the feed has fewer than 80% of the current non-removed jobs, or if
+any employer that currently has a non-removed job would drop to zero. Running
+it again with the same file is a no-op aside from updated_at.
 """
 
 from __future__ import annotations
@@ -131,8 +149,9 @@ def parse_fetched(value: str) -> datetime | None:
         return None
 
 
-def load_jobs() -> list[dict]:
-    raw = json.loads((ROOT / "data" / "listings.json").read_text(encoding="utf-8"))
+def load_jobs(path: Path | None = None) -> list[dict]:
+    source = path or (ROOT / "data" / "listings.json")
+    raw = json.loads(source.read_text(encoding="utf-8"))
     if not isinstance(raw, list):
         raise SystemExit("data/listings.json must be a JSON array")
     kept = [job for job in raw if not bp.is_excluded_job(job)]
@@ -370,30 +389,78 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
     )
 
 
+def guard_feed(conn, jobs: list[dict]) -> None:
+    """Refuse a feed that would close most of the board or an entire employer."""
+    with conn.cursor() as cur:
+        cur.execute("select count(*) from jobs where removed_at is null")
+        current = int(cur.fetchone()[0])
+        if current == 0:
+            return
+        if len(jobs) * 10 < current * 8:
+            raise SystemExit(
+                f"refusing feed: {len(jobs)} jobs is under 80% of {current} current rows. "
+                "Nothing was written."
+            )
+        cur.execute(
+            """
+            select employer_slug
+            from jobs
+            where removed_at is null
+            group by employer_slug
+            """
+        )
+        current_employers = {row[0] for row in cur.fetchall()}
+        incoming = {job["_employer_slug"] for job in jobs}
+        dropped = sorted(current_employers - incoming)
+        if dropped:
+            sample = ", ".join(dropped[:12])
+            raise SystemExit(
+                "refusing feed: it would mark every current job removed for "
+                f"{sample}. Nothing was written."
+            )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--no-seed-member", action="store_true")
     parser.add_argument("--seed-member", action="store_true")
+    parser.add_argument(
+        "--feed",
+        help="JSON array in the data/listings.json shape. Default: data/listings.json.",
+    )
+    parser.add_argument(
+        "--supabase-only",
+        action="store_true",
+        help="Upsert into Postgres only. Skip built HTML and legacy redirects. Never seed a member.",
+    )
     args = parser.parse_args()
     database_url = os.environ.get("DATABASE_URL", "").strip()
     if not database_url:
         raise SystemExit("DATABASE_URL is required")
-    jobs = load_jobs()
-    check_paths(jobs)
-    redirects = legacy_redirects(jobs)
-    REDIRECTS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    REDIRECTS_PATH.write_text(json.dumps(redirects, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote {len(redirects)} legacy redirects to {REDIRECTS_PATH.relative_to(ROOT)}")
+    feed = Path(args.feed) if args.feed else None
+    jobs = load_jobs(feed)
+    if args.supabase_only:
+        print("Supabase-only import: not checking built HTML and not rewriting legacy redirects.")
+    else:
+        check_paths(jobs)
+        redirects = legacy_redirects(jobs)
+        REDIRECTS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        REDIRECTS_PATH.write_text(json.dumps(redirects, indent=2) + "\n", encoding="utf-8")
+        print(f"Wrote {len(redirects)} legacy redirects to {REDIRECTS_PATH.relative_to(ROOT)}")
     host = ""
     try:
         host = database_url.split("@", 1)[1]
     except IndexError:
         host = database_url
     seed_member = args.seed_member or (
-        not args.no_seed_member and ("localhost" in host or "127.0.0.1" in host)
+        not args.supabase_only
+        and not args.no_seed_member
+        and ("localhost" in host or "127.0.0.1" in host)
     )
     conn = psycopg2.connect(database_url)
     try:
+        if args.supabase_only:
+            guard_feed(conn, jobs)
         upsert(conn, jobs, seed_member)
     finally:
         conn.close()

@@ -80,6 +80,20 @@ export function hasPageParam(params: Record<string, string | string[] | undefine
   return Object.prototype.hasOwnProperty.call(params, "page");
 }
 
+export function queryFromFilters(filters: JobFilters): string {
+  const search = new URLSearchParams();
+  if (filters.q) search.set("q", filters.q);
+  if (filters.location) search.set("location", filters.location);
+  if (filters.employer) search.set("employer", filters.employer);
+  if (filters.category) search.set("category", filters.category);
+  if (filters.type) search.set("type", filters.type);
+  if (filters.salaryMin != null) search.set("salary_min", String(filters.salaryMin));
+  if (filters.salaryMax != null) search.set("salary_max", String(filters.salaryMax));
+  if (filters.postedSince) search.set("posted_since", filters.postedSince);
+  if (filters.closesBy) search.set("closes_by", filters.closesBy);
+  return search.toString();
+}
+
 export function searchWithoutPage(params: Record<string, string | string[] | undefined>): string {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {

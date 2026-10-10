@@ -10,8 +10,6 @@ import type { JobDetail } from "@/lib/types";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-type Props = { params: Promise<{ employer: string; slug: string }> };
-
 const UNAVAILABLE =
   "A job description is not available for this posting. Use the Apply button to view details on the employer site.";
 
@@ -29,8 +27,7 @@ function metaRows(job: JobDetail): { label: string; value: string; href?: string
   return rows.filter((row) => row.value);
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { employer, slug } = await params;
+export async function jobMetadata(employer: string, slug: string): Promise<Metadata> {
   const job = await getJob(employer, slug);
   if (!job) return { title: "Page not found" };
   return pageMetadata({
@@ -41,8 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function JobPage({ params }: Props) {
-  const { employer, slug } = await params;
+export async function JobView({ employer, slug }: { employer: string; slug: string }) {
   const job = await getJob(employer, slug);
   if (!job) notFound();
   const similar = job.closed ? await similarOpenJobs(job) : [];
