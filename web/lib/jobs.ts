@@ -32,6 +32,7 @@ type ListRow = {
   title: string;
   employer_name: string;
   location: string;
+  location_places?: unknown;
   closing: string | null;
   employment_type: string;
   path: string;
@@ -99,6 +100,7 @@ function toListJob(row: ListRow): ListJob {
     title: row.title,
     employer: row.employer_name,
     location: row.location || "",
+    location_places: row.location_places,
     closing: (row.closing || "").slice(0, 10),
     type: row.employment_type || "",
     href: jobHref(row.path),
@@ -114,7 +116,7 @@ async function searchJobsUncached(
   const where = whereFor(filters, params);
   const limit = member ? "" : `limit ${FREE_LIST_LIMIT}`;
   const rows = await query<ListRow>(
-    `select j.title, e.name as employer_name, j.location, j.closing_date::text as closing,
+    `select j.title, e.name as employer_name, j.location, j.location_places, j.closing_date::text as closing,
             j.employment_type, j.path, count(*) over() as total_count
      from jobs j
      join employers e on e.id = j.employer_id
@@ -161,6 +163,7 @@ type DetailRow = {
   page_title: string;
   meta_description: string;
   location: string;
+  location_places: unknown;
   closing: string | null;
   posted: string | null;
   first_seen: string | null;
@@ -209,6 +212,7 @@ function toDetail(row: DetailRow): JobDetail {
     title: row.title,
     employer_name: row.employer_name,
     location: row.location,
+    location_places: row.location_places,
     closing: row.closing,
     employment_type: row.employment_type,
     path: row.path,
@@ -243,7 +247,7 @@ function toDetail(row: DetailRow): JobDetail {
 }
 
 const DETAIL_SQL = `select j.id, j.title, e.name as employer_name, j.employer_slug, j.job_slug,
-  j.path, j.page_title, j.meta_description, j.location, j.closing_date::text as closing,
+  j.path, j.page_title, j.meta_description, j.location, j.location_places, j.closing_date::text as closing,
   j.posted_date::text as posted, j.first_seen_at::date::text as first_seen, j.fetched_at::date::text as fetched,
   j.employment_type, j.work_mode, j.salary, j.department,
   j.description, j.paragraphs, j.apply_url, j.category, j.cities, j.fully_remote, e.website, e.logo_url, j.jobposting,
@@ -272,6 +276,7 @@ type SimilarRow = {
   category: string;
   cities: string[] | null;
   location: string | null;
+  location_places: unknown;
   closing: string | null;
   employment_type: string | null;
   path: string;
@@ -281,7 +286,7 @@ async function similarOpenJobsUncached(job: JobDetail): Promise<ListJob[]> {
   const category = job.category || "";
   const rows = await query<SimilarRow>(
     `select j.id, j.title, e.name as employer_name, j.employer_slug, j.category, j.cities,
-            j.location, j.closing_date::text as closing, j.employment_type, j.path
+            j.location, j.location_places, j.closing_date::text as closing, j.employment_type, j.path
      from jobs j
      join employers e on e.id = j.employer_id
      where ${OPEN}
@@ -300,6 +305,7 @@ async function similarOpenJobsUncached(job: JobDetail): Promise<ListJob[]> {
     category: row.category || "",
     cities: asCities(row.cities),
     location: row.location || "",
+    location_places: row.location_places,
     closing: (row.closing || "").slice(0, 10),
     type: row.employment_type || "",
     path: row.path,
@@ -320,14 +326,14 @@ async function neighbourJobsUncached(job: JobDetail): Promise<ListJob[]> {
   try {
     const rows = await query<RankedRow>(
       `with ranked as (
-         select j.id, j.title, e.name as employer_name, j.location,
+         select j.id, j.title, e.name as employer_name, j.location, j.location_places,
                 j.closing_date::text as closing, j.employment_type, j.path,
                 row_number() over (order by ${JOB_ORDER}) as rn
          from jobs j
          join employers e on e.id = j.employer_id
          where ${OPEN} and j.employer_slug = $1
        )
-       select id, title, employer_name, location, closing, employment_type, path,
+       select id, title, employer_name, location, location_places, closing, employment_type, path,
               rn::text as rn, '0' as total_count
        from ranked
        order by rn::int`,
@@ -352,7 +358,7 @@ async function elsewhereJobsUncached(job: JobDetail, excludePaths: string[]): Pr
   try {
     if (!job.category) return [];
     const rows = await query<ListRow>(
-      `select j.title, e.name as employer_name, j.location, j.closing_date::text as closing,
+      `select j.title, e.name as employer_name, j.location, j.location_places, j.closing_date::text as closing,
               j.employment_type, j.path, '0' as total_count
        from jobs j
        join employers e on e.id = j.employer_id

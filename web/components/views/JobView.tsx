@@ -2,6 +2,7 @@ import { ApplyRow } from "@/components/ApplyRow";
 import { JobList } from "@/components/JobList";
 import { JsonLd } from "@/components/JsonLd";
 import { formatDescription } from "@/lib/description";
+import { displayLocation } from "@/lib/display-location";
 import { formatLongDate } from "@/lib/format";
 import { jobPostingJsonLd } from "@/lib/jsonld";
 import { hasDescription } from "@/lib/has-description";
@@ -18,7 +19,7 @@ const UNAVAILABLE =
 function metaRows(job: JobDetail): { label: string; value: string; href?: string }[] {
   const rows: { label: string; value: string; href?: string }[] = [
     { label: "Employer", value: job.employer, href: `/employers/${job.employer_slug}/` },
-    { label: "Location", value: job.location },
+    { label: "Location", value: displayLocation(job.location, job.location_places) },
     job.posted
       ? { label: "Posted", value: formatLongDate(job.posted) }
       : { label: "Listed on PublicJobs.ca", value: formatLongDate(job.first_seen) },
