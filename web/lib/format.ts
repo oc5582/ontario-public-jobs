@@ -27,6 +27,29 @@ export function parseIsoDate(value: string | null | undefined): string {
   return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : "";
 }
 
+function torontoOffset(instant: Date): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Toronto",
+    timeZoneName: "longOffset",
+    hour: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(instant);
+  const name = parts.find((part) => part.type === "timeZoneName")?.value || "";
+  const match = name.match(/([+-]\d{2}:\d{2})/);
+  return match ? match[1] : "-05:00";
+}
+
+/** Closing date at 23:59:59 America/Toronto, with the offset for that day. */
+export function validThrough(isoDate: string): string {
+  const raw = parseIsoDate(isoDate);
+  if (!raw) return "";
+  let offset = "-05:00";
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    offset = torontoOffset(new Date(`${raw}T23:59:59${offset}`));
+  }
+  return `${raw}T23:59:59${offset}`;
+}
+
 export function formatLongDate(iso: string): string {
   const raw = parseIsoDate(iso);
   if (!raw) return "";
