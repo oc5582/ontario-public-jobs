@@ -22,8 +22,10 @@ export type MembershipState = "none" | "active" | "past_due" | "canceled";
 let verifyClient: Stripe | null = null;
 
 function stripeForVerify(): Stripe {
+  // The configured key is passed through as-is (sk_ or rk_, test or live).
+  // This stub is only for local signature checks when no key is set. It never calls Stripe.
   if (process.env.STRIPE_SECRET_KEY) return getStripe();
-  if (!verifyClient) verifyClient = new Stripe("sk_test_webhook_verify_only");
+  if (!verifyClient) verifyClient = new Stripe("rk_test_webhook_verify_only");
   return verifyClient;
 }
 

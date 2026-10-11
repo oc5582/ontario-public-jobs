@@ -75,7 +75,11 @@ async function loadTaxRateIds(stripe: Stripe): Promise<void> {
   }
 }
 
-/** Env var wins. Otherwise the active Stripe tax rate with our metadata. */
+/**
+ * Env var wins. Otherwise the active Stripe tax rate with our metadata.
+ * taxRates.list is the same call for secret keys (sk_) and restricted keys (rk_).
+ * A restricted key needs read access to Tax Rates. The key prefix is not checked.
+ */
 export async function taxRateIdForProvince(stripe: Stripe, code: ProvinceCode): Promise<string | null> {
   const fromEnv = taxRateIdFromEnv(code);
   if (fromEnv) return fromEnv;
