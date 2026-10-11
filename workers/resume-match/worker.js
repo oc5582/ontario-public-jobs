@@ -13,8 +13,8 @@ const TOKEN_PRICES = {
 
 // ---- Config ----
 const MONTHLY_SPEND_CAP_USD = 10; // stop matching once this month's estimated AI spend reaches this
-const USES_PER_PERSON = 3;        // lifetime, per normalized email
-const USES_PER_IP = 3;            // lifetime backstop, per IP
+const USES_PER_PERSON = 3;        // lifetime, per normalized email, direct callers only
+const IP_USES_PER_DAY = 10;       // per IP per UTC day, direct callers only. Not a lifetime cap.
 const DAILY_CAP = 300;            // all users, per UTC day
 const MAX_RESUME_CHARS = 15000;
 const MAX_BODY = 40000;
@@ -31,6 +31,7 @@ const MSG = {
   invalid: "Enter your email and check the box to agree to job alert emails.",
   resume: "Add your resume. Upload a PDF or Word file, or paste the text.",
   person_limit: "You have used your 3 free resume matches. New jobs will still come to your inbox every week.",
+  ip_limit: "Resume matching from this network is busy today. Please try again tomorrow.",
   paused: "Resume matching is paused for now. Please try again next month. New jobs still come to your inbox every week.",
   daily: "Resume matching is busy today. Please try again tomorrow. New jobs still come to your inbox every week.",
   error: "Something went wrong. Please try again.",
@@ -81,6 +82,32 @@ export function normalizeEmail(email) {
 async function sha256(s) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function logLimit(limit) {
+  console.log(JSON.stringify({ event: "resume_match_limit", limit }));
+}
+
+function intEnv(env, name, fallback) {
+  const n = parseInt(env && env[name], 10);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+// Server-side callers (the Next.js app) send this header. It skips the per-email
+// and per-IP counters. The daily cap and the monthly spend cap still apply.
+async function isTrusted(request, env) {
+  const secret = String((env && env.MATCH_TRUSTED_SECRET) || "");
+  if (!secret) return false;
+  const got = request.headers.get("x-publicjobs-trusted") || "";
+  if (!got) return false;
+  const [a, b] = await Promise.all([sha256(secret), sha256(got)]);
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+function isTestAddress(email) {
+  return /@(?:resend\.dev|example\.com|example\.net|example\.org)$/i.test(email);
 }
 
 // ---- Job index (mirrors scripts/build_pages.py sort_jobs + assign_paths) ----
@@ -314,9 +341,16 @@ async function handleMatch(request, env, ctx, origin) {
   if (!data || typeof data !== "object") return fail("invalid", 400, origin);
   if (String(data._gotcha || "").trim()) return json({ ok: true, strong: [], maybe: [] }, 200, origin);
 
+  const trusted = await isTrusted(request, env);
   const email = String(data.email || "").trim().toLowerCase();
-  const consent = data.casl_consent === true || ["yes", "true", "on"].includes(data.casl_consent);
-  if (!isEmail(email) || !consent) return fail("invalid", 400, origin);
+  const consent = data.casl_consent === true || ["yes", "true", "on"].includes(String(data.casl_consent || ""));
+  // Direct callers (the live /match/ page) still need an email and the consent box.
+  // Trusted callers enforce accounts in the app, so consent is optional and only opts into email.
+  if (trusted) {
+    if (consent && !isEmail(email)) return fail("invalid", 400, origin);
+  } else if (!isEmail(email) || !consent) {
+    return fail("invalid", 400, origin);
+  }
   let resume = String(data.resume_text || "").replace(/\u0000/g, "").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
   if (resume.length < 80) return fail("resume", 400, origin);
   if (resume.length > MAX_RESUME_CHARS) resume = resume.slice(0, MAX_RESUME_CHARS);
@@ -325,69 +359,115 @@ async function handleMatch(request, env, ctx, origin) {
   const now = new Date();
   const day = now.toISOString().slice(0, 10);
   const month = now.toISOString().slice(0, 7);
-  const personKey = `person:${await sha256(normalizeEmail(email))}`;
-  const ipKey = `ip:${await sha256("ip|" + ip)}`;
+  const personKey = isEmail(email) ? `person:${await sha256(normalizeEmail(email))}` : "";
+  const ipKey = `ipday:${day}:${await sha256("ip|" + ip)}`;
   const dayKey = `day:${day}`;
   const spendKey = `spend:${month}`; // micro-USD
+  const dailyCap = intEnv(env, "MATCH_DAILY_CAP", DAILY_CAP);
 
-  // Sign up first (they agreed to alerts), even if a cap stops matching.
-  // Resend test addresses (@resend.dev) skip the signup so tests never add contacts or send welcome emails.
-  const testAddress = email.endsWith("@resend.dev");
-  if (!testAddress && !(await signup(env, email))) return fail("error", 502, origin);
+  let tookPerson = false;
+  let tookIp = false;
+  let tookDay = false;
+  async function release() {
+    const jobs = [];
+    if (tookPerson) jobs.push(giveBack(env, personKey));
+    if (tookIp) jobs.push(giveBack(env, ipKey));
+    if (tookDay) jobs.push(giveBack(env, dayKey));
+    tookPerson = false;
+    tookIp = false;
+    tookDay = false;
+    if (jobs.length) await Promise.all(jobs);
+  }
 
-  // Monthly spend cap first (no use is taken when paused).
-  if ((await readCount(env, spendKey)) >= MONTHLY_SPEND_CAP_USD * 1e6) return fail("paused", 503, origin);
-  if (!(await take(env, personKey, USES_PER_PERSON))) return fail("person_limit", 429, origin, { remaining: 0 });
-  if (!(await take(env, ipKey, USES_PER_IP))) { await giveBack(env, personKey); return fail("person_limit", 429, origin, { remaining: 0 }); }
-  if (!(await take(env, dayKey, DAILY_CAP))) { await Promise.all([giveBack(env, personKey), giveBack(env, ipKey)]); return fail("daily", 503, origin); }
-  const personUses = (await readCount(env, personKey)) - 1;
-
-  const jobs = await getIndex(ctx);
-  const [cfgModel, cfgBatch] = await Promise.all([env.USAGE.get("config_model"), env.USAGE.get("config_batch")]);
-  const model = cfgModel || DEFAULT_MODEL;
-  const batchSize = Math.min(150, Math.max(10, parseInt(cfgBatch || "", 10) || BATCH_SIZE));
-  const batches = [];
-  for (let i = 0; i < jobs.length; i += batchSize) batches.push(jobs.slice(i, i + batchSize));
-  const settled = await Promise.allSettled(batches.map((b) => matchBatch(env, model, resume, b)));
-  resume = null;
-
-  let inTok = 0, outTok = 0, usd = 0, okBatches = 0;
-  const byId = new Map(jobs.map((j) => [j.id, j]));
-  const picked = new Map();
-  for (const s of settled) {
-    if (s.status !== "fulfilled") { console.error("AI batch failed", s.reason && s.reason.message ? s.reason.message.slice(0, 120) : "error"); continue; }
-    okBatches++;
-    inTok += s.value.inTok; outTok += s.value.outTok; usd += s.value.usd;
-    for (const m of s.value.matches) {
-      const id = Number(m.id);
-      if (!byId.has(id) || picked.has(id)) continue;
-      picked.set(id, { fit: m.fit === "strong" ? "strong" : "maybe", reason: String(m.reason || "").slice(0, 200) });
+  try {
+    // Limits first. Do not subscribe, and do not take a use, when a cap already blocks the match.
+    if ((await readCount(env, spendKey)) >= MONTHLY_SPEND_CAP_USD * 1e6) {
+      logLimit("spend");
+      return fail("paused", 503, origin);
     }
-  }
-  const costMicro = Math.ceil(usd * 1e6);
-  // Record spend even on failure, since tokens were used.
-  ctx.waitUntil(addSpend(env, spendKey, costMicro));
-  if (okBatches === 0) {
-    // Do not charge the person a use when matching failed.
-    ctx.waitUntil(Promise.all([giveBack(env, personKey), giveBack(env, ipKey), giveBack(env, dayKey)]));
-    return fail("error", 502, origin);
-  }
+    if (!trusted) {
+      if (!(await take(env, personKey, USES_PER_PERSON))) {
+        logLimit("person");
+        return fail("person_limit", 429, origin, { remaining: 0 });
+      }
+      tookPerson = true;
+      if (!(await take(env, ipKey, IP_USES_PER_DAY))) {
+        logLimit("ip");
+        await release();
+        return fail("ip_limit", 429, origin);
+      }
+      tookIp = true;
+    }
+    if (!(await take(env, dayKey, dailyCap))) {
+      logLimit("daily");
+      await release();
+      return fail("daily", 503, origin);
+    }
+    tookDay = true;
 
-  const strong = [], maybe = [];
-  for (const j of jobs) {
-    const p = picked.get(j.id);
-    if (!p) continue;
-    const item = { title: j.title, employer: j.employer, location: j.location, closing_date: j.closing, url: j.url, reason: p.reason };
-    (p.fit === "strong" ? strong : maybe).push(item);
+    // Signup only after the caps pass, and only when the caller opted in.
+    // example.com and @resend.dev never touch the mailing list.
+    if (consent && isEmail(email) && !isTestAddress(email)) {
+      if (!(await signup(env, email))) {
+        await release();
+        return fail("error", 502, origin);
+      }
+    }
+
+    const jobs = await getIndex(ctx);
+    const [cfgModel, cfgBatch] = await Promise.all([env.USAGE.get("config_model"), env.USAGE.get("config_batch")]);
+    const model = cfgModel || DEFAULT_MODEL;
+    const batchSize = Math.min(150, Math.max(10, parseInt(cfgBatch || "", 10) || BATCH_SIZE));
+    const batches = [];
+    for (let i = 0; i < jobs.length; i += batchSize) batches.push(jobs.slice(i, i + batchSize));
+    const settled = await Promise.allSettled(batches.map((b) => matchBatch(env, model, resume, b)));
+    resume = null;
+
+    let inTok = 0, outTok = 0, usd = 0, okBatches = 0;
+    const byId = new Map(jobs.map((j) => [j.id, j]));
+    const picked = new Map();
+    for (const s of settled) {
+      if (s.status !== "fulfilled") {
+        console.error("AI batch failed", s.reason && s.reason.message ? s.reason.message.slice(0, 120) : "error");
+        continue;
+      }
+      okBatches++;
+      inTok += s.value.inTok; outTok += s.value.outTok; usd += s.value.usd;
+      for (const m of s.value.matches) {
+        const id = Number(m.id);
+        if (!byId.has(id) || picked.has(id)) continue;
+        picked.set(id, { fit: m.fit === "strong" ? "strong" : "maybe", reason: String(m.reason || "").slice(0, 200) });
+      }
+    }
+    const costMicro = Math.ceil(usd * 1e6);
+    if (costMicro > 0) await addSpend(env, spendKey, costMicro);
+    if (okBatches !== batches.length) {
+      console.log(JSON.stringify({ event: "resume_match_failed", reason: okBatches === 0 ? "ai" : "partial" }));
+      await release();
+      return fail("error", 502, origin);
+    }
+
+    const personUses = tookPerson ? (await readCount(env, personKey)) - 1 : 0;
+    const strong = [], maybe = [];
+    for (const j of jobs) {
+      const p = picked.get(j.id);
+      if (!p) continue;
+      const item = { title: j.title, employer: j.employer, location: j.location, closing_date: j.closing, url: j.url, reason: p.reason };
+      (p.fit === "strong" ? strong : maybe).push(item);
+    }
+    return json({
+      ok: true,
+      strong, maybe,
+      jobs_checked: jobs.length,
+      remaining: trusted ? null : Math.max(0, USES_PER_PERSON - personUses - 1),
+      partial: false,
+      meta: { ms: Date.now() - t0, model, batches: batches.length, input_tokens: inTok, output_tokens: outTok, est_cost_usd: costMicro / 1e6 },
+    }, 200, origin);
+  } catch (err) {
+    console.log(JSON.stringify({ event: "resume_match_failed", reason: "crash", message: err && err.message ? err.message.slice(0, 120) : "error" }));
+    await release();
+    return fail("error", 500, origin);
   }
-  return json({
-    ok: true,
-    strong, maybe,
-    jobs_checked: jobs.length,
-    remaining: Math.max(0, USES_PER_PERSON - personUses - 1),
-    partial: okBatches < batches.length,
-    meta: { ms: Date.now() - t0, model, batches: batches.length, input_tokens: inTok, output_tokens: outTok, est_cost_usd: costMicro / 1e6 },
-  }, 200, origin);
 }
 
 export default {
@@ -404,7 +484,8 @@ export default {
       return new Response(page, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Robots-Tag": "noindex" } });
     }
     if (request.method !== "POST" || (url.pathname !== "/" && url.pathname !== "/match")) return fail("error", 405, origin);
-    if (!originAllowed(origin)) return fail("error", 403, origin, { error: "Origin not allowed" });
+    const trusted = await isTrusted(request, env);
+    if (!trusted && !originAllowed(origin)) return fail("error", 403, origin, { error: "Origin not allowed" });
     try {
       return await handleMatch(request, env, ctx, origin);
     } catch (err) {
