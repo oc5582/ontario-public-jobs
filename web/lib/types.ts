@@ -24,6 +24,7 @@ export type JobDetail = ListJob & {
   paragraphs: string[];
   apply_url: string;
   category: string;
+  cities: string[];
   closed: boolean;
   removed: boolean;
   website: string;
