@@ -2,7 +2,11 @@
 // Resume text is used only in memory to call the AI model. It is never stored or logged.
 
 const SITE = "https://publicjobs.ca";
-const LISTINGS_URL = "https://publicjobs.ca/data/listings.json";
+// Job index: Supabase function public.match_index (supabase/migrations/20261011180000_match_index.sql).
+// The old static /data/listings.json is gone since the switch to Next.js.
+// The publishable key is public; the function only answers with MATCH_TRUSTED_SECRET.
+const INDEX_URL = "https://qshleqzngbstqnthhxzw.supabase.co/rest/v1/rpc/match_index";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_NsmTzFLw9U4N2ntJIOG6Cw_Qd4tSnTR";
 const DEFAULT_MODEL = "@cf/openai/gpt-oss-120b";
 // Cloudflare published Workers AI prices (USD). Used to estimate spend for the monthly cap.
 const USD_PER_NEURON = 0.011 / 1000;
@@ -200,21 +204,29 @@ function summarize(desc) {
 }
 
 let memIndex = null;
-async function getIndex(ctx) {
+async function getIndex(ctx, env) {
   if (memIndex && Date.now() - memIndex.at < INDEX_TTL_SECONDS * 1000) return memIndex.jobs;
   const cache = caches.default;
-  const key = new Request("https://publicjobs-resume-match.internal/index-v2");
+  const key = new Request("https://publicjobs-resume-match.internal/index-v3");
   const hit = await cache.match(key);
   if (hit) {
     const jobs = await hit.json();
     memIndex = { at: Date.now(), jobs };
     return jobs;
   }
-  const res = await fetch(LISTINGS_URL, { cf: { cacheTtl: 600 } });
-  if (!res.ok) throw new Error(`listings ${res.status}`);
+  const secret = String((env && env.MATCH_TRUSTED_SECRET) || "");
+  if (!secret) throw new Error("index secret missing");
+  const res = await fetch(INDEX_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json", apikey: SUPABASE_PUBLISHABLE_KEY },
+    body: JSON.stringify({ p_secret: secret }),
+  });
+  if (!res.ok) throw new Error(`index ${res.status}`);
   const raw = await res.json();
+  if (!Array.isArray(raw) || !raw.length) throw new Error("index empty");
   const sorted = sortJobs(raw);
-  assignPaths(sorted);
+  // Rows carry the site path from the database. Older feeds without it fall back to the build_pages.py rules.
+  if (sorted.some((j) => !j.path)) assignPaths(sorted);
   const jobs = sorted.map((j, i) => ({
     id: i + 1,
     title: text(j.title),
@@ -223,7 +235,7 @@ async function getIndex(ctx) {
     type: text(j.employment_type),
     closing: validDate(text(j.closing_date)) || "",
     summary: summarize(j.description),
-    url: `${SITE}/${j._path}`,
+    url: `${SITE}/${String(j.path || j._path).replace(/^\/+/, "")}`,
   }));
   const body = JSON.stringify(jobs);
   ctx.waitUntil(cache.put(key, new Response(body, { headers: { "Cache-Control": `max-age=${INDEX_TTL_SECONDS}` } })));
@@ -414,7 +426,7 @@ async function handleMatch(request, env, ctx, origin) {
       }
     }
 
-    const jobs = await getIndex(ctx);
+    const jobs = await getIndex(ctx, env);
     const [cfgModel, cfgBatch] = await Promise.all([env.USAGE.get("config_model"), env.USAGE.get("config_batch")]);
     const model = cfgModel || DEFAULT_MODEL;
     const batchSize = Math.min(150, Math.max(10, parseInt(cfgBatch || "", 10) || BATCH_SIZE));

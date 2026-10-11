@@ -1,5 +1,5 @@
 import { getViewer } from "@/lib/auth";
-import { matchConsentText } from "@/lib/legal-copy";
+import { alertConsentLabel, alertConsentSender } from "@/lib/legal-copy";
 import { pageMetadata } from "@/lib/seo";
 import { BRAND } from "@/lib/site";
 import type { Metadata } from "next";
@@ -36,7 +36,10 @@ export default async function MatchPage() {
             )}
             <label className="checkbox" htmlFor="consent">
               <input type="checkbox" id="consent" name="casl_consent" value="yes" />
-              <span>{matchConsentText()}</span>
+              <span>
+                {alertConsentLabel()}
+                <span className="consent-sender">{alertConsentSender()}</span>
+              </span>
             </label>
             <p className="hint">Optional. Matching does not add you to the weekly email unless you check this.</p>
           </fieldset>
