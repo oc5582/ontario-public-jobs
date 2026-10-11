@@ -212,10 +212,6 @@
     "to": "/jobs/independent-electricity-system-operator-ieso/analyst-solutions/"
   },
   {
-    "from": "/jobs/ieso-executive-assistant.html",
-    "to": "/jobs/independent-electricity-system-operator-ieso/executive-assistant/"
-  },
-  {
     "from": "/jobs/ieso-specialist-information-security.html",
     "to": "/jobs/independent-electricity-system-operator-ieso/specialist-information-security/"
   },
@@ -286,14 +282,6 @@
   {
     "from": "/jobs/metrolinx-rail-traffic-controller-talent-pool.html",
     "to": "/jobs/metrolinx/rail-traffic-controller-talent-pool/"
-  },
-  {
-    "from": "/jobs/metrolinx-senior-contract-administrator.html",
-    "to": "/jobs/metrolinx/senior-contract-administrator/"
-  },
-  {
-    "from": "/jobs/metrolinx-senior-privacy-advisor.html",
-    "to": "/jobs/metrolinx/senior-privacy-advisor/"
   },
   {
     "from": "/jobs/mtcc-engineering-manager.html",
@@ -400,10 +388,6 @@
     "to": "/jobs/toronto-hydro-corporation/associate-financial-analyst-capital-planning-reporting-toronto-on-ca/"
   },
   {
-    "from": "/jobs/toronto-hydro-building-system-technician-toronto-on-ca.html",
-    "to": "/jobs/toronto-hydro-corporation/building-system-technician-toronto-on-ca/"
-  },
-  {
     "from": "/jobs/toronto-hydro-engineer-toronto-on-ca.html",
     "to": "/jobs/toronto-hydro-corporation/engineer-toronto-on-ca-574239717/"
   },
@@ -426,10 +410,6 @@
   {
     "from": "/jobs/toronto-hydro-manager-stations-toronto-on-ca.html",
     "to": "/jobs/toronto-hydro-corporation/manager-stations-toronto-on-ca/"
-  },
-  {
-    "from": "/jobs/toronto-hydro-operations-analyst-12-month-contract-toronto-on-ca.html",
-    "to": "/jobs/toronto-hydro-corporation/operations-analyst-12-month-contract-toronto-on-ca/"
   },
   {
     "from": "/jobs/toronto-hydro-senior-manager-capital-projects-toronto-on-ca.html",
@@ -564,10 +544,6 @@
     "to": "/jobs/farm-credit-canada/student-legal/"
   },
   {
-    "from": "/jobs/wsib-senior-solution-architect-cybersecurity-and-it-risk.html",
-    "to": "/jobs/workplace-safety-and-insurance-board/senior-solution-architect-cybersecurity-it-risk/"
-  },
-  {
     "from": "/rom-future-career-opportunities-at-royal-ontario-museum-rom.html",
     "to": "/jobs/royal-ontario-museum/future-career-opportunities-at-royal-ontario-museum-rom/"
   },
@@ -608,10 +584,6 @@
     "to": "/jobs/toronto-hydro-corporation/associate-financial-analyst-capital-planning-reporting-toronto-on-ca/"
   },
   {
-    "from": "/toronto-hydro-building-system-technician-toronto-on-ca.html",
-    "to": "/jobs/toronto-hydro-corporation/building-system-technician-toronto-on-ca/"
-  },
-  {
     "from": "/toronto-hydro-engineer-toronto-on-ca.html",
     "to": "/jobs/toronto-hydro-corporation/engineer-toronto-on-ca-574239717/"
   },
@@ -634,10 +606,6 @@
   {
     "from": "/toronto-hydro-manager-stations-toronto-on-ca.html",
     "to": "/jobs/toronto-hydro-corporation/manager-stations-toronto-on-ca/"
-  },
-  {
-    "from": "/toronto-hydro-operations-analyst-12-month-contract-toronto-on-ca.html",
-    "to": "/jobs/toronto-hydro-corporation/operations-analyst-12-month-contract-toronto-on-ca/"
   },
   {
     "from": "/toronto-hydro-senior-manager-capital-projects-toronto-on-ca.html",
@@ -690,9 +658,5 @@
   {
     "from": "/tvo-manager-web-and-mobile-delivery-bilingual.html",
     "to": "/jobs/ontario-educational-communications-authority-tvo/manager-web-mobile-delivery-bilingual/"
-  },
-  {
-    "from": "/wsib-senior-solution-architect-cybersecurity-and-it-risk.html",
-    "to": "/jobs/workplace-safety-and-insurance-board/senior-solution-architect-cybersecurity-it-risk/"
   }
 ]
