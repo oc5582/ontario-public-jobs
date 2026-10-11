@@ -1,4 +1,5 @@
-# Reference config for the resume match preview Worker. Deployed manually (not by CI).
+# Reference config for the resume match Worker. Deployed manually (not by CI).
+# Do not put MATCH_TRUSTED_SECRET here. Set it with `npx wrangler secret put MATCH_TRUSTED_SECRET`.
 name = "publicjobs-resume-match"
 main = "worker.js"
 compatibility_date = "2026-09-01"
