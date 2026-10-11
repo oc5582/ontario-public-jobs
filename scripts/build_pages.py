@@ -2103,6 +2103,9 @@ def listing_source_names(jobs: list[dict]) -> list[str]:
     names: set[str] = set()
     for job in jobs:
         key = text(job.get("source")).split(":", 1)[0]
+        if key == "peoplesoft_tps":
+            # Paused Toronto Police Service feed. Remaining jobs close on the next refresh.
+            continue
         if key.startswith("site_"):
             # Read from the careers page of the employer's own website, not an ATS.
             names.add("employers' own websites")
@@ -2139,7 +2142,7 @@ def render_about_page() -> str:
     body = f"""          <h2>Who runs this site</h2>
           <p>PublicJobs.ca is run independently by Osama Chaudhary. It is not a government website and is not affiliated with, endorsed by, or acting for any government or any employer listed on the site.</p>
           <h2>What the site covers</h2>
-          <p>The site lists current job openings from public employers in Toronto and the GTA, such as the City of Toronto and other GTA cities, towns and regions, the Toronto Police Service, Crown corporations, provincial and federal agencies, City of Toronto agencies, and some public-interest regulators.</p>
+          <p>The site lists current job openings from public employers in Toronto and the GTA, such as the City of Toronto and other GTA cities, towns and regions, Crown corporations, provincial and federal agencies, City of Toronto agencies, and some public-interest regulators.</p>
           <p>We do not hire and we do not take applications. Every job page links to the employer's own posting, and you apply there. Browsing is free and needs no account. The homepage can search job titles and employer names. <a href="/jobs/">All current openings</a> are also listed on their own pages. The <a href="/employers/">employers page</a> names each organization and links to its openings. Email alerts are optional.</p>
           <p><a href="/match/">Match your resume</a> compares a resume with the current openings. The resume is read to find matches and is not stored. Matching is free, up to 3 times. Common questions are answered on the <a href="/faq/">FAQ</a>.</p>
           <h2>How listings are collected</h2>
@@ -2460,7 +2463,7 @@ def faq_sections(employer_count: int) -> list[dict]:
         ),
         faq_item(
             "What kinds of employers does PublicJobs.ca list?",
-            "PublicJobs.ca lists GTA municipal governments (the City of Toronto and other cities, towns and regions), the Toronto Police Service, "
+            "PublicJobs.ca lists GTA municipal governments (the City of Toronto and other cities, towns and regions), "
             "Crown corporations, provincial and federal agencies, City of Toronto agencies, and some public-interest regulators.",
         ),
         faq_item(
@@ -2540,7 +2543,7 @@ def faq_sections(employer_count: int) -> list[dict]:
         faq_item(
             "Which levels of government do PublicJobs.ca employers belong to?",
             "We list jobs from all three levels: federal Crown corporations, Ontario provincial agencies, and municipal employers: "
-            "the City of Toronto and its agencies and corporations, the Toronto Police Service, and other GTA cities, towns and regions. "
+            "the City of Toronto, its agencies and corporations, and other GTA cities, towns and regions. "
             "We also list a few public-interest regulators that are not part of any government. "
             "See the full list on our [employers page](/employers/).",
         ),

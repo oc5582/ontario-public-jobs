@@ -356,7 +356,8 @@ async function listingFactsUncached(): Promise<{ sources: string[]; fetched: str
   const names = new Set<string>();
   for (const row of sources) {
     const key = (row.source || "").split(":")[0];
-    if (!key) continue;
+    // peoplesoft_tps is the paused Toronto Police Service feed. Those jobs close on the next refresh.
+    if (!key || key === "peoplesoft_tps") continue;
     if (key.startsWith("site_")) names.add("employers' own websites");
     else names.add(SOURCE_LABELS[key] || key);
   }
