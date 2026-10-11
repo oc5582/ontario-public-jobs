@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { query } from "./db";
 import { hasFilters, type JobFilters } from "./filters";
+import { neighbourRanks } from "./neighbour-jobs";
 import { selectSimilarJobs, type SimilarJobCandidate } from "./similar-jobs";
 import { FREE_LIST_LIMIT } from "./site";
 import type { Facets, JobDetail, ListJob } from "./types";
@@ -311,23 +312,66 @@ export function similarOpenJobs(job: JobDetail): Promise<ListJob[]> {
   return publicCache(["similar-jobs", job.id], () => similarOpenJobsUncached(job));
 }
 
-export type EmployerJobLink = { title: string; href: string };
+type RankedRow = ListRow & { id: string; rn: string };
 
-async function employerOpenJobLinksUncached(slug: string): Promise<EmployerJobLink[]> {
-  const rows = await query<{ title: string; path: string }>(
-    `select j.title, j.path
-     from jobs j
-     where j.employer_slug = $1
-       and ${OPEN}
-     order by lower(j.title) asc, j.title asc, j.path asc`,
-    [slug],
-  );
-  return rows.map((row) => ({ title: row.title, href: jobHref(row.path) }));
+async function neighbourJobsUncached(job: JobDetail): Promise<ListJob[]> {
+  try {
+    const rows = await query<RankedRow>(
+      `with ranked as (
+         select j.id, j.title, e.name as employer_name, j.location,
+                j.closing_date::text as closing, j.employment_type, j.path,
+                row_number() over (order by ${JOB_ORDER}) as rn
+         from jobs j
+         join employers e on e.id = j.employer_id
+         where ${OPEN} and j.employer_slug = $1
+       )
+       select id, title, employer_name, location, closing, employment_type, path,
+              rn::text as rn, '0' as total_count
+       from ranked
+       order by rn::int`,
+      [job.employer_slug],
+    );
+    const me = rows.find((row) => row.id === job.id);
+    if (!me) return [];
+    const ranks = new Set(neighbourRanks(Number(me.rn), rows.length));
+    return rows.filter((row) => ranks.has(Number(row.rn))).map(toListJob);
+  } catch (error) {
+    console.error("neighbour jobs failed", error);
+    return [];
+  }
 }
 
-/** Title and path only. Cached with the other public list queries. */
-export function employerOpenJobLinks(slug: string): Promise<EmployerJobLink[]> {
-  return publicCache(["employer-open-titles", slug], () => employerOpenJobLinksUncached(slug));
+/** Open jobs just before and after this one in the employer's JOB_ORDER list. */
+export function neighbourJobs(job: JobDetail): Promise<ListJob[]> {
+  return publicCache(["neighbours", job.id], () => neighbourJobsUncached(job));
+}
+
+async function elsewhereJobsUncached(job: JobDetail, excludePaths: string[]): Promise<ListJob[]> {
+  try {
+    if (!job.category) return [];
+    const rows = await query<ListRow>(
+      `select j.title, e.name as employer_name, j.location, j.closing_date::text as closing,
+              j.employment_type, j.path, '0' as total_count
+       from jobs j
+       join employers e on e.id = j.employer_id
+       where ${OPEN}
+         and j.category = $1
+         and j.employer_slug <> $2
+         and not (j.path = any($3::text[]))
+       order by (j.cities && $4::text[]) desc, lower(j.title) asc, j.title asc, j.path asc
+       limit 2`,
+      [job.category, job.employer_slug, excludePaths.length ? excludePaths : [""], job.cities],
+    );
+    return rows.map(toListJob);
+  } catch (error) {
+    console.error("elsewhere jobs failed", error);
+    return [];
+  }
+}
+
+/** Two open jobs at other employers: same category and city, then same category. */
+export function elsewhereJobs(job: JobDetail, excludePaths: string[]): Promise<ListJob[]> {
+  return publicCache(["elsewhere", job.id, excludePaths.join("\n")], () => elsewhereJobsUncached(job, excludePaths));
 }
 
 async function getFacetsUncached(): Promise<Facets> {

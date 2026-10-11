@@ -4,7 +4,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { formatDescription } from "@/lib/description";
 import { formatLongDate } from "@/lib/format";
 import { jobPostingJsonLd } from "@/lib/jsonld";
-import { getJob, similarOpenJobs } from "@/lib/jobs";
+import { elsewhereJobs, getJob, neighbourJobs, similarOpenJobs } from "@/lib/jobs";
 import { pageMetadata } from "@/lib/seo";
 import type { JobDetail } from "@/lib/types";
 import type { Metadata } from "next";
@@ -43,7 +43,9 @@ export async function jobMetadata(employer: string, slug: string): Promise<Metad
 export async function JobView({ employer, slug }: { employer: string; slug: string }) {
   const job = await getJob(employer, slug);
   if (!job) notFound();
-  const similar = await similarOpenJobs(job);
+  const neighbours = job.closed ? [] : await neighbourJobs(job);
+  const elsewhere = job.closed ? [] : await elsewhereJobs(job, [job.path, ...neighbours.map((item) => item.path)]);
+  const similar = job.closed ? await similarOpenJobs(job) : [];
   const rows = metaRows(job);
   const posting = jobPostingJsonLd(job);
   const descriptionHtml = formatDescription(job.description.trim() ? job.description : job.paragraphs.join("\n"));
@@ -86,10 +88,27 @@ export async function JobView({ employer, slug }: { employer: string; slug: stri
           employer. The employer can ask us to correct or remove a listing.{" "}
           <a href={`/report/?job=${encodeURIComponent(job.path)}`}>Report a fake or suspicious job</a>
         </p>
-        {similar.length ? (
+        {job.closed && similar.length ? (
           <section className="similar-jobs" aria-labelledby="similar-heading">
             <h2 id="similar-heading">Similar jobs</h2>
             <JobList jobs={similar} />
+          </section>
+        ) : null}
+        {!job.closed && (neighbours.length || elsewhere.length) ? (
+          <section className="similar-jobs" aria-labelledby="related-heading">
+            <h2 id="related-heading">More jobs like this</h2>
+            {neighbours.length ? (
+              <>
+                <h3>More at {job.employer}</h3>
+                <JobList jobs={neighbours} />
+              </>
+            ) : null}
+            {elsewhere.length ? (
+              <>
+                <h3>Similar jobs elsewhere</h3>
+                <JobList jobs={elsewhere} />
+              </>
+            ) : null}
           </section>
         ) : null}
       </article>
