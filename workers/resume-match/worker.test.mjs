@@ -11,8 +11,9 @@ const listings = Array.from({ length: 11 }, (_, i) => ({
   employment_type: "Full-time",
   closing_date: "2026-12-01",
   description: "What you will do: help residents with applications and records at the counter every day.",
-  apply_url: `https://jobs.example.com/j${i + 1}`,
+  path: `jobs/city-of-toronto/clerk-${i + 1}/`,
 }));
+const indexSecrets = [];
 
 const rows = new Map();
 let mode = "ok";
@@ -57,9 +58,14 @@ function createDb() {
 }
 
 globalThis.caches = { default: { async match() { return null; }, async put() {} } };
-globalThis.fetch = async (url) => {
+globalThis.fetch = async (url, init = {}) => {
   if (mode === "crash") return new Response("no", { status: 500 });
-  if (String(url).includes("listings.json")) return new Response(JSON.stringify(listings), { status: 200 });
+  if (String(url).endsWith("/rest/v1/rpc/match_index")) {
+    const got = JSON.parse(init.body).p_secret;
+    indexSecrets.push(got);
+    if (got !== SECRET || !new Headers(init.headers).get("apikey")) return new Response("{}", { status: 401 });
+    return new Response(JSON.stringify(listings), { status: 200 });
+  }
   throw new Error(`unexpected fetch ${url}`);
 };
 
@@ -263,5 +269,9 @@ const ipMsg = "Resume matching from this network is busy today. Please try again
   const denied = await call({ resume_text: resume }, { trusted: true, secret: "nope", origin: "https://evil.example" });
   assert.equal(denied.status, 403);
 }
+
+// The job index comes from the Next.js site and is fetched with the Worker's secret.
+assert.ok(indexSecrets.length > 0);
+assert.ok(indexSecrets.every((got) => got === SECRET));
 
 console.log("worker tests passed");
