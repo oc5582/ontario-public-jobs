@@ -33,8 +33,16 @@ export const PERMISSIONS_POLICY = [
 ].join(", ");
 
 export function securityHeaders(): { key: string; value: string }[] {
+  // Vercel injects its preview toolbar from vercel.live. Production does not.
+  let csp = CONTENT_SECURITY_POLICY;
+  if (process.env.VERCEL_ENV !== "production") {
+    csp = csp
+      .replace("script-src 'self'", "script-src 'self' https://vercel.live")
+      .replace("connect-src 'self'", "connect-src 'self' https://vercel.live")
+      .replace("frame-src ", "frame-src https://vercel.live ");
+  }
   return [
-    { key: "Content-Security-Policy", value: CONTENT_SECURITY_POLICY },
+    { key: "Content-Security-Policy", value: csp },
     { key: "X-Frame-Options", value: "DENY" },
     { key: "X-Content-Type-Options", value: "nosniff" },
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },

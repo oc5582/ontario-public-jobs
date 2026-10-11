@@ -55,6 +55,15 @@ assert.match(headers["Content-Security-Policy"], /frame-ancestors 'none'/);
 assert.match(headers["Permissions-Policy"], /camera=\(\)/);
 assert.match(headers["Permissions-Policy"], /payment=\(\)/);
 assert.match(headers["Strict-Transport-Security"], /max-age=63072000; includeSubDomains; preload/);
+const savedEnv = process.env.VERCEL_ENV;
+process.env.VERCEL_ENV = "production";
+const productionCsp = securityHeaders().find((header) => header.key === "Content-Security-Policy")?.value || "";
+assert.doesNotMatch(productionCsp, /vercel\.live/);
+delete process.env.VERCEL_ENV;
+const previewCsp = securityHeaders().find((header) => header.key === "Content-Security-Policy")?.value || "";
+assert.match(previewCsp, /https:\/\/vercel\.live/);
+if (savedEnv == null) delete process.env.VERCEL_ENV;
+else process.env.VERCEL_ENV = savedEnv;
 for (const host of [
   "js.stripe.com",
   "connect.facebook.net",
