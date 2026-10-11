@@ -19,6 +19,12 @@ function listIsShared(filters: JobFilters): boolean {
 const OPEN = `j.removed_at is null
   and (j.closing_date is null or j.closing_date >= (timezone('America/Toronto', now()))::date)`;
 
+/** Feed posted date, or the day we first stored the job. */
+export const EFFECTIVE_POSTED = "coalesce(j.posted_date, j.first_seen_at::date)";
+
+/** Newest effective posted date, then fetch time, then title. Every job list uses this. */
+export const JOB_ORDER = `${EFFECTIVE_POSTED} desc nulls last, j.fetched_at desc nulls last, j.title asc`;
+
 type ListRow = {
   title: string;
   employer_name: string;
@@ -70,7 +76,7 @@ function whereFor(filters: JobFilters, params: unknown[]): string {
   }
   if (filters.postedSince) {
     params.push(filters.postedSince);
-    parts.push(`j.posted_date >= $${params.length}::date`);
+    parts.push(`${EFFECTIVE_POSTED} >= $${params.length}::date`);
   }
   if (filters.closesBy) {
     params.push(filters.closesBy);
@@ -110,7 +116,7 @@ async function searchJobsUncached(
      from jobs j
      join employers e on e.id = j.employer_id
      where ${where}
-     order by j.posted_date desc nulls last, j.fetched_at desc nulls last, j.title asc
+     order by ${JOB_ORDER}
      ${limit}`,
     params,
   );
@@ -154,6 +160,7 @@ type DetailRow = {
   location: string;
   closing: string | null;
   posted: string | null;
+  first_seen: string | null;
   fetched: string | null;
   employment_type: string;
   work_mode: string;
@@ -212,6 +219,7 @@ function toDetail(row: DetailRow): JobDetail {
     page_title: row.page_title,
     meta_description: row.meta_description,
     posted: (row.posted || "").slice(0, 10),
+    first_seen: (row.first_seen || "").slice(0, 10),
     fetched: (row.fetched || "").slice(0, 10),
     employment_type: row.employment_type || "",
     work_mode: row.work_mode || "",
@@ -233,7 +241,8 @@ function toDetail(row: DetailRow): JobDetail {
 
 const DETAIL_SQL = `select j.id, j.title, e.name as employer_name, j.employer_slug, j.job_slug,
   j.path, j.page_title, j.meta_description, j.location, j.closing_date::text as closing,
-  j.posted_date::text as posted, j.fetched_at::date::text as fetched, j.employment_type, j.work_mode, j.salary, j.department,
+  j.posted_date::text as posted, j.first_seen_at::date::text as first_seen, j.fetched_at::date::text as fetched,
+  j.employment_type, j.work_mode, j.salary, j.department,
   j.description, j.paragraphs, j.apply_url, j.category, j.cities, j.fully_remote, e.website, e.logo_url, j.jobposting,
   (j.removed_at is not null) as removed,
   (j.removed_at is not null or (j.closing_date is not null and j.closing_date < (timezone('America/Toronto', now()))::date)) as closed
@@ -456,7 +465,7 @@ function formatFetched(iso: string): string {
 function sitemapJobsUncached(): Promise<{ path: string; lastmod: string }[]> {
   return query<{ path: string; lastmod: string }>(
     `select j.path,
-            coalesce(j.posted_date::text, j.fetched_at::date::text, '') as lastmod
+            coalesce(${EFFECTIVE_POSTED}::text, '') as lastmod
      from jobs j
      where ${OPEN}
      order by j.path`,

@@ -17,7 +17,9 @@ function metaRows(job: JobDetail): { label: string; value: string; href?: string
   const rows: { label: string; value: string; href?: string }[] = [
     { label: "Employer", value: job.employer, href: `/employers/${job.employer_slug}/` },
     { label: "Location", value: job.location },
-    { label: "Posted", value: formatLongDate(job.posted) },
+    job.posted
+      ? { label: "Posted", value: formatLongDate(job.posted) }
+      : { label: "Listed on PublicJobs.ca", value: formatLongDate(job.first_seen) },
     { label: "Closes", value: formatLongDate(job.closing) },
     { label: "Employment type", value: job.employment_type },
     { label: "Work mode", value: job.work_mode },
