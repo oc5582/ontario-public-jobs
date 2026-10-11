@@ -36,7 +36,8 @@ export function membershipPeriodLabel(profile: {
     return when ? `Renews ${when}.` : "";
   }
   if (profile.membership_status === "refunded") {
-    return "Refunded. Access has ended.";
+    const when = formatTorontoTimestamp(profile.current_period_end);
+    return when ? `Refunded. Access ended ${when}.` : "Refunded. Access has ended.";
   }
   if (profile.membership_status === "canceled" && profile.current_period_end) {
     const when = formatTorontoTimestamp(profile.current_period_end);

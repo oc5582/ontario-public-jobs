@@ -8,6 +8,15 @@ export class AccountDeleteBlocked extends Error {
   }
 }
 
+/** A billing row is only for someone who paid. An abandoned checkout customer id is not a payment. */
+export function shouldRetainBillingRecord(profile: {
+  stripe_subscription_id: string | null;
+  membership_status: string;
+}): boolean {
+  if (profile.stripe_subscription_id) return true;
+  return profile.membership_status !== "none";
+}
+
 export async function deleteAccount(profileId: string): Promise<void> {
   const rows = await query<{
     email: string;
@@ -39,19 +48,21 @@ export async function deleteAccount(profileId: string): Promise<void> {
       }
     }
   }
-  await query(
-    `insert into billing_records
-       (email, customer_name, stripe_customer_id, stripe_subscription_id, plan, retained_reason)
-     values ($1, $2, $3, $4, $5, $6)`,
-    [
-      profile.email,
-      profile.customer_name,
-      profile.stripe_customer_id,
-      profile.stripe_subscription_id,
-      profile.plan,
-      "Kept for tax and consumer-law records after the account was deleted.",
-    ],
-  );
+  if (shouldRetainBillingRecord(profile)) {
+    await query(
+      `insert into billing_records
+         (email, customer_name, stripe_customer_id, stripe_subscription_id, plan, retained_reason)
+       values ($1, $2, $3, $4, $5, $6)`,
+      [
+        profile.email,
+        profile.customer_name,
+        profile.stripe_customer_id,
+        profile.stripe_subscription_id,
+        profile.plan,
+        "Kept for tax and consumer-law records after the account was deleted.",
+      ],
+    );
+  }
   await query(`delete from resume_match_usage where profile_id = $1`, [profileId]);
   await query(`delete from profiles where id = $1`, [profileId]);
   await query(`select app_private.delete_auth_user($1)`, [profileId]);

@@ -10,7 +10,8 @@ import {
 } from "../web/lib/billing.ts";
 import { getPool, query } from "../web/lib/db.ts";
 import { grantsMemberAccess, membershipPeriodLabel } from "../web/lib/membership.ts";
-import { cardLast4FromCharge } from "../web/lib/agreement-mail.ts";
+import { cardLast4ForCheckout, cardLast4FromCharge, cardLast4FromInvoice } from "../web/lib/agreement-mail.ts";
+import { deleteAccount, shouldRetainBillingRecord } from "../web/lib/account-delete.ts";
 import {
   acceptsStripeLivemode,
   chargeRefundKind,
@@ -162,6 +163,92 @@ assert.equal(
 );
 assert.equal(cardLast4FromCharge("ch_123" as never), "");
 assert.equal(cardLast4FromCharge({ payment_method_details: { type: "card", card: { last4: "the card" } } } as never), "");
+
+// Subscription Checkout leaves payment_intent null and puts the card on the invoice
+// payment. Expanding that payment intent does not include latest_charge.payment_method_details,
+// so the charge id has to be retrieved. The old lookup stopped there and emailed no last4.
+const expands: string[][] = [];
+const invoiceOnly = await cardLast4ForCheckout(
+  { id: "cs_sub", object: "checkout.session", mode: "subscription", payment_intent: null, invoice: "in_1" } as never,
+  {
+    paymentIntents: {
+      async retrieve(_id: string, params?: { expand?: string[] }) {
+        expands.push(params?.expand || []);
+        const expanded = params?.expand?.includes("latest_charge.payment_method_details");
+        return {
+          id: "pi_1",
+          object: "payment_intent",
+          latest_charge: expanded
+            ? { id: "ch_1", object: "charge", payment_method_details: { type: "card", card: { last4: "4242" } } }
+            : "ch_1",
+          payment_method: "pm_1",
+        } as never;
+      },
+    },
+    charges: {
+      async retrieve() {
+        return { id: "ch_1", object: "charge", payment_method_details: { type: "card", card: { last4: "4242" } } } as never;
+      },
+    },
+    invoices: {
+      async retrieve() {
+        return {
+          id: "in_1",
+          object: "invoice",
+          payments: {
+            object: "list",
+            data: [
+              {
+                id: "inpay_1",
+                payment: { type: "payment_intent", payment_intent: { id: "pi_1", latest_charge: "ch_1", payment_method: "pm_1" } },
+              },
+            ],
+          },
+        } as never;
+      },
+    },
+    invoicePayments: { async list() { return { data: [] }; } },
+    checkout: { sessions: { async retrieve() { throw new Error("session retrieve unused"); } } },
+    subscriptions: { async retrieve() { throw new Error("subscription retrieve unused"); } },
+  },
+);
+assert.equal(invoiceOnly, "4242");
+assert.ok(expands.some((expand) => expand.includes("latest_charge.payment_method_details")));
+
+const fromRecord = await cardLast4ForCheckout(
+  { id: "cs_rec", object: "checkout.session", mode: "subscription", payment_intent: null, invoice: "in_rec" } as never,
+  {
+    paymentIntents: { async retrieve() { return { id: "pi_x", latest_charge: null, payment_method: null } as never; } },
+    charges: { async retrieve() { return { id: "ch_x", payment_method_details: null } as never; } },
+    invoices: {
+      async retrieve() {
+        return {
+          id: "in_rec",
+          payments: { data: [{ payment: { type: "payment_record", payment_record: "pr_1" } }] },
+        } as never;
+      },
+    },
+    invoicePayments: { async list() { return { data: [] }; } },
+    checkout: { sessions: { async retrieve() { return { id: "cs_rec" } as never; } } },
+    subscriptions: {
+      async retrieve() {
+        return { id: "sub_x", default_payment_method: { card: { last4: "1111" } } } as never;
+      },
+    },
+    paymentRecords: {
+      async retrieve() {
+        return { payment_method_details: { card: { last4: "1881" } } };
+      },
+    },
+  },
+);
+assert.equal(fromRecord, "1881");
+assert.equal(
+  cardLast4FromInvoice({
+    payments: { data: [{ payment: { payment_record: { payment_method_details: { card: { last4: "1881" } } } } }] },
+  } as never),
+  "1881",
+);
 assert.deepEqual(params.line_items?.[0]?.tax_rates, ["txr_on"]);
 assert.match(params.custom_text?.submit?.message || "", /HST 13%/);
 assert.match(params.custom_text?.terms_of_service_acceptance?.message || "", /5-day refund/);
@@ -222,6 +309,17 @@ assert.equal(
   }),
   "Ended November 15, 2026.",
 );
+assert.equal(
+  membershipPeriodLabel({
+    membership_status: "refunded",
+    current_period_end: "2026-10-11T15:00:00.000Z",
+    cancel_at: null,
+  }),
+  "Refunded. Access ended October 11, 2026.",
+);
+assert.equal(shouldRetainBillingRecord({ stripe_subscription_id: null, membership_status: "none" }), false);
+assert.equal(shouldRetainBillingRecord({ stripe_subscription_id: "cus_only", membership_status: "none" }), true);
+assert.equal(shouldRetainBillingRecord({ stripe_subscription_id: null, membership_status: "refunded" }), true);
 assert.match(
   membershipPeriodLabel({ membership_status: "past_due", current_period_end: null, cancel_at: null }),
   /last payment failed/,
@@ -552,6 +650,18 @@ setSubscriptionCancellerForTests(async (id) => {
   cancelled.push(id);
 });
 
+function chargeInvoice(subscriptionId: string) {
+  return {
+    id: `in_${subscriptionId}`,
+    object: "invoice",
+    parent: {
+      type: "subscription_details",
+      quote_details: null,
+      subscription_details: { subscription: subscriptionId, metadata: null },
+    },
+  };
+}
+
 async function armRefundProfile() {
   await resetProfile("active");
   await query(
@@ -577,6 +687,7 @@ const fullRefund = await post(
       amount_refunded: 1694,
       refunded: true,
       customer: "cus_refund",
+      invoice: chargeInvoice("sub_refund"),
     },
     6000,
   ),
@@ -585,7 +696,8 @@ assert.equal(fullRefund.status, 200);
 row = await profile();
 assert.equal(row?.membership_status, "refunded");
 assert.equal(grantsMemberAccess(row), false);
-assert.equal(membershipPeriodLabel(row), "Refunded. Access has ended.");
+assert.match(membershipPeriodLabel(row), /^Refunded\. Access ended /);
+assert.ok(Math.abs(new Date(row?.current_period_end || 0).getTime() - 6000 * 1000) < 1500);
 assert.deepEqual(cancelled, ["sub_refund"]);
 
 const fullAgain = await post(
@@ -599,6 +711,7 @@ const fullAgain = await post(
       amount_refunded: 1694,
       refunded: true,
       customer: "cus_refund",
+      invoice: chargeInvoice("sub_refund"),
     },
     6000,
   ),
@@ -625,6 +738,8 @@ assert.equal(deletedAfterRefund.status, 200);
 row = await profile();
 assert.equal(row?.membership_status, "refunded");
 assert.equal(grantsMemberAccess(row), false);
+assert.ok(Math.abs(new Date(row?.current_period_end || 0).getTime() - 6000 * 1000) < 1500);
+assert.match(membershipPeriodLabel(row), /^Refunded\. Access ended /);
 
 await armRefundProfile();
 cancelled.length = 0;
@@ -639,6 +754,7 @@ const partial = await post(
       amount_refunded: 100,
       refunded: false,
       customer: "cus_refund",
+      invoice: chargeInvoice("sub_old"),
     },
     6200,
   ),
@@ -666,6 +782,7 @@ const dispute = await post(
         amount_refunded: 0,
         refunded: false,
         customer: "cus_refund",
+        invoice: chargeInvoice("sub_refund"),
       },
     },
     6300,
@@ -675,7 +792,95 @@ assert.equal(dispute.status, 200);
 row = await profile();
 assert.equal(row?.membership_status, "canceled");
 assert.equal(grantsMemberAccess(row), false);
+assert.match(membershipPeriodLabel(row), /^Ended /);
+assert.ok(Math.abs(new Date(row?.current_period_end || 0).getTime() - 6300 * 1000) < 1500);
 assert.deepEqual(cancelled, ["sub_refund"]);
+
+await armRefundProfile();
+cancelled.length = 0;
+const oldCharge = await post(
+  event(
+    "evt_test_refund_old_charge",
+    "charge.refunded",
+    {
+      id: "ch_old",
+      object: "charge",
+      amount: 1694,
+      amount_refunded: 1694,
+      refunded: true,
+      customer: "cus_refund",
+      invoice: chargeInvoice("sub_previous"),
+    },
+    6350,
+  ),
+);
+assert.equal(oldCharge.status, 200);
+row = await profile();
+assert.equal(row?.membership_status, "active");
+assert.equal(grantsMemberAccess(row), true);
+assert.deepEqual(cancelled, []);
+
+await resetProfile("none");
+const unlinked = await post(
+  event(
+    "evt_test_dispute_unlinked",
+    "charge.dispute.created",
+    {
+      id: "du_unlinked",
+      object: "dispute",
+      charge: {
+        id: "ch_unlinked",
+        object: "charge",
+        customer: "cus_not_yet",
+        billing_details: { email: "stripe-test@example.com" },
+        invoice: chargeInvoice("sub_not_yet"),
+      },
+    },
+    6360,
+  ),
+);
+assert.equal(unlinked.status, 409);
+row = await profile();
+assert.equal(row?.membership_status, "none");
+assert.equal(row?.stripe_customer_id, null);
+const unlinkedEvents = await query<{ id: string }>(`select id from stripe_events where id = 'evt_test_dispute_unlinked'`);
+assert.equal(unlinkedEvents.length, 0);
+
+await query(
+  `update profiles
+   set stripe_subscription_id = 'sub_not_yet', membership_status = 'active', plan = 'month',
+       current_period_end = now() + interval '20 days'
+   where id = $1`,
+  [PROFILE],
+);
+cancelled.length = 0;
+setSubscriptionCancellerForTests(async (id) => {
+  cancelled.push(id);
+});
+const linkedOnRetry = await post(
+  event(
+    "evt_test_dispute_unlinked",
+    "charge.dispute.created",
+    {
+      id: "du_unlinked",
+      object: "dispute",
+      charge: {
+        id: "ch_unlinked",
+        object: "charge",
+        customer: "cus_not_yet",
+        billing_details: { email: "stripe-test@example.com" },
+        invoice: chargeInvoice("sub_not_yet"),
+      },
+    },
+    6360,
+  ),
+);
+assert.equal(linkedOnRetry.status, 200);
+row = await profile();
+assert.equal(row?.membership_status, "canceled");
+assert.equal(row?.stripe_customer_id, "cus_not_yet");
+assert.match(membershipPeriodLabel(row), /^Ended /);
+assert.deepEqual(cancelled, ["sub_not_yet"]);
 
 await armRefundProfile();
 setSubscriptionCancellerForTests(async () => {
@@ -692,6 +897,7 @@ const cancelFailed = await post(
       amount_refunded: 1694,
       refunded: true,
       customer: "cus_refund",
+      invoice: chargeInvoice("sub_refund"),
     },
     6400,
   ),
@@ -733,6 +939,66 @@ assert.equal(grantsMemberAccess(row), true);
 await query(`delete from stripe_events where id like 'evt_test_%'`);
 await query(`delete from agreement_acceptances where profile_id = $1 or email = 'stripe-test@example.com'`, [PROFILE]);
 await query(`delete from profiles where id = $1`, [PROFILE]);
+
+const DELETE_ID = "00000000-0000-4000-8000-0000000000bb";
+await query(`create table if not exists auth.users (id uuid primary key)`);
+await query(`alter table public.profiles drop constraint if exists profiles_id_fkey`);
+await query(`insert into auth.users (id) select id from profiles on conflict do nothing`);
+await query(
+  `alter table public.profiles
+   add constraint profiles_id_fkey
+   foreign key (id) references auth.users (id) on delete cascade`,
+);
+await query(`delete from billing_records where email in ('never-paid@example.com', 'paid-then-deleted@example.com')`);
+await query(`delete from auth.users where id = $1`, [DELETE_ID]);
+await query(`delete from profiles where id = $1`, [DELETE_ID]);
+
+await query(`insert into auth.users (id) values ($1)`, [DELETE_ID]);
+await query(
+  `insert into profiles (id, email, membership_status, stripe_customer_id)
+   values ($1, 'never-paid@example.com', 'none', 'cus_abandoned')`,
+  [DELETE_ID],
+);
+await deleteAccount(DELETE_ID);
+const unpaidBills = await query<{ id: string }>(
+  `select id from billing_records where email = 'never-paid@example.com'`,
+);
+assert.equal(unpaidBills.length, 0);
+const unpaidProfile = await query<{ id: string }>(`select id from profiles where id = $1`, [DELETE_ID]);
+assert.equal(unpaidProfile.length, 0);
+
+await query(`insert into auth.users (id) values ($1)`, [DELETE_ID]);
+await query(
+  `insert into profiles (id, email, membership_status, stripe_subscription_id, plan)
+   values ($1, 'paid-then-deleted@example.com', 'canceled', 'sub_paid', 'month')`,
+  [DELETE_ID],
+);
+await deleteAccount(DELETE_ID);
+const paidBills = await query<{ stripe_subscription_id: string }>(
+  `select stripe_subscription_id from billing_records where email = 'paid-then-deleted@example.com'`,
+);
+assert.equal(paidBills.length, 1);
+assert.equal(paidBills[0].stripe_subscription_id, "sub_paid");
+
+await query(`insert into auth.users (id) values ($1)`, [DELETE_ID]);
+await query(
+  `insert into profiles (id, email, membership_status) values ($1, 'cascade@example.com', 'none')`,
+  [DELETE_ID],
+);
+await query(
+  `insert into resume_match_usage (profile_id, email_hash, used_on) values ($1, 'cascade', current_date)`,
+  [DELETE_ID],
+);
+await query(`delete from auth.users where id = $1`, [DELETE_ID]);
+const cascaded = await query<{ id: string }>(`select id from profiles where id = $1`, [DELETE_ID]);
+assert.equal(cascaded.length, 0);
+const cascadedUsage = await query<{ id: string }>(
+  `select id from resume_match_usage where profile_id = $1`,
+  [DELETE_ID],
+);
+assert.equal(cascadedUsage.length, 0);
+await query(`delete from billing_records where email in ('never-paid@example.com', 'paid-then-deleted@example.com')`);
+await query(`alter table public.profiles drop constraint if exists profiles_id_fkey`);
 
 const appRole = await query<{ ok: number }>(`select 1 as ok from pg_roles where rolname = 'publicjobs_app'`);
 if (!appRole.length) {

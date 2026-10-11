@@ -19,6 +19,14 @@ const HANDLED = new Set([
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** The profile is not linked to this customer yet. Stripe should retry. */
+export class CustomerNotLinked extends Error {
+  constructor() {
+    super("Customer is not linked yet.");
+    this.name = "CustomerNotLinked";
+  }
+}
+
 export type MembershipState = "none" | "active" | "past_due" | "canceled";
 
 let verifyClient: Stripe | null = null;
@@ -180,7 +188,16 @@ async function writeSubscription(
            else $4
          end,
          plan = coalesce($5, plan),
-         current_period_end = coalesce($6, current_period_end),
+         current_period_end = case
+           when membership_status = 'refunded' and $4::text <> 'active' then current_period_end
+           when membership_status = 'canceled'
+             and $4::text = 'canceled'
+             and current_period_end is not null
+             and $6::timestamptz is not null
+             and $6::timestamptz > current_period_end
+             then current_period_end
+           else coalesce($6, current_period_end)
+         end,
          cancel_at = $7,
          billing_event_created = $8,
          updated_at = now()
@@ -320,60 +337,148 @@ export function setSubscriptionCancellerForTests(fn: ((subscriptionId: string) =
   cancelSubscriptionImpl = fn ?? defaultCancelSubscription;
 }
 
-async function customerIdOfCharge(charge: Stripe.Charge | string): Promise<string | null> {
-  if (typeof charge !== "string") return idOf(charge.customer);
-  if (!process.env.STRIPE_SECRET_KEY) return null;
-  const loaded = await getStripe().charges.retrieve(charge);
-  return idOf(loaded.customer);
+function invoiceLikeSubscriptionId(invoice: unknown): string | null {
+  if (!invoice || typeof invoice !== "object") return null;
+  return subscriptionIdFromInvoice(invoice as Stripe.Invoice);
 }
 
-async function subscriptionIdForCustomer(customerId: string | null): Promise<string | null> {
-  if (!customerId) return null;
-  const rows = await query<{ stripe_subscription_id: string | null }>(
-    `select stripe_subscription_id from profiles where stripe_customer_id = $1`,
-    [customerId],
-  );
-  return rows[0]?.stripe_subscription_id || null;
+/** Subscription id carried on the charge or its payment intent, when the payload includes the invoice. */
+export function subscriptionIdFromCharge(charge: { invoice?: unknown; payment_intent?: unknown }): string | null {
+  const fromInvoice = invoiceLikeSubscriptionId(charge.invoice);
+  if (fromInvoice) return fromInvoice;
+  const paymentIntent = charge.payment_intent;
+  if (paymentIntent && typeof paymentIntent === "object") {
+    return invoiceLikeSubscriptionId((paymentIntent as { invoice?: unknown }).invoice);
+  }
+  return null;
+}
+
+function chargeEmail(charge: Stripe.Charge): string | null {
+  const email = charge.billing_details?.email || charge.receipt_email || "";
+  return email.includes("@") ? email : null;
+}
+
+async function resolveCharge(charge: Stripe.Charge | string): Promise<Stripe.Charge> {
+  if (typeof charge !== "string") return charge;
+  if (!process.env.STRIPE_SECRET_KEY) throw new CustomerNotLinked();
+  return getStripe().charges.retrieve(charge);
+}
+
+async function subscriptionIdOfResolvedCharge(charge: Stripe.Charge): Promise<string | null> {
+  const inline = subscriptionIdFromCharge(charge);
+  if (inline) return inline;
+  if (!process.env.STRIPE_SECRET_KEY) return null;
+  const stripe = getStripe();
+  const invoiceId = typeof (charge as Stripe.Charge & { invoice?: unknown }).invoice === "string"
+    ? ((charge as Stripe.Charge & { invoice?: string }).invoice as string)
+    : null;
+  if (invoiceId) {
+    const invoice = await stripe.invoices.retrieve(invoiceId);
+    const fromInvoice = subscriptionIdFromInvoice(invoice);
+    if (fromInvoice) return fromInvoice;
+  }
+  const paymentIntentId = idOf(charge.payment_intent);
+  if (!paymentIntentId) return null;
+  const payments = await stripe.invoicePayments.list({
+    payment: { type: "payment_intent", payment_intent: paymentIntentId },
+    limit: 5,
+  });
+  for (const payment of payments.data) {
+    const invoiceRef = payment.invoice;
+    if (!invoiceRef || typeof invoiceRef === "string") {
+      if (typeof invoiceRef !== "string") continue;
+      const invoice = await stripe.invoices.retrieve(invoiceRef);
+      const fromInvoice = subscriptionIdFromInvoice(invoice);
+      if (fromInvoice) return fromInvoice;
+      continue;
+    }
+    if ("deleted" in invoiceRef) continue;
+    const fromInvoice = subscriptionIdFromInvoice(invoiceRef);
+    if (fromInvoice) return fromInvoice;
+  }
+  return null;
+}
+
+async function profileForCharge(hints: {
+  customerId: string | null;
+  email: string | null;
+  subscriptionId: string | null;
+}): Promise<{ id: string; stripe_subscription_id: string | null } | null> {
+  if (hints.customerId) {
+    const byCustomer = await query<{ id: string; stripe_subscription_id: string | null }>(
+      `select id, stripe_subscription_id from profiles where stripe_customer_id = $1`,
+      [hints.customerId],
+    );
+    if (byCustomer[0]) return byCustomer[0];
+  }
+  if (hints.subscriptionId) {
+    const bySubscription = await query<{ id: string; stripe_subscription_id: string | null }>(
+      `select id, stripe_subscription_id from profiles where stripe_subscription_id = $1`,
+      [hints.subscriptionId],
+    );
+    if (bySubscription[0]) return bySubscription[0];
+  }
+  if (hints.email) {
+    const byEmail = await query<{ id: string; stripe_subscription_id: string | null }>(
+      `select id, stripe_subscription_id from profiles where lower(email) = lower($1)`,
+      [hints.email],
+    );
+    if (byEmail[0]) return byEmail[0];
+  }
+  return null;
 }
 
 type Revocation =
   | { action: "partial" }
-  | { action: "revoke"; status: "refunded" | "canceled"; customerId: string | null; subscriptionId: string | null };
+  | { action: "ignore" }
+  | { action: "revoke"; status: "refunded" | "canceled"; customerId: string | null; subscriptionId: string };
 
 async function revocationFor(event: Stripe.Event): Promise<Revocation | null> {
-  if (event.type === "charge.refunded") {
+  if (event.type !== "charge.refunded" && event.type !== "charge.dispute.created") return null;
+  if (event.type === "charge.refunded" && chargeRefundKind(event.data.object as Stripe.Charge) === "partial") {
     const charge = event.data.object as Stripe.Charge;
-    if (chargeRefundKind(charge) === "partial") {
-      console.info(
-        JSON.stringify({
-          event: "stripe_refund_partial",
-          id: event.id,
-          charge: charge.id,
-          amount: charge.amount,
-          amount_refunded: charge.amount_refunded,
-        }),
-      );
-      return { action: "partial" };
-    }
-    const customerId = idOf(charge.customer);
-    return {
-      action: "revoke",
-      status: "refunded",
-      customerId,
-      subscriptionId: await subscriptionIdForCustomer(customerId),
-    };
+    console.info(
+      JSON.stringify({
+        event: "stripe_refund_partial",
+        id: event.id,
+        charge: charge.id,
+        amount: charge.amount,
+        amount_refunded: charge.amount_refunded,
+      }),
+    );
+    return { action: "partial" };
   }
-  if (event.type === "charge.dispute.created") {
-    const dispute = event.data.object as Stripe.Dispute;
-    const customerId = await customerIdOfCharge(dispute.charge);
-    return {
-      action: "revoke",
-      status: "canceled",
-      customerId,
-      subscriptionId: await subscriptionIdForCustomer(customerId),
-    };
+  const dispute = event.type === "charge.dispute.created" ? (event.data.object as Stripe.Dispute) : null;
+  let charge = await resolveCharge(dispute ? dispute.charge : (event.data.object as Stripe.Charge));
+  if (dispute && !idOf(charge.payment_intent) && dispute.payment_intent) {
+    charge = { ...charge, payment_intent: dispute.payment_intent } as Stripe.Charge;
   }
-  return null;
+  const customerId = idOf(charge.customer);
+  const subscriptionId = await subscriptionIdOfResolvedCharge(charge);
+  const profile = await profileForCharge({
+    customerId,
+    email: chargeEmail(charge),
+    subscriptionId,
+  });
+  if (!profile || !profile.stripe_subscription_id) throw new CustomerNotLinked();
+  if (!subscriptionId || subscriptionId !== profile.stripe_subscription_id) {
+    console.info(
+      JSON.stringify({
+        event: "stripe_charge_other_subscription",
+        id: event.id,
+        charge: charge.id,
+        chargeSubscriptionId: subscriptionId,
+        currentSubscriptionId: profile.stripe_subscription_id,
+      }),
+    );
+    return { action: "ignore" };
+  }
+  return {
+    action: "revoke",
+    status: event.type === "charge.refunded" ? "refunded" : "canceled",
+    customerId,
+    subscriptionId,
+  };
 }
 
 async function applyRevocation(client: PoolClient, event: Stripe.Event, plan: Revocation): Promise<void> {
@@ -383,22 +488,27 @@ async function applyRevocation(client: PoolClient, event: Stripe.Event, plan: Re
     customerId: plan.customerId,
     subscriptionId: plan.subscriptionId,
   });
-  if (!profileId) {
-    console.info(JSON.stringify({ event: "stripe_webhook_unmatched", type: event.type, id: event.id }));
-    return;
-  }
+  if (!profileId) throw new CustomerNotLinked();
   await client.query(
     `update profiles
      set membership_status = case
            when membership_status = 'refunded' and $2::text <> 'active' then membership_status
            else $2
          end,
+         stripe_customer_id = coalesce($3, stripe_customer_id),
+         current_period_end = case
+           when current_period_end is not null
+             and current_period_end < to_timestamp($4::double precision)
+             then current_period_end
+           else to_timestamp($4::double precision)
+         end,
          cancel_at = null,
-         billing_event_created = $3,
+         billing_event_created = $4,
          updated_at = now()
      where id = $1
-       and (billing_event_created is null or billing_event_created <= $3)`,
-    [profileId, plan.status, event.created],
+       and (billing_event_created is null or billing_event_created <= $4)
+       and (stripe_subscription_id is null or stripe_subscription_id = $5)`,
+    [profileId, plan.status, plan.customerId, event.created, plan.subscriptionId],
   );
 }
 
@@ -459,6 +569,12 @@ export async function handleStripeWebhook(request: Request): Promise<Response> {
     subscription = await loadCheckoutSubscription(event);
     revocation = await revocationFor(event);
   } catch (error) {
+    if (error instanceof CustomerNotLinked) {
+      console.info(
+        JSON.stringify({ event: "stripe_webhook_customer_unlinked", type: event.type, id: event.id }),
+      );
+      return Response.json({ error: "Customer is not linked yet." }, { status: 409 });
+    }
     console.error(
       JSON.stringify({
         event: "stripe_webhook_error",
@@ -511,6 +627,12 @@ export async function handleStripeWebhook(request: Request): Promise<Response> {
     }
     return Response.json({ received: true });
   } catch (error) {
+    if (error instanceof CustomerNotLinked) {
+      console.info(
+        JSON.stringify({ event: "stripe_webhook_customer_unlinked", type: event.type, id: event.id }),
+      );
+      return Response.json({ error: "Customer is not linked yet." }, { status: 409 });
+    }
     console.error(
       JSON.stringify({
         event: "stripe_webhook_error",

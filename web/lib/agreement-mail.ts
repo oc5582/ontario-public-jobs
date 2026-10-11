@@ -59,9 +59,9 @@ export async function sendAgreementCopy(input: {
   }
   await query(
     `update agreement_acceptances
-     set agreement_email_sent_at = now(), agreement_email_id = $2
+     set agreement_email_sent_at = now(), agreement_email_id = $2, card_last4 = nullif($3, '')
      where id = $1`,
-    [input.agreementId, sent.id],
+    [input.agreementId, sent.id, input.last4],
   );
 }
 
@@ -135,75 +135,254 @@ export function cardLast4FromCharge(charge: Stripe.Charge | string | null | unde
   return fourDigits(charge.payment_method_details?.card?.last4);
 }
 
-function cardLast4FromPaymentIntent(intent: Stripe.PaymentIntent | string | null | undefined): string {
-  if (!intent || typeof intent === "string") return "";
-  const fromCharge = cardLast4FromCharge(intent.latest_charge);
-  if (fromCharge) return fromCharge;
-  const method = intent.payment_method;
-  if (method && typeof method !== "string") return fourDigits(method.card?.last4);
-  return "";
+function cardLast4FromPaymentMethod(method: Stripe.PaymentMethod | string | null | undefined): string {
+  if (!method || typeof method === "string") return "";
+  return fourDigits(method.card?.last4);
 }
 
-function cardLast4FromInvoice(invoice: Stripe.Invoice | string | null | undefined): string {
+function cardLast4FromPaymentRecord(
+  record: { payment_method_details?: { card?: { last4?: string | null } | null } | null } | string | null | undefined,
+): string {
+  if (!record || typeof record === "string") return "";
+  return fourDigits(record.payment_method_details?.card?.last4);
+}
+
+export function cardLast4FromPaymentIntent(intent: Stripe.PaymentIntent | string | null | undefined): string {
+  if (!intent || typeof intent === "string") return "";
+  return cardLast4FromCharge(intent.latest_charge) || cardLast4FromPaymentMethod(intent.payment_method);
+}
+
+export function cardLast4FromInvoice(invoice: Stripe.Invoice | string | null | undefined): string {
   if (!invoice || typeof invoice === "string") return "";
   for (const payment of invoice.payments?.data || []) {
     const fromIntent = cardLast4FromPaymentIntent(payment.payment?.payment_intent);
     if (fromIntent) return fromIntent;
     const fromCharge = cardLast4FromCharge(payment.payment?.charge);
     if (fromCharge) return fromCharge;
+    const fromRecord = cardLast4FromPaymentRecord(payment.payment?.payment_record);
+    if (fromRecord) return fromRecord;
   }
   return "";
 }
 
-async function paymentIntentLast4(stripe: Stripe, intent: Stripe.PaymentIntent | string): Promise<string> {
-  const loaded =
-    typeof intent === "string" || typeof intent.latest_charge === "string" || !intent.latest_charge
-      ? await stripe.paymentIntents.retrieve(typeof intent === "string" ? intent : intent.id, {
-          expand: ["latest_charge", "payment_method"],
-        })
-      : intent;
-  return cardLast4FromPaymentIntent(loaded);
+function cardLast4FromSubscription(subscription: Stripe.Subscription | string | null | undefined): string {
+  if (!subscription || typeof subscription === "string") return "";
+  return cardLast4FromPaymentMethod(subscription.default_payment_method);
 }
 
-async function invoiceLast4(stripe: Stripe, invoice: Stripe.Invoice | string): Promise<string> {
-  const loaded =
-    typeof invoice === "string" || !invoice.payments?.data?.length
-      ? await stripe.invoices.retrieve(typeof invoice === "string" ? invoice : invoice.id, {
-          expand: ["payments.data.payment.payment_intent", "payments.data.payment.charge"],
-        })
-      : invoice;
-  const direct = cardLast4FromInvoice(loaded);
+/** Stripe client surface used to read a card last4. Tests pass a fake. */
+export type CardLast4Client = {
+  paymentIntents: {
+    retrieve(id: string, params?: { expand?: string[] }): Promise<Stripe.PaymentIntent>;
+  };
+  charges: {
+    retrieve(id: string): Promise<Stripe.Charge>;
+  };
+  invoices: {
+    retrieve(id: string, params?: { expand?: string[] }): Promise<Stripe.Invoice>;
+  };
+  invoicePayments: {
+    list(params: { invoice?: string; expand?: string[] }): Promise<{ data: Stripe.InvoicePayment[] }>;
+  };
+  checkout: {
+    sessions: {
+      retrieve(id: string, params?: { expand?: string[] }): Promise<Stripe.Checkout.Session>;
+    };
+  };
+  subscriptions: {
+    retrieve(id: string, params?: { expand?: string[] }): Promise<Stripe.Subscription>;
+  };
+  paymentRecords?: {
+    retrieve(id: string): Promise<{ payment_method_details?: { card?: { last4?: string | null } | null } | null }>;
+  };
+};
+
+async function paymentIntentLast4(stripe: CardLast4Client, intent: Stripe.PaymentIntent | string): Promise<string> {
+  const direct = cardLast4FromPaymentIntent(intent);
   if (direct) return direct;
-  for (const payment of loaded.payments?.data || []) {
+  const id = typeof intent === "string" ? intent : intent.id;
+  if (!id) return "";
+  // Expanding latest_charge alone omits payment_method_details on the current API.
+  // Ask for that hash, then retrieve the charge if it is still only an id.
+  let loaded: Stripe.PaymentIntent | null = null;
+  try {
+    loaded = await stripe.paymentIntents.retrieve(id, {
+      expand: ["latest_charge.payment_method_details", "payment_method"],
+    });
+  } catch {
+    try {
+      loaded = await stripe.paymentIntents.retrieve(id, { expand: ["latest_charge", "payment_method"] });
+    } catch {
+      loaded = null;
+    }
+  }
+  const fromLoaded = loaded ? cardLast4FromPaymentIntent(loaded) : "";
+  if (fromLoaded) return fromLoaded;
+  const chargeId = !loaded
+    ? null
+    : typeof loaded.latest_charge === "string"
+      ? loaded.latest_charge
+      : loaded.latest_charge?.id;
+  if (!chargeId) return "";
+  try {
+    return cardLast4FromCharge(await stripe.charges.retrieve(chargeId));
+  } catch {
+    return "";
+  }
+}
+
+async function paymentRecordLast4(stripe: CardLast4Client, recordId: string): Promise<string> {
+  if (!stripe.paymentRecords) return "";
+  try {
+    return cardLast4FromPaymentRecord(await stripe.paymentRecords.retrieve(recordId));
+  } catch {
+    return "";
+  }
+}
+
+async function last4FromInvoicePayments(
+  stripe: CardLast4Client,
+  payments: Stripe.InvoicePayment[] | undefined,
+): Promise<string> {
+  for (const payment of payments || []) {
+    const inline =
+      cardLast4FromPaymentIntent(payment.payment?.payment_intent) ||
+      cardLast4FromCharge(payment.payment?.charge) ||
+      cardLast4FromPaymentRecord(payment.payment?.payment_record);
+    if (inline) return inline;
     const intent = payment.payment?.payment_intent;
-    if (typeof intent === "string") {
+    if (intent) {
       const found = await paymentIntentLast4(stripe, intent);
       if (found) return found;
     }
     const charge = payment.payment?.charge;
     if (typeof charge === "string") {
-      const found = cardLast4FromCharge(await stripe.charges.retrieve(charge));
+      try {
+        const found = cardLast4FromCharge(await stripe.charges.retrieve(charge));
+        if (found) return found;
+      } catch {
+        // The next payment on the invoice may still have a card.
+      }
+    }
+    const record = payment.payment?.payment_record;
+    if (typeof record === "string") {
+      const found = await paymentRecordLast4(stripe, record);
       if (found) return found;
     }
   }
   return "";
 }
 
-/** Last4 from the Checkout payment, or "" when Stripe does not return one. */
-export async function cardLast4ForCheckout(session: Stripe.Checkout.Session): Promise<string> {
-  const onSession = cardLast4FromPaymentIntent(session.payment_intent) || cardLast4FromInvoice(session.invoice);
-  if (onSession) return onSession;
-  if (!session.id || !process.env.STRIPE_SECRET_KEY) return "";
+async function invoiceLast4(stripe: CardLast4Client, invoice: Stripe.Invoice | string): Promise<string> {
+  const direct = cardLast4FromInvoice(invoice);
+  if (direct) return direct;
+  const id = typeof invoice === "string" ? invoice : invoice.id;
+  if (!id) return "";
+  let loaded: Stripe.Invoice | null = null;
   try {
-    const stripe = getStripe();
-    if (session.payment_intent) return await paymentIntentLast4(stripe, session.payment_intent);
-    if (session.invoice) return await invoiceLast4(stripe, session.invoice);
-    const full = await stripe.checkout.sessions.retrieve(session.id, {
-      expand: ["payment_intent.latest_charge", "invoice"],
+    loaded = await stripe.invoices.retrieve(id, {
+      expand: [
+        "payments.data.payment.payment_intent",
+        "payments.data.payment.charge",
+        "payments.data.payment.payment_record",
+      ],
     });
-    if (full.payment_intent) return await paymentIntentLast4(stripe, full.payment_intent);
-    if (full.invoice) return await invoiceLast4(stripe, full.invoice);
+  } catch {
+    try {
+      loaded = await stripe.invoices.retrieve(id, { expand: ["payments"] });
+    } catch {
+      loaded = null;
+    }
+  }
+  const fromLoaded = loaded ? await last4FromInvoicePayments(stripe, loaded.payments?.data) : "";
+  if (fromLoaded) return fromLoaded;
+  try {
+    const listed = await stripe.invoicePayments.list({
+      invoice: id,
+      expand: ["data.payment.payment_intent", "data.payment.charge", "data.payment.payment_record"],
+    });
+    return last4FromInvoicePayments(stripe, listed.data);
+  } catch {
     return "";
+  }
+}
+
+async function subscriptionLast4(
+  stripe: CardLast4Client,
+  subscription: Stripe.Subscription | string,
+): Promise<string> {
+  const direct = cardLast4FromSubscription(subscription);
+  if (direct) return direct;
+  const id = typeof subscription === "string" ? subscription : subscription.id;
+  if (!id) return "";
+  try {
+    const loaded = await stripe.subscriptions.retrieve(id, { expand: ["default_payment_method"] });
+    return cardLast4FromSubscription(loaded);
+  } catch {
+    return "";
+  }
+}
+
+async function lookupCardLast4(stripe: CardLast4Client, session: Stripe.Checkout.Session): Promise<string> {
+  if (session.payment_intent) {
+    const found = await paymentIntentLast4(stripe, session.payment_intent);
+    if (found) return found;
+  }
+  if (session.invoice) {
+    const found = await invoiceLast4(stripe, session.invoice);
+    if (found) return found;
+  }
+  if (session.subscription) {
+    const found = await subscriptionLast4(stripe, session.subscription);
+    if (found) return found;
+  }
+  if (!session.id) return "";
+  let full: Stripe.Checkout.Session;
+  try {
+    full = await stripe.checkout.sessions.retrieve(session.id, {
+      expand: [
+        "payment_intent.latest_charge.payment_method_details",
+        "payment_intent.payment_method",
+        "invoice.payments",
+        "subscription.default_payment_method",
+      ],
+    });
+  } catch {
+    return "";
+  }
+  const fromObjects =
+    cardLast4FromPaymentIntent(full.payment_intent) ||
+    cardLast4FromInvoice(full.invoice) ||
+    cardLast4FromSubscription(full.subscription);
+  if (fromObjects) return fromObjects;
+  if (full.payment_intent) {
+    const found = await paymentIntentLast4(stripe, full.payment_intent);
+    if (found) return found;
+  }
+  if (full.invoice) {
+    const found = await invoiceLast4(stripe, full.invoice);
+    if (found) return found;
+  }
+  if (full.subscription) {
+    return subscriptionLast4(stripe, full.subscription);
+  }
+  return "";
+}
+
+/** Last4 from the Checkout payment, or "" when Stripe does not return one. */
+export async function cardLast4ForCheckout(
+  session: Stripe.Checkout.Session,
+  stripeClient?: CardLast4Client | null,
+): Promise<string> {
+  const onSession =
+    cardLast4FromPaymentIntent(session.payment_intent) ||
+    cardLast4FromInvoice(session.invoice) ||
+    cardLast4FromSubscription(session.subscription);
+  if (onSession) return onSession;
+  const stripe = stripeClient === undefined ? (process.env.STRIPE_SECRET_KEY ? getStripe() : null) : stripeClient;
+  if (!stripe) return "";
+  try {
+    return await lookupCardLast4(stripe, session);
   } catch (error) {
     console.error(
       JSON.stringify({
