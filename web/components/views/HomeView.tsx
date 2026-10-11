@@ -6,6 +6,7 @@ import { SignupForm } from "@/components/SignupForm";
 import { UnlockCard } from "@/components/UnlockCard";
 import { emptyFilters, queryFromFilters, type JobFilters } from "@/lib/filters";
 import { countNoun } from "@/lib/format";
+import { homepageConsentText } from "@/lib/legal-copy";
 import { homeJsonLd, itemListJsonLd } from "@/lib/jsonld";
 import { searchJobs } from "@/lib/jobs";
 import { H1, SITE_URL, SUBHEAD } from "@/lib/site";
@@ -40,7 +41,7 @@ export async function HomeView({ filters, member }: { filters: JobFilters; membe
         </section>
 
         <MatchPromo count={openTotal} />
-        <SignupForm />
+        <SignupForm consent={homepageConsentText()} />
 
         <section className="listings" aria-labelledby="listings-heading">
           <h2 id="listings-heading">Current openings</h2>

@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { unresolvedLegalPlaceholders } from "./lib/legal-config";
+import { securityHeaders } from "./lib/security-headers";
 import legacyRedirects from "./legacy-redirects.json";
 
 const missingLegal = unresolvedLegalPlaceholders();
@@ -28,6 +29,9 @@ const nextConfig: NextConfig = {
       { source: "/jobs/page/:page", destination: "/jobs/", permanent: true },
       ...legacy,
     ];
+  },
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders() }];
   },
 };
 

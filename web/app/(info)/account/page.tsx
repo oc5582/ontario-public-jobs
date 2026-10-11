@@ -20,6 +20,7 @@ const STATUS: Record<string, string> = {
   active: "Active",
   past_due: "Payment past due",
   canceled: "Canceled",
+  refunded: "Refunded",
 };
 
 export default async function AccountPage({

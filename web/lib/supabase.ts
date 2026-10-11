@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { authCookieSettings } from "./auth-cookie";
 import { publishableKey } from "./auth";
 
 export async function createClient() {
@@ -10,13 +11,14 @@ export async function createClient() {
   }
   const store = await cookies();
   return createServerClient(url, key, {
+    cookieOptions: authCookieSettings(),
     cookies: {
       getAll() {
         return store.getAll();
       },
       setAll(cookiesToSet) {
         try {
-          cookiesToSet.forEach(({ name, value, options }) => store.set(name, value, options));
+          cookiesToSet.forEach(({ name, value, options }) => store.set(name, value, authCookieSettings(options)));
         } catch {
           // Server Components cannot always set cookies. The middleware refresh covers that.
         }

@@ -35,7 +35,7 @@ export type JobDetail = ListJob & {
 export type Profile = {
   id: string;
   email: string;
-  membership_status: "none" | "active" | "past_due" | "canceled";
+  membership_status: "none" | "active" | "past_due" | "canceled" | "refunded";
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   plan: string | null;

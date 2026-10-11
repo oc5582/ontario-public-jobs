@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { authCookieSettings } from "@/lib/auth-cookie";
 import { hasListFilter, isListPath, livePathFor } from "@/lib/cache-paths";
 
 function hasSessionCookie(request: NextRequest): boolean {
@@ -22,13 +23,16 @@ async function refreshSession(request: NextRequest, response: NextResponse): Pro
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return response;
   const supabase = createServerClient(url, key, {
+    cookieOptions: authCookieSettings(),
     cookies: {
       getAll() {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        cookiesToSet.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, authCookieSettings(options)),
+        );
       },
     },
   });

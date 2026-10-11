@@ -11,7 +11,15 @@ import {
 import { getPool, query } from "../web/lib/db.ts";
 import { grantsMemberAccess, membershipPeriodLabel } from "../web/lib/membership.ts";
 import { cardLast4FromCharge } from "../web/lib/agreement-mail.ts";
-import { handleStripeWebhook, membershipState, periodEndUnix, subscriptionWrite } from "../web/lib/stripe-webhook.ts";
+import {
+  acceptsStripeLivemode,
+  chargeRefundKind,
+  handleStripeWebhook,
+  membershipState,
+  periodEndUnix,
+  setSubscriptionCancellerForTests,
+  subscriptionWrite,
+} from "../web/lib/stripe-webhook.ts";
 
 const envFile = readFileSync(new URL("../web/.env.local", import.meta.url), "utf8");
 for (const line of envFile.split("\n")) {
@@ -24,6 +32,21 @@ process.env.STRIPE_PRICE_MONTHLY = "price_month";
 process.env.STRIPE_PRICE_QUARTERLY = "price_quarter";
 process.env.STRIPE_PRICE_YEARLY = "price_year";
 delete process.env.STRIPE_SECRET_KEY;
+delete process.env.STRIPE_WEBHOOK_LIVEMODE;
+delete process.env.VERCEL_ENV;
+
+assert.equal(chargeRefundKind({ refunded: true, amount: 1694, amount_refunded: 1694 }), "full");
+assert.equal(chargeRefundKind({ refunded: false, amount: 1694, amount_refunded: 1694 }), "full");
+assert.equal(chargeRefundKind({ refunded: false, amount: 1694, amount_refunded: 100 }), "partial");
+assert.equal(acceptsStripeLivemode(false, {}), true);
+assert.equal(acceptsStripeLivemode(true, {}), false);
+assert.equal(acceptsStripeLivemode(true, { VERCEL_ENV: "production" }), true);
+assert.equal(acceptsStripeLivemode(false, { VERCEL_ENV: "production" }), false);
+assert.equal(acceptsStripeLivemode(true, { VERCEL_ENV: "preview" }), false);
+assert.equal(acceptsStripeLivemode(false, { VERCEL_ENV: "preview" }), true);
+assert.equal(acceptsStripeLivemode(true, { VERCEL_ENV: "production", STRIPE_WEBHOOK_LIVEMODE: "test" }), false);
+assert.equal(acceptsStripeLivemode(false, { VERCEL_ENV: "preview", STRIPE_WEBHOOK_LIVEMODE: "live" }), false);
+assert.equal(acceptsStripeLivemode(true, { STRIPE_WEBHOOK_LIVEMODE: "1" }), true);
 
 const PROFILE = "00000000-0000-4000-8000-0000000000aa";
 const stripe = new Stripe("sk_test_webhook_verify_only");
@@ -523,6 +546,189 @@ await assert.rejects(
   AlreadySubscribedError,
 );
 assert.equal(creates, 1);
+
+const cancelled: string[] = [];
+setSubscriptionCancellerForTests(async (id) => {
+  cancelled.push(id);
+});
+
+async function armRefundProfile() {
+  await resetProfile("active");
+  await query(
+    `update profiles
+     set stripe_customer_id = 'cus_refund',
+         stripe_subscription_id = 'sub_refund',
+         plan = 'month',
+         current_period_end = now() + interval '20 days'
+     where id = $1`,
+    [PROFILE],
+  );
+}
+
+await armRefundProfile();
+const fullRefund = await post(
+  event(
+    "evt_test_refund_full",
+    "charge.refunded",
+    {
+      id: "ch_full",
+      object: "charge",
+      amount: 1694,
+      amount_refunded: 1694,
+      refunded: true,
+      customer: "cus_refund",
+    },
+    6000,
+  ),
+);
+assert.equal(fullRefund.status, 200);
+row = await profile();
+assert.equal(row?.membership_status, "refunded");
+assert.equal(grantsMemberAccess(row), false);
+assert.equal(membershipPeriodLabel(row), "Refunded. Access has ended.");
+assert.deepEqual(cancelled, ["sub_refund"]);
+
+const fullAgain = await post(
+  event(
+    "evt_test_refund_full",
+    "charge.refunded",
+    {
+      id: "ch_full",
+      object: "charge",
+      amount: 1694,
+      amount_refunded: 1694,
+      refunded: true,
+      customer: "cus_refund",
+    },
+    6000,
+  ),
+);
+assert.equal(fullAgain.status, 200);
+assert.deepEqual(cancelled, ["sub_refund"]);
+row = await profile();
+assert.equal(row?.membership_status, "refunded");
+
+const deletedAfterRefund = await post(
+  event(
+    "evt_test_deleted_after_refund",
+    "customer.subscription.deleted",
+    subscription({
+      id: "sub_refund",
+      customer: "cus_refund",
+      status: "canceled",
+      ended_at: 1_700_000_000,
+    }),
+    6100,
+  ),
+);
+assert.equal(deletedAfterRefund.status, 200);
+row = await profile();
+assert.equal(row?.membership_status, "refunded");
+assert.equal(grantsMemberAccess(row), false);
+
+await armRefundProfile();
+cancelled.length = 0;
+const partial = await post(
+  event(
+    "evt_test_refund_partial",
+    "charge.refunded",
+    {
+      id: "ch_partial",
+      object: "charge",
+      amount: 1694,
+      amount_refunded: 100,
+      refunded: false,
+      customer: "cus_refund",
+    },
+    6200,
+  ),
+);
+assert.equal(partial.status, 200);
+row = await profile();
+assert.equal(row?.membership_status, "active");
+assert.equal(grantsMemberAccess(row), true);
+assert.deepEqual(cancelled, []);
+
+await armRefundProfile();
+const dispute = await post(
+  event(
+    "evt_test_dispute",
+    "charge.dispute.created",
+    {
+      id: "du_test",
+      object: "dispute",
+      amount: 1694,
+      status: "needs_response",
+      charge: {
+        id: "ch_disputed",
+        object: "charge",
+        amount: 1694,
+        amount_refunded: 0,
+        refunded: false,
+        customer: "cus_refund",
+      },
+    },
+    6300,
+  ),
+);
+assert.equal(dispute.status, 200);
+row = await profile();
+assert.equal(row?.membership_status, "canceled");
+assert.equal(grantsMemberAccess(row), false);
+assert.deepEqual(cancelled, ["sub_refund"]);
+
+await armRefundProfile();
+setSubscriptionCancellerForTests(async () => {
+  throw new Error("stripe down");
+});
+const cancelFailed = await post(
+  event(
+    "evt_test_refund_cancel_failed",
+    "charge.refunded",
+    {
+      id: "ch_fail",
+      object: "charge",
+      amount: 1694,
+      amount_refunded: 1694,
+      refunded: true,
+      customer: "cus_refund",
+    },
+    6400,
+  ),
+);
+assert.equal(cancelFailed.status, 500);
+row = await profile();
+assert.equal(row?.membership_status, "active");
+const failedEvents = await query<{ id: string }>(`select id from stripe_events where id = 'evt_test_refund_cancel_failed'`);
+assert.equal(failedEvents.length, 0);
+setSubscriptionCancellerForTests(null);
+
+await resetProfile("none");
+process.env.VERCEL_ENV = "production";
+const testOnProduction = await post(
+  event("evt_test_mode_on_prod", "customer.subscription.updated", subscription({ status: "active" }), 6500),
+);
+assert.equal(testOnProduction.status, 200);
+row = await profile();
+assert.equal(row?.membership_status, "none");
+
+process.env.VERCEL_ENV = "preview";
+const liveOnPreview = await post({
+  ...event("evt_test_live_on_preview", "customer.subscription.updated", subscription({ status: "active" }), 6600),
+  livemode: true,
+});
+assert.equal(liveOnPreview.status, 200);
+row = await profile();
+assert.equal(row?.membership_status, "none");
+
+delete process.env.VERCEL_ENV;
+const testOnPreview = await post(
+  event("evt_test_mode_on_preview", "customer.subscription.updated", subscription({ status: "active" }), 6700),
+);
+assert.equal(testOnPreview.status, 200);
+row = await profile();
+assert.equal(row?.membership_status, "active");
+assert.equal(grantsMemberAccess(row), true);
 
 await query(`delete from stripe_events where id like 'evt_test_%'`);
 await query(`delete from agreement_acceptances where profile_id = $1 or email = 'stripe-test@example.com'`, [PROFILE]);

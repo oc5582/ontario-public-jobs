@@ -2,7 +2,10 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { cookies, headers } from "next/headers";
 import { query } from "./db";
 import { grantsMemberAccess } from "./membership";
+import { safeNext } from "./safe-next";
 import type { Profile, Viewer } from "./types";
+
+export { safeNext };
 
 const COOKIE = "pj_local";
 const MAX_AGE = 60 * 60 * 24 * 30;
@@ -109,11 +112,6 @@ export async function setLocalSession(email: string): Promise<void> {
     path: "/",
     maxAge: MAX_AGE,
   });
-}
-
-export function safeNext(value: string | null | undefined, fallback = "/account/"): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\")) return fallback;
-  return value;
 }
 
 export async function clearLocalSession(): Promise<void> {

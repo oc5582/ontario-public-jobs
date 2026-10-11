@@ -2,7 +2,7 @@ import type { PoolClient } from "pg";
 import Stripe from "stripe";
 import { fulfillCheckoutAgreement } from "./agreement-mail";
 import { getStripe, planForPrice } from "./billing";
-import { withTransaction } from "./db";
+import { query, withTransaction } from "./db";
 import { sendDueRenewalReminders } from "./renewal-reminders";
 import type { PlanId } from "./site";
 
@@ -13,6 +13,8 @@ const HANDLED = new Set([
   "customer.subscription.deleted",
   "invoice.payment_failed",
   "invoice.upcoming",
+  "charge.refunded",
+  "charge.dispute.created",
 ]);
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -173,7 +175,10 @@ async function writeSubscription(
     `update profiles
      set stripe_customer_id = coalesce($2, stripe_customer_id),
          stripe_subscription_id = $3,
-         membership_status = $4,
+         membership_status = case
+           when membership_status = 'refunded' and $4::text <> 'active' then membership_status
+           else $4
+         end,
          plan = coalesce($5, plan),
          current_period_end = coalesce($6, current_period_end),
          cancel_at = $7,
@@ -268,7 +273,137 @@ async function loadCheckoutSubscription(event: Stripe.Event): Promise<Stripe.Sub
   return getStripe().subscriptions.retrieve(id);
 }
 
+export function chargeRefundKind(charge: {
+  refunded?: boolean | null;
+  amount?: number | null;
+  amount_refunded?: number | null;
+}): "full" | "partial" {
+  if (charge.refunded === true) return "full";
+  const amount = typeof charge.amount === "number" ? charge.amount : 0;
+  const refunded = typeof charge.amount_refunded === "number" ? charge.amount_refunded : 0;
+  if (amount > 0 && refunded >= amount) return "full";
+  return "partial";
+}
+
+/** Production accepts live events. Every other deployment accepts test events. STRIPE_WEBHOOK_LIVEMODE overrides that. */
+export function acceptsStripeLivemode(livemode: boolean, env: NodeJS.ProcessEnv = process.env): boolean {
+  const flag = (env.STRIPE_WEBHOOK_LIVEMODE || "").trim().toLowerCase();
+  if (flag === "1" || flag === "true" || flag === "live") return livemode === true;
+  if (flag === "0" || flag === "false" || flag === "test") return livemode === false;
+  if (env.VERCEL_ENV === "production") return livemode === true;
+  return livemode === false;
+}
+
+function subscriptionAlreadyCanceled(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const code = "code" in error ? String(error.code) : "";
+  const message = "message" in error && typeof error.message === "string" ? error.message : "";
+  return code === "resource_missing" || /already been canceled/i.test(message) || /canceled subscription/i.test(message);
+}
+
+async function defaultCancelSubscription(subscriptionId: string): Promise<void> {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.info(JSON.stringify({ event: "stripe_subscription_cancel_skipped", subscriptionId, reason: "no_key" }));
+    return;
+  }
+  try {
+    await getStripe().subscriptions.cancel(subscriptionId);
+  } catch (error) {
+    if (subscriptionAlreadyCanceled(error)) return;
+    throw error;
+  }
+}
+
+let cancelSubscriptionImpl: (subscriptionId: string) => Promise<void> = defaultCancelSubscription;
+
+export function setSubscriptionCancellerForTests(fn: ((subscriptionId: string) => Promise<void>) | null): void {
+  cancelSubscriptionImpl = fn ?? defaultCancelSubscription;
+}
+
+async function customerIdOfCharge(charge: Stripe.Charge | string): Promise<string | null> {
+  if (typeof charge !== "string") return idOf(charge.customer);
+  if (!process.env.STRIPE_SECRET_KEY) return null;
+  const loaded = await getStripe().charges.retrieve(charge);
+  return idOf(loaded.customer);
+}
+
+async function subscriptionIdForCustomer(customerId: string | null): Promise<string | null> {
+  if (!customerId) return null;
+  const rows = await query<{ stripe_subscription_id: string | null }>(
+    `select stripe_subscription_id from profiles where stripe_customer_id = $1`,
+    [customerId],
+  );
+  return rows[0]?.stripe_subscription_id || null;
+}
+
+type Revocation =
+  | { action: "partial" }
+  | { action: "revoke"; status: "refunded" | "canceled"; customerId: string | null; subscriptionId: string | null };
+
+async function revocationFor(event: Stripe.Event): Promise<Revocation | null> {
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object as Stripe.Charge;
+    if (chargeRefundKind(charge) === "partial") {
+      console.info(
+        JSON.stringify({
+          event: "stripe_refund_partial",
+          id: event.id,
+          charge: charge.id,
+          amount: charge.amount,
+          amount_refunded: charge.amount_refunded,
+        }),
+      );
+      return { action: "partial" };
+    }
+    const customerId = idOf(charge.customer);
+    return {
+      action: "revoke",
+      status: "refunded",
+      customerId,
+      subscriptionId: await subscriptionIdForCustomer(customerId),
+    };
+  }
+  if (event.type === "charge.dispute.created") {
+    const dispute = event.data.object as Stripe.Dispute;
+    const customerId = await customerIdOfCharge(dispute.charge);
+    return {
+      action: "revoke",
+      status: "canceled",
+      customerId,
+      subscriptionId: await subscriptionIdForCustomer(customerId),
+    };
+  }
+  return null;
+}
+
+async function applyRevocation(client: PoolClient, event: Stripe.Event, plan: Revocation): Promise<void> {
+  if (plan.action !== "revoke") return;
+  const profileId = await findProfile(client, {
+    profileId: null,
+    customerId: plan.customerId,
+    subscriptionId: plan.subscriptionId,
+  });
+  if (!profileId) {
+    console.info(JSON.stringify({ event: "stripe_webhook_unmatched", type: event.type, id: event.id }));
+    return;
+  }
+  await client.query(
+    `update profiles
+     set membership_status = case
+           when membership_status = 'refunded' and $2::text <> 'active' then membership_status
+           else $2
+         end,
+         cancel_at = null,
+         billing_event_created = $3,
+         updated_at = now()
+     where id = $1
+       and (billing_event_created is null or billing_event_created <= $3)`,
+    [profileId, plan.status, event.created],
+  );
+}
+
 async function applyEvent(client: PoolClient, event: Stripe.Event, subscription: Stripe.Subscription | null): Promise<void> {
+  if (event.type === "charge.refunded" || event.type === "charge.dispute.created") return;
   if (event.type === "invoice.upcoming") return;
   if (event.type === "invoice.payment_failed") {
     await applyPaymentFailed(client, event);
@@ -305,11 +440,24 @@ export async function handleStripeWebhook(request: Request): Promise<Response> {
   } catch {
     return Response.json({ error: "Invalid signature." }, { status: 400 });
   }
+  if (!acceptsStripeLivemode(event.livemode)) {
+    console.info(
+      JSON.stringify({
+        event: "stripe_webhook_livemode_ignored",
+        type: event.type,
+        id: event.id,
+        livemode: event.livemode,
+      }),
+    );
+    return Response.json({ received: true });
+  }
   if (!HANDLED.has(event.type)) return Response.json({ received: true });
 
   let subscription: Stripe.Subscription | null = null;
+  let revocation: Revocation | null = null;
   try {
     subscription = await loadCheckoutSubscription(event);
+    revocation = await revocationFor(event);
   } catch (error) {
     console.error(
       JSON.stringify({
@@ -321,6 +469,24 @@ export async function handleStripeWebhook(request: Request): Promise<Response> {
     return Response.json({ error: "Webhook failed." }, { status: 500 });
   }
 
+  if (revocation?.action === "revoke" && revocation.subscriptionId) {
+    const seen = await query<{ id: string }>(`select id from stripe_events where id = $1`, [event.id]);
+    if (!seen.length) {
+      try {
+        await cancelSubscriptionImpl(revocation.subscriptionId);
+      } catch (error) {
+        console.error(
+          JSON.stringify({
+            event: "stripe_webhook_error",
+            type: event.type,
+            message: error instanceof Error ? error.message : "cancel failed",
+          }),
+        );
+        return Response.json({ error: "Webhook failed." }, { status: 500 });
+      }
+    }
+  }
+
   try {
     const result = await withTransaction(async (client) => {
       const inserted = await client.query(
@@ -330,7 +496,8 @@ export async function handleStripeWebhook(request: Request): Promise<Response> {
         [event.id, event.type],
       );
       if (inserted.rowCount === 0) return { duplicate: true };
-      await applyEvent(client, event, subscription);
+      if (revocation) await applyRevocation(client, event, revocation);
+      else await applyEvent(client, event, subscription);
       return { duplicate: false };
     });
     console.info(JSON.stringify({ event: "stripe_webhook", type: event.type, duplicate: result.duplicate }));
