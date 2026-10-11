@@ -1,8 +1,9 @@
 import { HomeView } from "@/components/views/HomeView";
 import { getViewer } from "@/lib/auth";
 import { filtersFromSearch, hasFilters, hasPageParam, searchWithoutPage } from "@/lib/filters";
+import { listingFacts } from "@/lib/jobs";
 import { pageMetadata } from "@/lib/seo";
-import { BRAND, META_DESCRIPTION, PAGE_TITLE } from "@/lib/site";
+import { HOME_TITLE, homeCopy } from "@/lib/site";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -11,9 +12,11 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const params = await searchParams;
   const filters = filtersFromSearch(params);
+  const facts = await listingFacts();
+  const copy = homeCopy(facts.employerCount, facts.employerNames);
   return pageMetadata({
-    title: `${PAGE_TITLE} | ${BRAND}`,
-    description: META_DESCRIPTION,
+    title: HOME_TITLE,
+    description: copy.description,
     path: "/",
     index: !hasFilters(filters),
   });

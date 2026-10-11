@@ -8,8 +8,8 @@ import { emptyFilters, queryFromFilters, type JobFilters } from "@/lib/filters";
 import { countNoun } from "@/lib/format";
 import { alertConsentLabel, alertConsentSender } from "@/lib/legal-copy";
 import { homeJsonLd, itemListJsonLd } from "@/lib/jsonld";
-import { searchJobs } from "@/lib/jobs";
-import { H1, SITE_URL, SUBHEAD } from "@/lib/site";
+import { listingFacts, searchJobs } from "@/lib/jobs";
+import { H1, homeCopy, SITE_URL } from "@/lib/site";
 
 export async function HomeView({ filters, member }: { filters: JobFilters; member: boolean }) {
   const filtering = Boolean(queryFromFilters(filters));
@@ -18,6 +18,8 @@ export async function HomeView({ filters, member }: { filters: JobFilters; membe
   const label = countNoun(result.total, filtering);
   const browseQuery = queryFromFilters(filters);
   const browseHref = browseQuery ? `/jobs/?${browseQuery}` : "/jobs/";
+  const facts = await listingFacts();
+  const subhead = homeCopy(facts.employerCount, facts.employerNames).subhead;
 
   return (
     <main>
@@ -26,7 +28,7 @@ export async function HomeView({ filters, member }: { filters: JobFilters; membe
       <div className="content">
         <section className="hero" aria-labelledby="page-heading">
           <h1 id="page-heading">{H1}</h1>
-          <p className="subhead">{SUBHEAD}</p>
+          <p className="subhead">{subhead}</p>
           <div className="listings-toolbar">
             <div className="count-block" aria-live="polite">
               <p className="count-number" id="listings-count">

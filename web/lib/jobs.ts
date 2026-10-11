@@ -1,8 +1,11 @@
 import { unstable_cache } from "next/cache";
 import { query } from "./db";
+import { displayPostedDate } from "./dates";
 import { hasFilters, type JobFilters } from "./filters";
+import { locationCities, normalizeLocation } from "./location";
 import { selectSimilarJobs, type SimilarJobCandidate } from "./similar-jobs";
 import { FREE_LIST_LIMIT } from "./site";
+import { displayPageTitle, displayTitle } from "./titles";
 import type { Facets, JobDetail, ListJob } from "./types";
 
 const PUBLIC_REVALIDATE_SECONDS = 900;
@@ -19,6 +22,26 @@ function listIsShared(filters: JobFilters): boolean {
 const OPEN = `j.removed_at is null
   and (j.closing_date is null or j.closing_date >= (timezone('America/Toronto', now()))::date)`;
 
+const columnState = globalThis as unknown as { employerPostedColumn?: boolean };
+
+/** True after the employer_posted_date migration has been applied. */
+export async function hasEmployerPostedColumn(): Promise<boolean> {
+  if (columnState.employerPostedColumn === true) return true;
+  const rows = await query<{ ok: boolean }>(
+    `select exists (
+       select 1 from information_schema.columns
+       where table_schema = 'public' and table_name = 'jobs' and column_name = 'employer_posted_date'
+     ) as ok`,
+  );
+  const ok = Boolean(rows[0]?.ok);
+  if (ok) columnState.employerPostedColumn = true;
+  return ok;
+}
+
+function postedExpr(hasColumn: boolean): string {
+  return hasColumn ? "coalesce(j.employer_posted_date, j.posted_date)" : "j.posted_date";
+}
+
 type ListRow = {
   title: string;
   employer_name: string;
@@ -33,7 +56,7 @@ function likePattern(value: string): string {
   return `%${value.replace(/[\\%_]/g, "\\$&")}%`;
 }
 
-function whereFor(filters: JobFilters, params: unknown[]): string {
+function whereFor(filters: JobFilters, params: unknown[], hasColumn: boolean, locationAliases: string[]): string {
   const parts = [OPEN];
   if (filters.q) {
     params.push(likePattern(filters.q));
@@ -42,8 +65,8 @@ function whereFor(filters: JobFilters, params: unknown[]): string {
     );
   }
   if (filters.location) {
-    params.push(filters.location);
-    parts.push(`$${params.length} = any(j.cities)`);
+    params.push(locationAliases.length ? locationAliases : [filters.location]);
+    parts.push(`j.cities && $${params.length}::text[]`);
   }
   if (filters.employer) {
     params.push(filters.employer);
@@ -70,7 +93,7 @@ function whereFor(filters: JobFilters, params: unknown[]): string {
   }
   if (filters.postedSince) {
     params.push(filters.postedSince);
-    parts.push(`j.posted_date >= $${params.length}::date`);
+    parts.push(`${postedExpr(hasColumn)} >= $${params.length}::date`);
   }
   if (filters.closesBy) {
     params.push(filters.closesBy);
@@ -87,9 +110,9 @@ function jobHref(path: string): string {
 function toListJob(row: ListRow): ListJob {
   const path = row.path.endsWith("/") ? row.path : `${row.path}/`;
   return {
-    title: row.title,
+    title: displayTitle(row.title),
     employer: row.employer_name,
-    location: row.location || "",
+    location: normalizeLocation(row.location || ""),
     closing: (row.closing || "").slice(0, 10),
     type: row.employment_type || "",
     href: jobHref(row.path),
@@ -97,20 +120,40 @@ function toListJob(row: ListRow): ListJob {
   };
 }
 
+async function locationAliases(selected: string): Promise<string[]> {
+  const label = locationCities(selected)[0] || normalizeLocation(selected) || selected;
+  const rows = await query<{ city: string }>(
+    `select distinct city from (
+       select unnest(cities) as city from jobs
+     ) cities where city <> ''`,
+  );
+  const aliases = new Set<string>([selected, label]);
+  for (const row of rows) {
+    const labels = locationCities(row.city);
+    if (labels.includes(label) || normalizeLocation(row.city) === label || row.city === selected) {
+      aliases.add(row.city);
+    }
+  }
+  return [...aliases];
+}
+
 async function searchJobsUncached(
   filters: JobFilters,
   member: boolean,
 ): Promise<{ jobs: ListJob[]; total: number }> {
+  const hasColumn = await hasEmployerPostedColumn();
+  const aliases = filters.location ? await locationAliases(filters.location) : [];
   const params: unknown[] = [];
-  const where = whereFor(filters, params);
+  const where = whereFor(filters, params, hasColumn, aliases);
   const limit = member ? "" : `limit ${FREE_LIST_LIMIT}`;
+  const posted = postedExpr(hasColumn);
   const rows = await query<ListRow>(
     `select j.title, e.name as employer_name, j.location, j.closing_date::text as closing,
             j.employment_type, j.path, count(*) over() as total_count
      from jobs j
      join employers e on e.id = j.employer_id
      where ${where}
-     order by j.posted_date desc nulls last, j.fetched_at desc nulls last, j.title asc
+     order by ${posted} desc nulls last, j.fetched_at desc nulls last, j.title asc
      ${limit}`,
     params,
   );
@@ -130,8 +173,10 @@ export function searchJobs(
 }
 
 async function countJobs(filters: JobFilters): Promise<number> {
+  const hasColumn = await hasEmployerPostedColumn();
+  const aliases = filters.location ? await locationAliases(filters.location) : [];
   const params: unknown[] = [];
-  const where = whereFor(filters, params);
+  const where = whereFor(filters, params, hasColumn, aliases);
   const rows = await query<{ total: string }>(
     `select count(*)::text as total
      from jobs j
@@ -154,6 +199,7 @@ type DetailRow = {
   location: string;
   closing: string | null;
   posted: string | null;
+  employer_posted: string | null;
   fetched: string | null;
   employment_type: string;
   work_mode: string;
@@ -209,9 +255,13 @@ function toDetail(row: DetailRow): JobDetail {
     id: row.id,
     employer_slug: row.employer_slug,
     job_slug: row.job_slug,
-    page_title: row.page_title,
-    meta_description: row.meta_description,
-    posted: (row.posted || "").slice(0, 10),
+    page_title: displayPageTitle(row.page_title, row.title),
+    meta_description: displayPageTitle(row.meta_description, row.title),
+    posted: displayPostedDate({
+      employerPosted: row.employer_posted || "",
+      description: row.description || "",
+      firstCollected: (row.posted || row.fetched || "").slice(0, 10),
+    }),
     fetched: (row.fetched || "").slice(0, 10),
     employment_type: row.employment_type || "",
     work_mode: row.work_mode || "",
@@ -231,18 +281,23 @@ function toDetail(row: DetailRow): JobDetail {
   };
 }
 
-const DETAIL_SQL = `select j.id, j.title, e.name as employer_name, j.employer_slug, j.job_slug,
+function detailSql(hasColumn: boolean): string {
+  const employerPosted = hasColumn ? "j.employer_posted_date::text" : "null::text";
+  return `select j.id, j.title, e.name as employer_name, j.employer_slug, j.job_slug,
   j.path, j.page_title, j.meta_description, j.location, j.closing_date::text as closing,
-  j.posted_date::text as posted, j.fetched_at::date::text as fetched, j.employment_type, j.work_mode, j.salary, j.department,
+  j.posted_date::text as posted, ${employerPosted} as employer_posted, j.fetched_at::date::text as fetched,
+  j.employment_type, j.work_mode, j.salary, j.department,
   j.description, j.paragraphs, j.apply_url, j.category, j.cities, j.fully_remote, e.website, e.logo_url, j.jobposting,
   (j.removed_at is not null) as removed,
   (j.removed_at is not null or (j.closing_date is not null and j.closing_date < (timezone('America/Toronto', now()))::date)) as closed
   from jobs j
   join employers e on e.id = j.employer_id`;
+}
 
 async function getJobUncached(employer: string, slug: string): Promise<JobDetail | null> {
+  const hasColumn = await hasEmployerPostedColumn();
   const rows = await query<DetailRow>(
-    `${DETAIL_SQL} where j.employer_slug = $1 and j.job_slug = $2 limit 1`,
+    `${detailSql(hasColumn)} where j.employer_slug = $1 and j.job_slug = $2 limit 1`,
     [employer, slug],
   );
   return rows[0] ? toDetail(rows[0]) : null;
@@ -313,7 +368,7 @@ async function employerOpenJobLinksUncached(slug: string): Promise<EmployerJobLi
      order by lower(j.title) asc, j.title asc, j.path asc`,
     [slug],
   );
-  return rows.map((row) => ({ title: row.title, href: jobHref(row.path) }));
+  return rows.map((row) => ({ title: displayTitle(row.title), href: jobHref(row.path) }));
 }
 
 /** Title and path only. Cached with the other public list queries. */
@@ -343,8 +398,12 @@ async function getFacetsUncached(): Promise<Facets> {
        ) types where job_type <> '' order by job_type`,
     ),
   ]);
+  const placeLabels = new Set<string>();
+  for (const row of locations) {
+    for (const city of locationCities(row.city)) placeLabels.add(city);
+  }
   return {
-    locations: locations.map((row) => row.city),
+    locations: [...placeLabels].sort((a, b) => a.localeCompare(b, "en")),
     employers,
     categories: categories.map((row) => row.category),
     types: types.map((row) => row.job_type),
@@ -411,23 +470,29 @@ const SOURCE_LABELS: Record<string, string> = {
   workday_cxs: "Workday",
 };
 
-async function listingFactsUncached(): Promise<{ sources: string[]; fetched: string; employerCount: number }> {
+async function listingFactsUncached(): Promise<{
+  sources: string[];
+  fetched: string;
+  employerCount: number;
+  employerNames: string[];
+}> {
   const sources = await query<{ source: string | null }>(
     `select distinct source from jobs where removed_at is null`,
   );
-  const names = new Set<string>();
+  const sourceLabels = new Set<string>();
   for (const row of sources) {
     const key = (row.source || "").split(":")[0];
     // peoplesoft_tps is the paused Toronto Police Service feed. Those jobs close on the next refresh.
     if (!key || key === "peoplesoft_tps") continue;
-    if (key.startsWith("site_")) names.add("employers' own websites");
-    else names.add(SOURCE_LABELS[key] || key);
+    if (key.startsWith("site_")) sourceLabels.add("employers' own websites");
+    else sourceLabels.add(SOURCE_LABELS[key] || key);
   }
   const dates = await query<{ first: string | null; last: string | null }>(
     `select min(fetched_at)::date::text as first, max(fetched_at)::date::text as last
      from jobs where removed_at is null and fetched_at is not null`,
   );
   const employers = await query<{ total: string }>(`select count(*)::text as total from employers`);
+  const employerNameRows = await query<{ name: string }>(`select name from employers order by name`);
   const first = dates[0]?.first || "";
   const last = dates[0]?.last || "";
   let fetched = "The current listings do not record a fetch time.";
@@ -437,13 +502,19 @@ async function listingFactsUncached(): Promise<{ sources: string[]; fetched: str
     fetched = `The listings on the site now were fetched on ${formatFetched(first)}.`;
   }
   return {
-    sources: [...names].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" })),
+    sources: [...sourceLabels].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" })),
     fetched,
     employerCount: Number(employers[0]?.total || 0),
+    employerNames: employerNameRows.map((row) => row.name),
   };
 }
 
-export function listingFacts(): Promise<{ sources: string[]; fetched: string; employerCount: number }> {
+export function listingFacts(): Promise<{
+  sources: string[];
+  fetched: string;
+  employerCount: number;
+  employerNames: string[];
+}> {
   return publicCache(["listing-facts"], () => listingFactsUncached());
 }
 
@@ -453,10 +524,12 @@ function formatFetched(iso: string): string {
   return `${months[month - 1]} ${day}, ${year}`;
 }
 
-function sitemapJobsUncached(): Promise<{ path: string; lastmod: string }[]> {
+async function sitemapJobsUncached(): Promise<{ path: string; lastmod: string }[]> {
+  const hasColumn = await hasEmployerPostedColumn();
+  const posted = postedExpr(hasColumn);
   return query<{ path: string; lastmod: string }>(
     `select j.path,
-            coalesce(j.posted_date::text, j.fetched_at::date::text, '') as lastmod
+            coalesce(${posted}::text, j.fetched_at::date::text, '') as lastmod
      from jobs j
      where ${OPEN}
      order by j.path`,

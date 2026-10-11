@@ -1,3 +1,5 @@
+import { normalizeLocation } from "./location";
+import { displayTitle } from "./titles";
 import type { ListJob } from "./types";
 
 /** The job the similar list is built for. */
@@ -92,9 +94,9 @@ export function selectSimilarJobs(
     seen.add(item.candidate.id);
     const path = item.candidate.path.endsWith("/") ? item.candidate.path : `${item.candidate.path}/`;
     jobs.push({
-      title: item.candidate.title,
+      title: displayTitle(item.candidate.title),
       employer: item.candidate.employer,
-      location: item.candidate.location,
+      location: normalizeLocation(item.candidate.location),
       closing: item.candidate.closing.slice(0, 10),
       type: item.candidate.type,
       href: jobHref(item.candidate.path),

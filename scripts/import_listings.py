@@ -16,8 +16,17 @@ test@example.com. Pass --no-seed-member to skip that. Pass --seed-member to forc
 
 The weekday refresh should not use that path for Supabase. Call this instead,
 after the scrape has written a private JSON file in the listings.json shape.
-Node must be on PATH because the description formatter runs. Do not commit the
-feed, and do not change scripts/build_pages.py.
+Node must be on PATH because the description formatter and the location/date
+preparer run. Do not commit the feed, and do not change scripts/build_pages.py.
+
+jobs.employer_posted_date must exist. Apply
+supabase/migrations/20261011210000_employer_posted_date.sql first. The import
+stops before writing if that column is missing. posted_date stays the earliest
+day we collected the job. employer_posted_date is the employer's own date when
+the feed or the description header states one.
+
+Pass --notify-out path.json to write the open jobs whose public fields changed
+and the jobs that were removed. scripts/notify_indexing.ts reads that file.
 
   DATABASE_URL='postgresql://postgres.[ref]:[password]@aws-0-ca-central-1.pooler.supabase.com:6543/postgres?sslmode=require' \\
     python3 scripts/import_listings.py --feed /path/to/private-feed.json --supabase-only
@@ -227,9 +236,104 @@ def format_descriptions(texts: list[str]) -> list[dict]:
     return json.loads(proc.stdout)
 
 
-def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
+def prepare_listing_fields(jobs: list[dict]) -> list[dict]:
+    """Normalize location and pick the employer posting date. One Node process."""
+    payload = []
+    for job in jobs:
+        payload.append(
+            {
+                "location": bp.text(job.get("location")),
+                "description": bp.text(job.get("description")),
+                "firstCollected": bp.posting_date(job),
+                "closing": bp.closing_date(job),
+                "fields": {
+                    "employer_posted_date": bp.text(job.get("employer_posted_date")),
+                    "posting_date": bp.text(job.get("posting_date")),
+                    "date_posted": bp.text(job.get("date_posted")),
+                    "datePosted": bp.text(job.get("datePosted")),
+                },
+            }
+        )
+    script = ROOT / "scripts" / "prepare_listing_fields.ts"
+    proc = subprocess.run(
+        ["node", "--experimental-strip-types", str(script)],
+        input=json.dumps(payload),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise SystemExit(proc.stderr.strip() or "listing field preparer failed")
+    prepared = json.loads(proc.stdout)
+    if not isinstance(prepared, list) or len(prepared) != len(jobs):
+        raise SystemExit("listing field preparer returned the wrong number of rows")
+    return prepared
+
+
+def require_employer_posted_column(cur) -> None:
+    cur.execute(
+        """
+        select 1
+        from information_schema.columns
+        where table_schema = 'public'
+          and table_name = 'jobs'
+          and column_name = 'employer_posted_date'
+        """
+    )
+    if cur.fetchone() is None:
+        raise SystemExit(
+            "jobs.employer_posted_date is missing. Apply "
+            "supabase/migrations/20261011210000_employer_posted_date.sql "
+            "before importing. Nothing was written."
+        )
+
+
+def job_page_url(path: str) -> str:
+    origin = os.environ.get("NEXT_PUBLIC_SITE_URL", "https://publicjobs.ca").rstrip("/")
+    return f"{origin}/{path.strip('/')}/"
+
+
+def _date_text(value) -> str:
+    if not value:
+        return ""
+    return str(value)[:10]
+
+
+def _content_key(row: dict) -> tuple:
+    cities = row.get("cities") or []
+    return (
+        bp.text(row.get("title")),
+        bp.text(row.get("location")),
+        tuple(sorted(bp.text(city) for city in cities if bp.text(city))),
+        _date_text(row.get("closing")),
+        _date_text(row.get("employer_posted")),
+        bp.text(row.get("description")),
+        bp.text(row.get("apply_url")),
+        bp.text(row.get("employment_type")),
+        bp.text(row.get("salary")),
+        bp.text(row.get("department")),
+        bp.text(row.get("work_mode")),
+        bp.text(row.get("category")),
+    )
+
+
+def upsert(conn, jobs: list[dict], seed_member: bool) -> dict[str, list[str]]:
     today = bp.today_toronto()
+    updated: list[str] = []
+    deleted: list[str] = []
     with conn.cursor() as cur:
+        require_employer_posted_column(cur)
+        cur.execute(
+            """
+            select path, title, location, cities, closing_date::text as closing,
+                   employer_posted_date::text as employer_posted, description, apply_url,
+                   employment_type, salary, department, work_mode, category,
+                   (removed_at is not null) as removed
+            from jobs
+            """
+        )
+        columns = [desc[0] for desc in cur.description]
+        existing = {row[0]: dict(zip(columns, row)) for row in cur.fetchall()}
         employer_ids: dict[str, str] = {}
         for job in jobs:
             slug = job["_employer_slug"]
@@ -250,13 +354,23 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
 
         paths: list[str] = []
         formatted = format_descriptions([bp.text(job.get("description")) for job in jobs])
+        prepared = prepare_listing_fields(jobs)
         for index, job in enumerate(jobs):
             salary = bp.base_salary(job)
             annual_min, annual_max, currency, unit = annual_bounds(salary)
+            fields = prepared[index]
             posting = bp.job_posting_data(job)
             if posting is not None:
                 posting = dict(posting)
                 posting["directApply"] = False
+                if fields.get("datePosted"):
+                    posting["datePosted"] = fields["datePosted"]
+                else:
+                    posting.pop("datePosted", None)
+                if fields.get("validThrough"):
+                    posting["validThrough"] = fields["validThrough"]
+                else:
+                    posting.pop("validThrough", None)
             cleaned = formatted[index]
             paragraphs = cleaned["paragraphs"]
             description_html = cleaned["html"]
@@ -264,15 +378,39 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
                 posting["description"] = description_html
             posted = bp.posting_date(job) or None
             closing = bp.closing_date(job) or None
+            employer_posted = fields.get("employerPosted") or None
+            location = fields.get("location") or bp.text(job.get("location"))
+            cities = list(fields.get("cities") or [])
             alias = bp.SEARCH_ALIASES.get(bp.text(job.get("employer")), "")
             path = job["_path"]
             paths.append(path)
+            previous = existing.get(path)
+            stored_employer_posted = employer_posted or (previous or {}).get("employer_posted") or ""
+            incoming_key = _content_key(
+                {
+                    "title": bp.text(job.get("title")) or "Untitled",
+                    "location": location,
+                    "cities": cities,
+                    "closing": closing,
+                    "employer_posted": stored_employer_posted,
+                    "description": bp.text(job.get("description")),
+                    "apply_url": bp.text(job.get("apply_url")),
+                    "employment_type": bp.text(job.get("employment_type")),
+                    "salary": bp.text(job.get("salary")),
+                    "department": bp.text(job.get("department")),
+                    "work_mode": bp.text(job.get("work_mode")),
+                    "category": category_for(job),
+                }
+            )
+            changed = previous is None or bool(previous.get("removed")) or _content_key(previous) != incoming_key
+            if changed and not bp.job_is_closed(job, today):
+                updated.append(job_page_url(path))
             cur.execute(
                 """
                 insert into jobs (
                   employer_id, employer_slug, job_slug, path, title, page_title,
                   meta_description, location, cities, location_places, closing_date,
-                  posted_date, employment_type, job_types, work_mode, fully_remote,
+                  posted_date, employer_posted_date, employment_type, job_types, work_mode, fully_remote,
                   salary, salary_annual_min, salary_annual_max, salary_currency,
                   salary_unit, department, description, paragraphs, description_html,
                   apply_url, tier, source, fetched_at, external_id, category,
@@ -280,7 +418,7 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
                 ) values (
                   %s, %s, %s, %s, %s, %s,
                   %s, %s, %s, %s, %s,
-                  %s, %s, %s, %s, %s,
+                  %s, %s, %s, %s, %s, %s,
                   %s, %s, %s, %s,
                   %s, %s, %s, %s, %s,
                   %s, %s, %s, %s, %s, %s,
@@ -297,7 +435,8 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
                   cities = excluded.cities,
                   location_places = excluded.location_places,
                   closing_date = excluded.closing_date,
-                  posted_date = excluded.posted_date,
+                  posted_date = least(jobs.posted_date, excluded.posted_date),
+                  employer_posted_date = coalesce(excluded.employer_posted_date, jobs.employer_posted_date),
                   employment_type = excluded.employment_type,
                   job_types = excluded.job_types,
                   work_mode = excluded.work_mode,
@@ -330,11 +469,12 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
                     bp.text(job.get("title")) or "Untitled",
                     job["_page_title"],
                     job["_meta_desc"],
-                    bp.text(job.get("location")),
-                    bp.job_cities(bp.text(job.get("location"))),
-                    Json(bp.job_locations(bp.text(job.get("location")))),
+                    location,
+                    cities,
+                    Json(bp.job_locations(location)),
                     closing,
                     posted,
+                    employer_posted,
                     bp.text(job.get("employment_type")),
                     job_types_for(job),
                     bp.text(job.get("work_mode")),
@@ -369,6 +509,12 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
             (paths,),
         )
         removed = cur.rowcount
+        incoming_paths = set(paths)
+        for path, row in existing.items():
+            if row.get("removed"):
+                continue
+            if path not in incoming_paths:
+                deleted.append(job_page_url(path))
         closed = sum(1 for job in jobs if bp.job_is_closed(job, today))
         if seed_member:
             cur.execute(
@@ -385,8 +531,10 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
     conn.commit()
     print(
         f"Upserted {len(jobs)} jobs ({closed} already past their closing date). "
-        f"Marked {removed} missing paths removed."
+        f"Marked {removed} missing paths removed. "
+        f"{len(updated)} open jobs changed, {len(deleted)} removed."
     )
+    return {"updated": sorted(set(updated)), "deleted": sorted(set(deleted))}
 
 
 def guard_feed(conn, jobs: list[dict]) -> None:
@@ -433,6 +581,10 @@ def main() -> None:
         action="store_true",
         help="Upsert into Postgres only. Skip built HTML and legacy redirects. Never seed a member.",
     )
+    parser.add_argument(
+        "--notify-out",
+        help="Write changed and removed job URLs as JSON for scripts/notify_indexing.ts.",
+    )
     args = parser.parse_args()
     database_url = os.environ.get("DATABASE_URL", "").strip()
     if not database_url:
@@ -461,9 +613,12 @@ def main() -> None:
     try:
         if args.supabase_only:
             guard_feed(conn, jobs)
-        upsert(conn, jobs, seed_member)
+        notice = upsert(conn, jobs, seed_member)
     finally:
         conn.close()
+    if args.notify_out:
+        Path(args.notify_out).write_text(json.dumps(notice, indent=2) + "\n", encoding="utf-8")
+        print(f"Wrote indexing manifest to {args.notify_out}")
     if seed_member:
         print("Seeded local member test@example.com")
 

@@ -2,14 +2,15 @@ import type { Metadata, Viewport } from "next";
 import { AdNotice } from "@/components/AdNotice";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteScripts } from "@/components/SiteScripts";
-import { BRAND, META_DESCRIPTION, PAGE_TITLE, SITE_URL } from "@/lib/site";
+import { BRAND, HOME_TITLE, SITE_URL } from "@/lib/site";
 
 const OG_ALT = "PublicJobs.ca: government jobs in Toronto and the GTA";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { absolute: `${PAGE_TITLE} | ${BRAND}` },
-  description: META_DESCRIPTION,
+  title: { absolute: HOME_TITLE },
+  description:
+    "Current openings at public employers in Toronto and the GTA, collected every weekday. Apply free on each employer's site.",
   applicationName: BRAND,
   icons: {
     icon: [

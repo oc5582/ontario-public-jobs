@@ -1,5 +1,7 @@
 import { createHash } from "crypto";
 import { query } from "./db";
+import { normalizeLocation } from "./location";
+import { displayTitle } from "./titles";
 
 export const FREE_MATCH_LIMIT = 1;
 export const FREE_RESULTS = 5;
@@ -125,9 +127,9 @@ function hits(value: unknown): MatchHit[] {
       const row = item as Record<string, unknown>;
       return {
         url: String(row.url || ""),
-        title: String(row.title || ""),
+        title: displayTitle(String(row.title || "")),
         employer: String(row.employer || ""),
-        location: String(row.location || ""),
+        location: normalizeLocation(String(row.location || "")),
         closing_date: String(row.closing_date || ""),
         reason: String(row.reason || "").slice(0, 200),
       };

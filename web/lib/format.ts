@@ -34,16 +34,31 @@ export function formatLongDate(iso: string): string {
   return `${MONTHS[month - 1]} ${day}, ${year}`;
 }
 
-export function closingLabel(iso: string, todayIso = torontoTodayIso()): { text: string; urgent: boolean } {
+function daysUntil(iso: string, todayIso: string): number | null {
   const raw = parseIsoDate(iso);
-  if (!raw) return { text: "", urgent: false };
+  if (!raw) return null;
   const close = Date.parse(`${raw}T00:00:00Z`);
   const today = Date.parse(`${todayIso}T00:00:00Z`);
-  const diff = Math.round((close - today) / 86400000);
+  return Math.round((close - today) / 86400000);
+}
+
+export function closingLabel(iso: string, todayIso = torontoTodayIso()): { text: string; urgent: boolean } {
+  const raw = parseIsoDate(iso);
+  const diff = daysUntil(iso, todayIso);
+  if (!raw || diff == null) return { text: "", urgent: false };
   if (diff === 0) return { text: "Closes today", urgent: true };
   if (diff === 1) return { text: "Closes in 1 day", urgent: true };
   if (diff > 1 && diff <= 7) return { text: `Closes in ${diff} days`, urgent: true };
   return { text: formatLongDate(raw), urgent: false };
+}
+
+/** Days left until the closing date. Empty once the date has passed or is missing. */
+export function closesInText(iso: string, todayIso = torontoTodayIso()): string {
+  const diff = daysUntil(iso, todayIso);
+  if (diff == null || diff < 0) return "";
+  if (diff === 0) return "Closes today";
+  if (diff === 1) return "Closes in 1 day";
+  return `Closes in ${diff} days`;
 }
 
 export function pillLabel(value: string): string {

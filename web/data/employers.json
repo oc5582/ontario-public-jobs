@@ -1,0 +1,266 @@
+{
+  "city-of-toronto": {
+    "level": "municipal",
+    "intro": "The City of Toronto is the municipal government of Toronto. It is responsible for local services in the city, including roads, parks, libraries, public health, and city planning."
+  },
+  "city-of-brampton": {
+    "level": "municipal",
+    "intro": "The City of Brampton is the municipal government of Brampton, in Peel Region in the Greater Toronto Area. It is responsible for local services in the city, including roads, parks, recreation, and city planning."
+  },
+  "city-of-burlington": {
+    "level": "municipal",
+    "intro": "The City of Burlington is the municipal government of Burlington, in Halton Region in the Greater Toronto Area. It is responsible for local services in the city, including roads, parks, recreation, and city planning."
+  },
+  "city-of-markham": {
+    "level": "municipal",
+    "intro": "The City of Markham is the municipal government of Markham, in York Region in the Greater Toronto Area. It is responsible for local services in the city, including roads, parks, recreation, and city planning."
+  },
+  "city-of-mississauga": {
+    "level": "municipal",
+    "intro": "The City of Mississauga is the municipal government of Mississauga, in Peel Region in the Greater Toronto Area. It is responsible for local services in the city, including roads, parks, recreation, and city planning."
+  },
+  "city-of-richmond-hill": {
+    "level": "municipal",
+    "intro": "The City of Richmond Hill is the municipal government of Richmond Hill, in York Region in the Greater Toronto Area. It is responsible for local services in the city, including roads, parks, recreation, and city planning."
+  },
+  "municipality-of-clarington": {
+    "level": "municipal",
+    "intro": "The Municipality of Clarington is the municipal government of Clarington, in Durham Region in the Greater Toronto Area. It is responsible for local government services in the municipality, which includes Bowmanville."
+  },
+  "regional-municipality-of-halton": {
+    "level": "municipal",
+    "intro": "The Regional Municipality of Halton is the upper-tier municipal government for Halton Region, covering Burlington, Halton Hills, Milton, and Oakville. It delivers regional services, including water, wastewater, waste, and regional roads."
+  },
+  "town-of-ajax": {
+    "level": "municipal",
+    "intro": "The Town of Ajax is the municipal government of Ajax, in Durham Region in the Greater Toronto Area. It is responsible for local government services in the town."
+  },
+  "town-of-aurora": {
+    "level": "municipal",
+    "intro": "The Town of Aurora is the municipal government of Aurora, in York Region in the Greater Toronto Area. It is responsible for local government services in the town."
+  },
+  "town-of-east-gwillimbury": {
+    "level": "municipal",
+    "intro": "The Town of East Gwillimbury is the municipal government of East Gwillimbury, in York Region in the Greater Toronto Area. It is responsible for local government services in the town."
+  },
+  "town-of-halton-hills": {
+    "level": "municipal",
+    "intro": "The Town of Halton Hills is the municipal government of Halton Hills, in Halton Region in the Greater Toronto Area. It is responsible for local government services in the town, which includes Georgetown and Acton."
+  },
+  "town-of-milton": {
+    "level": "municipal",
+    "intro": "The Town of Milton is the municipal government of Milton, in Halton Region in the Greater Toronto Area. It is responsible for local government services in the town."
+  },
+  "town-of-oakville": {
+    "level": "municipal",
+    "intro": "The Town of Oakville is the municipal government of Oakville, in Halton Region in the Greater Toronto Area. It is responsible for local services in the town, including roads, parks, recreation, and town planning."
+  },
+  "town-of-whitby": {
+    "level": "municipal",
+    "intro": "The Town of Whitby is the municipal government of Whitby, in Durham Region in the Greater Toronto Area. It is responsible for local government services in the town."
+  },
+  "township-of-king": {
+    "level": "municipal",
+    "intro": "The Township of King is the municipal government of King Township, in York Region in the Greater Toronto Area. It is responsible for local government services in the township."
+  },
+  "township-of-scugog": {
+    "level": "municipal",
+    "intro": "The Township of Scugog is the municipal government of Scugog, in Durham Region in the Greater Toronto Area. It is responsible for local government services in the township, which includes Port Perry."
+  },
+  "township-of-uxbridge": {
+    "level": "municipal",
+    "intro": "The Township of Uxbridge is the municipal government of Uxbridge, in Durham Region in the Greater Toronto Area. It is responsible for local government services in the township."
+  },
+  "createto": {
+    "level": "municipal",
+    "intro": "CreateTO is a City of Toronto agency that manages the city's real estate. It leads city-building projects on public land in Toronto."
+  },
+  "exhibition-place-board-of-governors-canadian-national-exhibition-association": {
+    "level": "municipal",
+    "intro": "Exhibition Place is a board of the City of Toronto that manages the Exhibition Place grounds on Toronto's waterfront. The grounds are the home of the Canadian National Exhibition."
+  },
+  "toronto-atmospheric-fund": {
+    "level": "municipal",
+    "intro": "The Toronto Atmospheric Fund is a City of Toronto agency that finances local greenhouse-gas reduction projects. Its work is in Toronto."
+  },
+  "toronto-community-housing-corporation": {
+    "level": "municipal",
+    "intro": "Toronto Community Housing is a City of Toronto corporation and the city's social housing provider. It manages rental housing for tenants in Toronto."
+  },
+  "toronto-hydro-corporation": {
+    "level": "municipal",
+    "intro": "Toronto Hydro is a City of Toronto corporation that distributes electricity in Toronto. It delivers power to homes and businesses in the city."
+  },
+  "toronto-parking-authority": {
+    "level": "municipal",
+    "intro": "The Toronto Parking Authority is a City of Toronto agency that operates municipal parking in Toronto. That includes on-street spaces and Green P lots."
+  },
+  "toronto-police-service": {
+    "level": "municipal",
+    "intro": "The Toronto Police Service is the municipal police service for the City of Toronto. It provides policing across the city."
+  },
+  "toronto-transit-commission": {
+    "level": "municipal",
+    "intro": "The Toronto Transit Commission is a City of Toronto agency that operates public transit in Toronto. Its services include buses, streetcars, and the subway."
+  },
+  "toronto-zoo-board-of-management": {
+    "level": "municipal",
+    "intro": "The Toronto Zoo is operated by a board of the City of Toronto. It runs the city zoo in Scarborough."
+  },
+  "bank-of-canada": {
+    "level": "federal",
+    "intro": "The Bank of Canada is Canada's central bank and a federal Crown corporation. It is responsible for monetary policy, Canadian currency, and the stability of the financial system."
+  },
+  "business-development-bank-of-canada-bdc": {
+    "level": "federal",
+    "intro": "The Business Development Bank of Canada is a federal Crown corporation that provides financing and advisory services to Canadian businesses. It serves businesses across the country, including in the Greater Toronto Area."
+  },
+  "canada-development-investment-corporation-cdev": {
+    "level": "federal",
+    "intro": "The Canada Development Investment Corporation is a federal Crown corporation. It manages commercial investments and assets held by the Government of Canada."
+  },
+  "canada-infrastructure-bank": {
+    "level": "federal",
+    "intro": "The Canada Infrastructure Bank is a federal Crown corporation that invests in revenue-generating infrastructure projects in the public interest. It invests alongside public and private partners."
+  },
+  "canada-mortgage-and-housing-corporation-cmhc": {
+    "level": "federal",
+    "intro": "Canada Mortgage and Housing Corporation is a federal Crown corporation that supports housing in Canada. Its programs are used by households and housing providers, including in the Greater Toronto Area."
+  },
+  "canada-pension-plan-investment-board-cppib": {
+    "level": "federal",
+    "intro": "The Canada Pension Plan Investment Board is a federal Crown corporation. It invests Canada Pension Plan funds that are not needed to pay current benefits."
+  },
+  "canada-post-corporation": {
+    "level": "federal",
+    "intro": "Canada Post is a federal Crown corporation that provides postal service across Canada. That includes delivery and retail postal service in the Greater Toronto Area."
+  },
+  "canadian-broadcasting-corporation-cbc-radio-canada": {
+    "level": "federal",
+    "intro": "CBC/Radio-Canada is Canada's national public broadcaster and a federal Crown corporation. It produces news and programming in English and French, including for audiences in the Greater Toronto Area."
+  },
+  "export-development-canada-edc": {
+    "level": "federal",
+    "intro": "Export Development Canada is a federal Crown corporation. It provides trade financing, insurance, and expertise to Canadian companies that sell abroad."
+  },
+  "farm-credit-canada": {
+    "level": "federal",
+    "intro": "Farm Credit Canada is a federal Crown corporation. It provides financing to the agriculture and agri-food industry in Canada."
+  },
+  "telefilm-canada": {
+    "level": "federal",
+    "intro": "Telefilm Canada is a federal Crown corporation. It finances and promotes the Canadian film, television, and media industry."
+  },
+  "financial-services-regulatory-authority-of-ontario-fsra": {
+    "level": "provincial",
+    "intro": "The Financial Services Regulatory Authority of Ontario is a provincial Crown agency. It regulates insurance, credit unions, pension plans, and mortgage brokerages in Ontario."
+  },
+  "investment-management-corporation-of-ontario-imco": {
+    "level": "provincial",
+    "intro": "The Investment Management Corporation of Ontario is a provincial corporation. It manages investments for Ontario public-sector institutions."
+  },
+  "liquor-control-board-of-ontario-lcbo": {
+    "level": "provincial",
+    "intro": "The Liquor Control Board of Ontario is a provincial Crown agency. It sells beverage alcohol in Ontario, including through stores in the Greater Toronto Area."
+  },
+  "ontario-health": {
+    "level": "provincial",
+    "intro": "Ontario Health is a provincial agency that connects and coordinates health care in Ontario. Its work covers planning and quality for the provincial health system, including in the Greater Toronto Area."
+  },
+  "ontario-lottery-and-gaming-corporation-olg": {
+    "level": "provincial",
+    "intro": "The Ontario Lottery and Gaming Corporation is a provincial Crown agency. It conducts lottery games and gaming in Ontario."
+  },
+  "ontario-securities-commission": {
+    "level": "provincial",
+    "intro": "The Ontario Securities Commission is a provincial Crown agency. It regulates capital markets in Ontario."
+  },
+  "public-health-ontario-ontario-agency-for-health-protection-and-promotion": {
+    "level": "provincial",
+    "intro": "Public Health Ontario is a provincial Crown agency. It provides scientific and technical advice and public health laboratory services to support public health in Ontario."
+  },
+  "hydro-one-limited": {
+    "level": "provincial",
+    "intro": "Hydro One Limited transmits and distributes electricity in Ontario. Its network serves communities across the province, including outside the City of Toronto in the Greater Toronto Area."
+  },
+  "alcohol-and-gaming-commission-of-ontario-agco": {
+    "level": "agency",
+    "intro": "The Alcohol and Gaming Commission of Ontario is a provincial regulator. It regulates alcohol, gaming, horse racing, and cannabis retail in Ontario."
+  },
+  "art-gallery-of-ontario": {
+    "level": "agency",
+    "intro": "The Art Gallery of Ontario is an art museum in downtown Toronto and an agency of the Government of Ontario. It exhibits art and runs public programs at its Toronto site."
+  },
+  "chartered-professional-accountants-of-ontario-cpa-ontario": {
+    "level": "agency",
+    "intro": "CPA Ontario is the regulator of chartered professional accountants in Ontario. It licenses CPAs who practise in the province and sets standards for the profession."
+  },
+  "home-construction-regulatory-authority-hcra": {
+    "level": "agency",
+    "intro": "The Home Construction Regulatory Authority is the Ontario regulator that licenses new home builders and vendors. It oversees that licensing across the province, including in the Greater Toronto Area."
+  },
+  "independent-electricity-system-operator-ieso": {
+    "level": "agency",
+    "intro": "The Independent Electricity System Operator operates Ontario's electricity market and manages the provincial power system. Its work covers the electricity grid that serves the Greater Toronto Area."
+  },
+  "infrastructure-ontario": {
+    "level": "agency",
+    "intro": "Infrastructure Ontario is a provincial agency that manages large public infrastructure projects. It also provides infrastructure financing for the Ontario public sector."
+  },
+  "law-society-of-ontario": {
+    "level": "agency",
+    "intro": "The Law Society of Ontario regulates lawyers and paralegals in Ontario in the public interest. It licenses the people who practise law in the province."
+  },
+  "metrolinx": {
+    "level": "agency",
+    "intro": "Metrolinx is a provincial agency that plans and operates regional transit in the Greater Toronto and Hamilton Area. Its services include GO Transit and UP Express."
+  },
+  "metropolitan-toronto-convention-centre-corporation": {
+    "level": "agency",
+    "intro": "The Metropolitan Toronto Convention Centre Corporation operates the Metro Toronto Convention Centre in downtown Toronto. It is an agency of the Government of Ontario."
+  },
+  "ontario-cannabis-retail-corporation-ontario-cannabis-store": {
+    "level": "agency",
+    "intro": "The Ontario Cannabis Store is the provincial wholesaler of recreational cannabis in Ontario. It also sells cannabis to the public online."
+  },
+  "ontario-centre-of-innovation": {
+    "level": "agency",
+    "intro": "The Ontario Centre of Innovation is a provincial agency that supports research and commercialization in Ontario. It funds collaboration between industry and post-secondary institutions."
+  },
+  "ontario-educational-communications-authority-tvo": {
+    "level": "agency",
+    "intro": "TVO is Ontario's English-language public educational broadcaster and a provincial agency. It produces and distributes educational media for audiences in Ontario, including the Greater Toronto Area."
+  },
+  "ontario-energy-board": {
+    "level": "agency",
+    "intro": "The Ontario Energy Board is a provincial regulator. It regulates Ontario's electricity and natural gas sectors."
+  },
+  "ontario-french-language-educational-communications-authority-tfo": {
+    "level": "agency",
+    "intro": "TFO is Ontario's French-language public educational broadcaster and a provincial agency. It produces and distributes French-language educational media in Ontario."
+  },
+  "ontario-power-generation-inc": {
+    "level": "agency",
+    "intro": "Ontario Power Generation is a provincial corporation that generates electricity in Ontario. Its generating stations supply power used across the province, including in the Greater Toronto Area."
+  },
+  "royal-ontario-museum": {
+    "level": "agency",
+    "intro": "The Royal Ontario Museum is a museum of art, culture, and nature in Toronto and an agency of the Government of Ontario. It operates its public galleries in the city."
+  },
+  "technical-standards-and-safety-authority-tssa": {
+    "level": "agency",
+    "intro": "The Technical Standards and Safety Authority administers Ontario public-safety standards for elevators, fuels, boilers, and amusement devices. It carries out that work across the province, including in the Greater Toronto Area."
+  },
+  "toronto-and-region-conservation-authority": {
+    "level": "agency",
+    "intro": "The Toronto and Region Conservation Authority protects watersheds in Toronto and neighbouring municipalities. It manages conservation lands and flood-protection work in the Greater Toronto Area."
+  },
+  "workplace-safety-and-insurance-appeals-tribunal": {
+    "level": "agency",
+    "intro": "The Workplace Safety and Insurance Appeals Tribunal hears appeals from final decisions of the Workplace Safety and Insurance Board. It is an Ontario tribunal."
+  },
+  "workplace-safety-and-insurance-board": {
+    "level": "agency",
+    "intro": "The Workplace Safety and Insurance Board administers Ontario's workplace injury and illness insurance system. It covers workers and employers in the province, including in the Greater Toronto Area."
+  }
+}

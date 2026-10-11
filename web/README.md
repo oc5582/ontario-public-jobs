@@ -75,7 +75,7 @@ Every variable is listed in `.env.example`. Never commit `.env.local` or real se
 
 ## Supabase (hosted)
 
-1. Create a project. In the SQL editor, run `supabase/migrations/20261010160000_init.sql`, then `supabase/migrations/20261010200000_stripe_billing.sql`, then `supabase/migrations/20261010223000_grant_publicjobs_app_stripe_events.sql`. Do not run `supabase/seed.sql`.
+1. Create a project. In the SQL editor, run the migrations in `supabase/migrations/` in filename order, including `supabase/migrations/20261011210000_employer_posted_date.sql`. Do not run `supabase/seed.sql`. The Next.js app still renders posting dates from the description if that last migration is not applied yet. The importer will not write until it is.
 2. The migrations enable RLS on `employers`, `jobs`, `profiles`, `resume_match_usage`, and `stripe_events`. `anon` and `authenticated` have no `SELECT` on jobs, employers, match usage, or Stripe event ids, so the Data API cannot bulk-read the list. `authenticated` can `SELECT` its own `profiles` row. Membership columns are not client-writable. `private.handle_new_user` inserts a profile when `auth.users` exists.
 3. The Next.js server connects with `DATABASE_URL` as the table owner, which bypasses RLS unless you force it. That is intentional: list queries run on the server, and the 10-job cap is applied there. Do not use the anon key as `DATABASE_URL`.
 4. Authentication → URL configuration:
@@ -109,10 +109,42 @@ What that command does:
 
 - It does not read `jobs/*/index.html` and does not write `web/legacy-redirects.json`.
 - It does not insert `test@example.com`.
-- It runs `scripts/format_descriptions.ts`, then upserts each job on `path`.
+- It runs `scripts/format_descriptions.ts` and `scripts/prepare_listing_fields.ts`, then upserts each job on `path`. Locations are stored as `City, ON` (or the province or state the place is in). `posted_date` stays the earliest day the job was collected. `employer_posted_date` is the employer's own date when the feed or a description header such as `Posting Date 08/17/2026` states one.
+- Apply `supabase/migrations/20261011210000_employer_posted_date.sql` before the first import that uses this column. If the column is missing, the import stops and writes nothing.
 - It sets `removed_at` on rows that are still open and whose path is not in the file.
-- It is idempotent: a second run with the same file leaves the same rows.
+- It is idempotent: a second run with the same file leaves the same rows, aside from `updated_at`. `posted_date` does not move forward.
 - It writes nothing if the file has fewer than 80% of the current non-removed jobs, or if an employer that currently has a non-removed job would drop to zero.
+- `--notify-out /tmp/pj-index.json` writes the open job URLs whose public fields changed and the URLs that were removed. Pass that file to the indexing notify script below. The import itself does not call Google or IndexNow.
+
+### Indexing API and IndexNow
+
+After the weekday import, optionally notify Google and IndexNow. Both are off until the environment variables are set. `next build` does not need them. If both are unset, the notify script exits 0 and does nothing.
+
+```bash
+DATABASE_URL='postgresql://publicjobs_app.[ref]:[password]@HOST:6543/postgres?sslmode=require' \
+  python3 scripts/import_listings.py --feed /path/to/private-feed.json --supabase-only \
+  --notify-out /tmp/pj-index.json
+
+GOOGLE_INDEXING_SA_JSON=/path/to/indexing-sa.json \
+INDEXNOW_KEY='your-public-key' \
+NEXT_PUBLIC_SITE_URL=https://publicjobs.ca \
+  node --experimental-strip-types scripts/notify_indexing.ts /tmp/pj-index.json
+```
+
+Google Indexing API:
+
+1. In Google Cloud Console, create or choose a project and enable the **Indexing API**.
+2. Create a service account. Download its JSON key. Do not commit the file.
+3. In Google Search Console, add that service account's `client_email` as an owner of `https://publicjobs.ca`.
+4. Set `GOOGLE_INDEXING_SA_JSON` to the JSON text, or to the path of the JSON file, on the machine that runs the weekday refresh. The script signs a JWT for `https://www.googleapis.com/auth/indexing` and calls `urlNotifications:publish`.
+5. New or changed open jobs are sent as `URL_UPDATED`. Jobs that left the feed are sent as `URL_DELETED`. A second import of the same file does not list them again.
+6. The default quota is about 200 URLs a day. The first import after location cleanup can change most jobs. The script stops when Google returns 429 and prints how many were not sent. Run the same manifest again on a later day. Publishing the same URL twice is safe.
+
+IndexNow:
+
+1. Choose a key of 8–128 letters, digits, or hyphens. Set it as `INDEXNOW_KEY` on Vercel (Production, and Preview if you want the preview to answer) and on the weekday machine.
+2. The app serves that key at `https://publicjobs.ca/indexnow.txt/` (`trailingSlash` adds the slash). The body is the key, `text/plain`. If the variable is unset, that URL is 404.
+3. The script POSTs updated and removed URLs to `https://api.indexnow.org/indexnow` with `keyLocation` set to that URL. IndexNow has no delete type; removed URLs are included so Bing recrawls them.
 
 ### Google sign-in
 

@@ -5,12 +5,7 @@ export const SIGNUP_ENDPOINT =
   process.env.NEXT_PUBLIC_SIGNUP_ENDPOINT ||
   "https://ontario-public-jobs-signup.publicjobs.workers.dev";
 
-export const PAGE_TITLE = "Independent job board for government jobs in Toronto and the GTA";
-export const META_DESCRIPTION =
-  "City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 50 other public employers in Toronto and the GTA, each hiring on its own website. Their openings, collected in one place.";
-export const H1 = PAGE_TITLE;
-export const SUBHEAD =
-  "City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 50 other public employers in Toronto and the GTA.";
+export { H1, HOME_TITLE, homeCopy } from "./home-copy";
 export const FOOTER = "PublicJobs.ca is independent and not affiliated with any government.";
 
 export const PLANS = [

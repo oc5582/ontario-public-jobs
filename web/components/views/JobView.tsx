@@ -2,7 +2,8 @@ import { ApplyRow } from "@/components/ApplyRow";
 import { JobList } from "@/components/JobList";
 import { JsonLd } from "@/components/JsonLd";
 import { formatDescription } from "@/lib/description";
-import { formatLongDate } from "@/lib/format";
+import { employerProfile, governmentLevelLabel } from "@/lib/employers";
+import { closesInText, formatLongDate } from "@/lib/format";
 import { jobPostingJsonLd } from "@/lib/jsonld";
 import { getJob, similarOpenJobs } from "@/lib/jobs";
 import { pageMetadata } from "@/lib/seo";
@@ -14,11 +15,14 @@ const UNAVAILABLE =
   "A job description is not available for this posting. Use the Apply button to view details on the employer site.";
 
 function metaRows(job: JobDetail): { label: string; value: string; href?: string }[] {
+  const level = governmentLevelLabel(employerProfile(job.employer_slug).level);
   const rows: { label: string; value: string; href?: string }[] = [
     { label: "Employer", value: job.employer, href: `/employers/${job.employer_slug}/` },
     { label: "Location", value: job.location },
+    { label: "Level of government", value: level },
     { label: "Posted", value: formatLongDate(job.posted) },
     { label: "Closes", value: formatLongDate(job.closing) },
+    { label: "Days left", value: closesInText(job.closing) },
     { label: "Employment type", value: job.employment_type },
     { label: "Work mode", value: job.work_mode },
     { label: "Salary", value: job.salary },

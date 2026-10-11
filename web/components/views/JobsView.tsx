@@ -5,6 +5,7 @@ import { UnlockCard } from "@/components/UnlockCard";
 import type { JobFilters } from "@/lib/filters";
 import { itemListJsonLd } from "@/lib/jsonld";
 import { getFacets, searchJobs } from "@/lib/jobs";
+import { displayFilterLocation } from "@/lib/location";
 import { SITE_URL } from "@/lib/site";
 
 export async function JobsView({ filters, member }: { filters: JobFilters; member: boolean }) {
@@ -25,7 +26,11 @@ export async function JobsView({ filters, member }: { filters: JobFilters; membe
         <section className="description">
           <p>{intro}</p>
         </section>
-        <FilterBar action="/jobs/" filters={filters} facets={facets} />
+        <FilterBar
+          action="/jobs/"
+          filters={{ ...filters, location: displayFilterLocation(filters.location) }}
+          facets={facets}
+        />
         {result.total === 0 ? (
           <p className="listings-empty">No openings match that search.</p>
         ) : (
