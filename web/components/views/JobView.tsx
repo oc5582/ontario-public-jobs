@@ -4,6 +4,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { formatDescription } from "@/lib/description";
 import { formatLongDate } from "@/lib/format";
 import { jobPostingJsonLd } from "@/lib/jsonld";
+import { hasDescription } from "@/lib/has-description";
 import { elsewhereJobs, getJob, neighbourJobs, similarOpenJobs } from "@/lib/jobs";
 import { pageMetadata } from "@/lib/seo";
 import type { JobDetail } from "@/lib/types";
@@ -36,7 +37,7 @@ export async function jobMetadata(employer: string, slug: string): Promise<Metad
     title: job.page_title,
     description: job.meta_description,
     path: job.href,
-    index: !job.closed,
+    index: !job.closed && hasDescription(job),
   });
 }
 

@@ -20,6 +20,8 @@ function listIsShared(filters: JobFilters): boolean {
 const OPEN = `j.removed_at is null
   and (j.closing_date is null or j.closing_date >= (timezone('America/Toronto', now()))::date)`;
 
+const HAS_DESCRIPTION = `(btrim(j.description) <> '' or (jsonb_typeof(j.paragraphs) = 'array' and jsonb_array_length(j.paragraphs) > 0))`;
+
 /** Feed posted date, or the day we first stored the job. */
 export const EFFECTIVE_POSTED = "coalesce(j.posted_date, j.first_seen_at::date)";
 
@@ -512,6 +514,7 @@ function sitemapJobsUncached(): Promise<{ path: string; lastmod: string }[]> {
             coalesce(${EFFECTIVE_POSTED}::text, '') as lastmod
      from jobs j
      where ${OPEN}
+       and ${HAS_DESCRIPTION}
      order by j.path`,
   );
 }
