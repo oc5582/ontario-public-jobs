@@ -299,7 +299,7 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
                   cities = excluded.cities,
                   location_places = excluded.location_places,
                   closing_date = excluded.closing_date,
-                  posted_date = excluded.posted_date,
+                  posted_date = least(jobs.posted_date, excluded.posted_date),
                   employment_type = excluded.employment_type,
                   job_types = excluded.job_types,
                   work_mode = excluded.work_mode,
