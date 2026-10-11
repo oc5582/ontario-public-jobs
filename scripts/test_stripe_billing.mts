@@ -102,9 +102,16 @@ async function resetProfile(status = "none") {
 }
 
 const params = checkoutSessionCreateParams(
-  { profileId: PROFILE, email: "stripe-test@example.com", plan: "month", origin: "https://publicjobs.ca" },
+  {
+    profileId: PROFILE,
+    email: "stripe-test@example.com",
+    plan: "month",
+    origin: "https://publicjobs.ca",
+    province: "ON",
+  },
   "cus_1",
   "price_month",
+  "txr_on",
 );
 assert.equal(params.mode, "subscription");
 assert.equal(params.customer, "cus_1");
@@ -119,7 +126,12 @@ assert.equal(params.success_url, "https://publicjobs.ca/account/?checkout=succes
 assert.equal(params.cancel_url, "https://publicjobs.ca/pricing/");
 assert.equal(params.billing_address_collection, "required");
 assert.equal(params.consent_collection?.terms_of_service, "required");
-assert.equal(params.metadata?.terms_version, "2026-10-10");
+assert.equal(params.metadata?.terms_version, "2026-10-11");
+assert.equal(params.metadata?.tax_province, "ON");
+assert.equal(params.automatic_tax, undefined);
+assert.deepEqual(params.line_items?.[0]?.tax_rates, ["txr_on"]);
+assert.match(params.custom_text?.submit?.message || "", /HST 13%/);
+assert.match(params.custom_text?.terms_of_service_acceptance?.message || "", /5-day refund/);
 assert.equal(priceIdForPlan("quarter"), "price_quarter");
 
 const portal = portalSessionCreateParams({ stripeCustomerId: "cus_1", origin: "https://publicjobs.ca" });
@@ -425,6 +437,7 @@ const unmatched = await post(
 assert.equal(unmatched.status, 200);
 
 let creates = 0;
+process.env.STRIPE_TAX_RATE_ON = "txr_on";
 const fake = {
   customers: {
     retrieve: async () => ({ id: "cus_existing", object: "customer" }),
@@ -434,6 +447,12 @@ const fake = {
       assert.equal(body.metadata?.profile_id, PROFILE);
       return { id: "cus_created", object: "customer" };
     },
+    update: async (id: string, body: { name?: string; address?: { country?: string; state?: string } }) => {
+      assert.equal(id, "cus_created");
+      assert.equal(body.address?.country, "CA");
+      assert.equal(body.address?.state, "ON");
+      return { id, object: "customer" };
+    },
   },
   checkout: {
     sessions: {
@@ -441,6 +460,8 @@ const fake = {
         assert.equal(body.mode, "subscription");
         assert.equal(body.subscription_data?.trial_period_days, undefined);
         assert.equal(body.optional_items, undefined);
+        assert.equal(body.automatic_tax, undefined);
+        assert.deepEqual(body.line_items?.[0]?.tax_rates, ["txr_on"]);
         return { url: "https://checkout.stripe.com/c/pay/cs_test_session" };
       },
     },
@@ -449,7 +470,14 @@ const fake = {
 
 await resetProfile();
 const session = await createCheckoutSession(
-  { profileId: PROFILE, email: "stripe-test@example.com", plan: "year", origin: "http://localhost:3000" },
+  {
+    profileId: PROFILE,
+    email: "stripe-test@example.com",
+    plan: "year",
+    origin: "http://localhost:3000",
+    province: "ON",
+    customerName: "Pat Example",
+  },
   fake,
 );
 assert.equal(session.url, "https://checkout.stripe.com/c/pay/cs_test_session");
@@ -460,7 +488,7 @@ const agreements = await query<{ plan: string; price_label: string; terms_versio
 );
 assert.equal(agreements.length, 1);
 assert.equal(agreements[0].plan, "year");
-assert.equal(agreements[0].terms_version, "2026-10-10");
+assert.equal(agreements[0].terms_version, "2026-10-11");
 assert.match(agreements[0].price_label, /CA\$59 a year/);
 row = await profile();
 assert.equal(row?.stripe_customer_id, "cus_created");
@@ -473,7 +501,13 @@ await query(
 await assert.rejects(
   () =>
     createCheckoutSession(
-      { profileId: PROFILE, email: "stripe-test@example.com", plan: "month", origin: "http://localhost:3000" },
+      {
+        profileId: PROFILE,
+        email: "stripe-test@example.com",
+        plan: "month",
+        origin: "http://localhost:3000",
+        province: "ON",
+      },
       fake,
     ),
   AlreadySubscribedError,

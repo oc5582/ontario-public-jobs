@@ -69,7 +69,7 @@ export async function sendDueRenewalReminders(now = new Date()): Promise<{ sent:
       plan,
       renewsOn,
       priceLabel: planPriceLine(plan),
-      totalLabel: `${planPriceLine(plan)} plus GST/HST`,
+      totalLabel: `${planPriceLine(plan)} plus applicable GST/HST`,
       last4: "the card on file",
     });
     try {

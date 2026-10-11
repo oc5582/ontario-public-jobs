@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { isProvinceCode, provinceByCode, taxRateIdForProvince, type ProvinceCode } from "./ca-tax";
 import { query } from "./db";
 import { disclosureText, stripeSubmitMessage, stripeTermsMessage } from "./legal-copy";
 import { LEGAL } from "./legal-config";
@@ -23,6 +24,7 @@ export type CheckoutInput = {
   email: string;
   plan: PlanId;
   origin: string;
+  province: ProvinceCode;
   customerName?: string;
   agreementId?: string;
 };
@@ -80,19 +82,26 @@ export function checkoutSessionCreateParams(
   input: CheckoutInput,
   customerId: string,
   priceId: string,
+  taxRateId: string,
 ): Stripe.Checkout.SessionCreateParams {
+  const province = provinceByCode(input.province);
+  if (!province) throw new BillingNotConfiguredError("Choose a Canadian billing province.");
   const metadata: Stripe.MetadataParam = {
     profile_id: input.profileId,
     plan: input.plan,
     terms_version: LEGAL.termsVersion,
+    tax_province: input.province,
+    tax_rate_id: taxRateId,
   };
   if (input.agreementId) metadata.agreement_id = input.agreementId;
-  const automaticTax = process.env.STRIPE_AUTOMATIC_TAX === "true";
+  // Stripe dynamic_tax_rates does not support Canada. One exclusive tax rate,
+  // chosen from the province, is attached to the subscription item. Stripe Tax
+  // (automatic_tax) is not used.
   return {
     mode: "subscription",
     customer: customerId,
     client_reference_id: input.profileId,
-    line_items: [{ price: priceId, quantity: 1 }],
+    line_items: [{ price: priceId, quantity: 1, tax_rates: [taxRateId] }],
     success_url: `${input.origin}/account/?checkout=success`,
     cancel_url: `${input.origin}/pricing/`,
     allow_promotion_codes: false,
@@ -102,12 +111,16 @@ export function checkoutSessionCreateParams(
     consent_collection: { terms_of_service: "required" },
     custom_text: {
       terms_of_service_acceptance: { message: stripeTermsMessage(input.plan) },
-      submit: { message: stripeSubmitMessage() },
+      submit: { message: stripeSubmitMessage(province) },
     },
-    automatic_tax: automaticTax ? { enabled: true } : undefined,
     metadata,
     subscription_data: {
-      metadata: { profile_id: input.profileId, plan: input.plan, terms_version: LEGAL.termsVersion },
+      metadata: {
+        profile_id: input.profileId,
+        plan: input.plan,
+        terms_version: LEGAL.termsVersion,
+        tax_province: input.province,
+      },
     },
   };
 }
@@ -161,21 +174,33 @@ export async function createCheckoutSession(input: CheckoutInput, stripe = getSt
   ) {
     throw new AlreadySubscribedError();
   }
+  if (!isProvinceCode(input.province)) throw new BillingNotConfiguredError("Choose a Canadian billing province.");
+  const province = provinceByCode(input.province);
+  const taxRateId = await taxRateIdForProvince(stripe, input.province);
+  if (!taxRateId || !province) {
+    throw new BillingNotConfiguredError(
+      `Stripe tax rate for ${input.province} is not set. Run scripts/stripe_tax_rates.mjs.`,
+    );
+  }
   const customerId = await ensureCustomer(stripe, input, profile.stripe_customer_id);
   const name = (input.customerName || "").trim();
+  await stripe.customers.update(customerId, {
+    ...(name ? { name } : {}),
+    address: { country: "CA", state: input.province },
+  });
   if (name) {
-    await stripe.customers.update(customerId, { name });
     await query(`update profiles set customer_name = $2, updated_at = now() where id = $1`, [input.profileId, name]);
   }
+  const disclosure = `${disclosureText(input.plan)}\nBilling province: ${province.name} (${province.code}). ${province.displayName} ${province.percentage}% added on top. GST/HST ${LEGAL.hstNumber}.`;
   const inserted = await query<{ id: string }>(
     `insert into agreement_acceptances
        (profile_id, email, customer_name, plan, price_label, terms_version, disclosure_text)
      values ($1, $2, $3, $4, $5, $6, $7)
      returning id`,
-    [input.profileId, input.email, name || null, input.plan, planPriceLine(input.plan), LEGAL.termsVersion, disclosureText(input.plan)],
+    [input.profileId, input.email, name || null, input.plan, planPriceLine(input.plan), LEGAL.termsVersion, disclosure],
   );
   const agreementId = inserted[0]?.id;
-  const params = checkoutSessionCreateParams({ ...input, agreementId }, customerId, priceId);
+  const params = checkoutSessionCreateParams({ ...input, agreementId }, customerId, priceId, taxRateId);
   let session: Stripe.Checkout.Session;
   try {
     session = await stripe.checkout.sessions.create(params);

@@ -18,7 +18,8 @@ export function PrivacyDocument() {
       <h2>Who is responsible</h2>
       <p>
         PublicJobs.ca is operated by {LEGAL.legalName} ({LEGAL.businessName}), {LEGAL.mailingAddress}. Our privacy
-        officer is {LEGAL.privacyOfficerName}, reachable at <Mail email={LEGAL.privacyOfficerEmail} /> or {LEGAL.phone}.
+        officer is {LEGAL.privacyOfficerName}, reachable at <Mail email={LEGAL.privacyOfficerEmail} /> or{" "}
+        <a href={LEGAL.phoneTel}>{LEGAL.phone}</a>.
         We answer access and correction requests within 30 days.
       </p>
       <h2>Browsing the site</h2>

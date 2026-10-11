@@ -1,6 +1,7 @@
 import { getViewer } from "@/lib/auth";
+import { CA_TAX_JURISDICTIONS } from "@/lib/ca-tax";
 import { LEGAL } from "@/lib/legal-config";
-import { checkoutCheckboxText, refundSentence, sellerLine, taxLine } from "@/lib/legal-copy";
+import { checkoutCheckboxText, refundSentence, refundShortLine, sellerLine, taxLine } from "@/lib/legal-copy";
 import { membershipPeriodLabel } from "@/lib/membership";
 import { pageMetadata } from "@/lib/seo";
 import { PLANS, planPriceLine, type PlanId } from "@/lib/site";
@@ -68,6 +69,11 @@ export default async function PricingPage({
               Enter the name to put on the agreement.
             </p>
           ) : null}
+          {notice === "province" ? (
+            <p className="status err" role="alert">
+              Choose your Canadian billing province so GST/HST can be added.
+            </p>
+          ) : null}
           <Disclosure />
           {checkout ? (
             <p>
@@ -79,7 +85,7 @@ export default async function PricingPage({
             {PLANS.map((plan) => (
               <li key={plan.id}>
                 <span className="plan-name">{plan.name}</span>
-                <span className="plan-price">{planPriceLine(plan.id)}</span>
+                <span className="plan-price">{planPriceLine(plan.id)}, plus applicable GST/HST</span>
                 <PlanAction
                   planId={plan.id}
                   signedIn={Boolean(viewer.email)}
@@ -115,7 +121,8 @@ function Disclosure() {
     <div className="legal-box">
       <h2>Before you subscribe</h2>
       <p>
-        Seller: {sellerLine()} · {LEGAL.mailingAddress} · {LEGAL.phone} · {LEGAL.supportEmail}
+        Seller: {sellerLine()} · {LEGAL.mailingAddress} · <a href={LEGAL.phoneTel}>{LEGAL.phone}</a> ·{" "}
+        <a href={`mailto:${LEGAL.supportEmail}`}>{LEGAL.supportEmail}</a> · GST/HST {LEGAL.hstNumber}
       </p>
       <p>
         What you get: the full filterable list of current openings and up to 20 resume matches a day, starting right
@@ -132,17 +139,14 @@ function Disclosure() {
       </ul>
       <p>{taxLine()}</p>
       <p>
-        Each plan renews automatically at the same price, plus tax, until you cancel. We email a reminder at least{" "}
-        {LEGAL.yearlyReminderDays} days before a yearly renewal and at least {LEGAL.quarterReminderDays} days before a
-        3-month renewal.
+        Each plan renews automatically at the same price, plus applicable GST/HST, until you cancel. We email a
+        reminder at least {LEGAL.yearlyReminderDays} days before a yearly renewal and at least {LEGAL.quarterReminderDays}{" "}
+        days before a 3-month renewal.
       </p>
       <p>
         Cancel anytime on your Account page, by email or by phone. Access lasts until the end of the paid period.
       </p>
-      <p>
-        Refund: full refund if you ask within 14 days of your first purchase or of a renewal, once per account in any
-        12 months.
-      </p>
+      <p>{refundShortLine()}</p>
       <p>Memberships are offered to people in {LEGAL.sellTo}.</p>
       <p>
         Terms version {LEGAL.termsVersion}. The full terms are on the <a href="/terms/">terms page</a>.
@@ -187,6 +191,19 @@ function PlanAction({
       <label className="checkout-name">
         Your name
         <input name="customer_name" type="text" required autoComplete="name" maxLength={120} />
+      </label>
+      <label className="checkout-name">
+        Billing province
+        <select name="province" required defaultValue="">
+          <option value="" disabled>
+            Select a province or territory
+          </option>
+          {CA_TAX_JURISDICTIONS.map((item) => (
+            <option key={item.code} value={item.code}>
+              {item.name} ({item.displayName} {item.percentage}%{item.code === "QC" ? ", GST only" : ""})
+            </option>
+          ))}
+        </select>
       </label>
       <label className="checkbox terms-ack">
         <input type="checkbox" name="agree" value={planId} required />

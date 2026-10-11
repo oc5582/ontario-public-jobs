@@ -32,7 +32,7 @@ export async function sendAgreementCopy(input: {
     input.taxCents === null
       ? "GST/HST (shown on the payment page)"
       : `GST/HST ${money(input.taxCents)}`;
-  const total = input.totalCents === null ? `${input.priceLabel} plus tax` : money(input.totalCents);
+  const total = input.totalCents === null ? `${input.priceLabel} plus applicable GST/HST` : money(input.totalCents);
   const message = agreementEmail({
     customerName: input.customerName || "there",
     email: input.email,

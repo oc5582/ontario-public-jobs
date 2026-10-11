@@ -9,6 +9,10 @@ function Mail() {
   return <>{email}</>;
 }
 
+function Phone() {
+  return <a href={LEGAL.phoneTel}>{LEGAL.phone}</a>;
+}
+
 export function TermsDocument() {
   return (
     <section className="description">
@@ -39,7 +43,7 @@ export function TermsDocument() {
       </p>
       <p>
         <strong>1. Who you are dealing with.</strong> PublicJobs.ca is operated by {LEGAL.legalName}, a sole proprietor
-        operating as {LEGAL.businessName}, {LEGAL.mailingAddress}, Ontario, Canada. Phone {LEGAL.phone}. Email <Mail />.
+        operating as {LEGAL.businessName}, {LEGAL.mailingAddress}, Ontario, Canada. Phone <Phone />. Email <Mail />.
         GST/HST {LEGAL.hstNumber}.
       </p>
       <p>
@@ -61,13 +65,14 @@ export function TermsDocument() {
         <strong>4. Payment and automatic renewal.</strong> You pay by card through our payment processor, Stripe. We do
         not see or store your full card number. Your first payment is charged when you subscribe and your membership
         starts right away. Your membership renews automatically at the end of each period (every month, every 3 months,
-        or every year, depending on your plan), and we charge the same card the price for your plan plus tax, until you
+        or every year, depending on your plan), and we charge the same card the price for your plan plus applicable
+        GST/HST, until you
         cancel. We will email you a reminder before each renewal: at least {LEGAL.yearlyReminderDays} days before a
         yearly renewal and at least {LEGAL.quarterReminderDays} days before a 3-month renewal.
       </p>
       <p>
         <strong>5. Cancelling.</strong> You can cancel at any time on your Account page (Manage billing). You can also
-        cancel by emailing <Mail /> or calling {LEGAL.phone}. When you cancel, renewal stops. You keep access until the
+        cancel by emailing <Mail /> or calling <Phone />. When you cancel, renewal stops. You keep access until the
         end of the period you have already paid for, and you are not charged again.
       </p>
       <p>
@@ -138,7 +143,7 @@ export function TermsDocument() {
         other people. Member pages are covered by section 7 above.
       </p>
       <p>
-        Questions: <Mail /> or {LEGAL.phone}.
+        Questions: <Mail /> or <Phone />.
       </p>
     </section>
   );

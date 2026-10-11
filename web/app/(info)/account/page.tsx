@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getViewer } from "@/lib/auth";
+import { refundSentence } from "@/lib/legal-copy";
 import { membershipPeriodLabel } from "@/lib/membership";
 import { pageMetadata } from "@/lib/seo";
 import { PLANS } from "@/lib/site";
@@ -77,6 +78,7 @@ export default async function AccountPage({
               See membership plans
             </a>
           </p>
+          <p>{refundSentence()}</p>
           <form action={openPortal}>
             <button className="apply-btn secondary" type="submit">
               Manage billing

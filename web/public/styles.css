@@ -1976,6 +1976,7 @@ a.apply-btn.secondary:visited,
 }
 
 .checkout-name input,
+.checkout-name select,
 .report-form input,
 .report-form textarea {
   display: block;

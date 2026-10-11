@@ -23,6 +23,7 @@ export default async function AboutPage() {
       .replace("{{SOURCES}}", englishList(facts.sources))
       .replace("{{FETCHED}}", facts.fetched)
       .replace(/<a href="mailto:hello@publicjobs\.ca">hello@publicjobs\.ca<\/a>/g, contact) +
+    `<h2>Contact</h2><p>PublicJobs.ca is operated by ${LEGAL.legalName}, a sole proprietor operating as ${LEGAL.businessName}, ${LEGAL.mailingAddress}. Phone <a href="${LEGAL.phoneTel}">${LEGAL.phone}</a>. Email ${contact}. GST/HST ${LEGAL.hstNumber}. The privacy officer is ${LEGAL.privacyOfficerName}.</p>` +
     `<h2>Accessibility</h2><p>If this site is hard to use, email ${contact}. Tell us the page and what got in the way.</p>`;
   return (
     <main>

@@ -1,40 +1,48 @@
 /**
  * Owner facts for terms, privacy, checkout, emails, and CASL.
- * Fill the bracketed values in this file only. A production build refuses to
- * ship while any of them are still placeholders. Preview builds may keep them.
+ * This is the only file that holds them. A production build refuses to ship
+ * while any bracketed placeholder remains. Preview builds may keep them.
  *
- * Defaults already chosen: prices are shown before tax and GST/HST is added
- * where it applies; a full refund is available within 14 days of the first
- * purchase and of each renewal, once per account in any 12 months; memberships
- * are offered to people in Canada.
+ * Prices are shown plus applicable GST/HST. A full refund is available within
+ * 5 days of the first purchase and of each renewal, once per account in any
+ * 12 months. Memberships are offered in Canada only.
  */
 
 export const LEGAL = {
-  legalName: "[LEGAL_NAME]",
-  businessName: "[BUSINESS_NAME]",
-  mailingAddress: "[MAILING_ADDRESS]",
-  phone: "[PHONE]",
-  supportEmail: "[SUPPORT_EMAIL]",
-  privacyOfficerEmail: "[PRIVACY_OFFICER_EMAIL]",
-  hstNumber: "[HST_NUMBER]",
-  /** Prices on the site do not include tax. */
+  legalName: "Osama Chaudhary",
+  businessName: "PublicJobs.ca",
+  mailingAddress: "603-65 Thorncliffe Park Drive, Toronto, Ontario M4H 1L2, Canada",
+  streetAddress: "603-65 Thorncliffe Park Drive",
+  addressLocality: "Toronto",
+  addressRegion: "Ontario",
+  postalCode: "M4H 1L2",
+  addressCountry: "CA",
+  phone: "(647) 917-3942",
+  phoneTel: "tel:+16479173942",
+  supportEmail: "hello@publicjobs.ca",
+  privacyOfficerEmail: "hello@publicjobs.ca",
+  privacyOfficerName: "Osama Chaudhary",
+  hstNumber: "712442870RT0001",
+  /** Prices on the site do not include tax. GST/HST is added at checkout. */
   pricesIncludeTax: false,
   /** Full refund of the first purchase and of each renewal, once per 12 months. */
   refundScope: "full_first_and_renewal_once_per_12_months" as const,
-  /** Memberships are offered to people in Canada. */
-  sellTo: "Canada" as const,
-  termsVersion: "2026-10-10",
-  effectiveDate: "October 10, 2026",
+  /** Memberships are offered in Canada only. */
+  sellTo: "Canada only" as const,
+  termsVersion: "2026-10-11",
+  effectiveDate: "October 11, 2026",
   fraudPolicyUpdated: "October 10, 2026",
   fraudReviewBusinessDays: 2,
   fraudRecordYears: 3,
+  /** Days after the charge during which a full refund can be requested. */
+  refundWindowDays: 5,
+  /** Business days to send the refund to the original payment method. */
   refundBusinessDays: 5,
   minimumAge: "18, or the age of majority where you live if that is higher",
   yearlyReminderDays: 30,
   quarterReminderDays: 7,
   priceChangeMinDays: 30,
   priceChangeMaxDays: 90,
-  privacyOfficerName: "[LEGAL_NAME]",
 } as const;
 
 export const LEGAL_PLACEHOLDERS = [
