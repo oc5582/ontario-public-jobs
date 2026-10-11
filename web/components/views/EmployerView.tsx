@@ -4,16 +4,17 @@ import { JsonLd } from "@/components/JsonLd";
 import { UnlockCard } from "@/components/UnlockCard";
 import type { JobFilters } from "@/lib/filters";
 import { itemListJsonLd } from "@/lib/jsonld";
-import { employerBySlug, getFacets, searchJobs } from "@/lib/jobs";
+import { employerBySlug, employerOpenJobLinks, getFacets, searchJobs } from "@/lib/jobs";
 import { SITE_URL } from "@/lib/site";
 import { notFound } from "next/navigation";
 
 export async function EmployerView({ filters, member }: { filters: JobFilters; member: boolean }) {
   const employer = await employerBySlug(filters.employer);
   if (!employer) notFound();
-  const [result, facets] = await Promise.all([
+  const [result, facets, openJobs] = await Promise.all([
     searchJobs({ ...filters, employer: employer.slug }, member),
     getFacets(),
+    employerOpenJobLinks(employer.slug),
   ]);
   const noun = result.total === 1 ? "opening" : "openings";
   const intro = result.total
@@ -42,6 +43,20 @@ export async function EmployerView({ filters, member }: { filters: JobFilters; m
           <JobList jobs={result.jobs} />
         )}
         {member ? null : <UnlockCard total={result.total} shown={result.jobs.length} />}
+        {openJobs.length ? (
+          <section className="similar-jobs" aria-labelledby="all-open-heading">
+            <h2 id="all-open-heading">
+              All open jobs at {employer.name} ({openJobs.length.toLocaleString("en-CA")})
+            </h2>
+            <ul className="employer-list">
+              {openJobs.map((job) => (
+                <li key={job.href}>
+                  <a href={job.href}>{job.title}</a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
       </article>
     </main>
   );

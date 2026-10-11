@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { query } from "./db";
 import { hasFilters, type JobFilters } from "./filters";
+import { selectSimilarJobs, type SimilarJobCandidate } from "./similar-jobs";
 import { FREE_LIST_LIMIT } from "./site";
 import type { Facets, JobDetail, ListJob } from "./types";
 
@@ -78,6 +79,11 @@ function whereFor(filters: JobFilters, params: unknown[]): string {
   return parts.join("\n  and ");
 }
 
+function jobHref(path: string): string {
+  const normalized = path.endsWith("/") ? path : `${path}/`;
+  return `/${normalized}`;
+}
+
 function toListJob(row: ListRow): ListJob {
   const path = row.path.endsWith("/") ? row.path : `${row.path}/`;
   return {
@@ -86,7 +92,7 @@ function toListJob(row: ListRow): ListJob {
     location: row.location || "",
     closing: (row.closing || "").slice(0, 10),
     type: row.employment_type || "",
-    href: `/${path}`,
+    href: jobHref(row.path),
     path,
   };
 }
@@ -157,6 +163,7 @@ type DetailRow = {
   paragraphs: string[] | string;
   apply_url: string;
   category: string;
+  cities: string[] | null;
   closed: boolean;
   removed: boolean;
   website: string | null;
@@ -180,6 +187,11 @@ function asObject(value: DetailRow["jobposting"]): Record<string, unknown> | nul
 function asParagraphs(value: DetailRow["paragraphs"]): string[] {
   const raw = typeof value === "string" ? (JSON.parse(value) as unknown) : value;
   return Array.isArray(raw) ? raw.filter((item): item is string => typeof item === "string") : [];
+}
+
+function asCities(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string" && item !== "");
 }
 
 function toDetail(row: DetailRow): JobDetail {
@@ -209,6 +221,7 @@ function toDetail(row: DetailRow): JobDetail {
     paragraphs: asParagraphs(row.paragraphs),
     apply_url: row.apply_url || "",
     category: row.category,
+    cities: asCities(row.cities),
     closed: row.closed,
     removed: row.removed,
     website: row.website || "",
@@ -221,7 +234,7 @@ function toDetail(row: DetailRow): JobDetail {
 const DETAIL_SQL = `select j.id, j.title, e.name as employer_name, j.employer_slug, j.job_slug,
   j.path, j.page_title, j.meta_description, j.location, j.closing_date::text as closing,
   j.posted_date::text as posted, j.fetched_at::date::text as fetched, j.employment_type, j.work_mode, j.salary, j.department,
-  j.description, j.paragraphs, j.apply_url, j.category, j.fully_remote, e.website, e.logo_url, j.jobposting,
+  j.description, j.paragraphs, j.apply_url, j.category, j.cities, j.fully_remote, e.website, e.logo_url, j.jobposting,
   (j.removed_at is not null) as removed,
   (j.removed_at is not null or (j.closing_date is not null and j.closing_date < (timezone('America/Toronto', now()))::date)) as closed
   from jobs j
@@ -239,24 +252,73 @@ export function getJob(employer: string, slug: string): Promise<JobDetail | null
   return publicCache(["job", employer, slug], () => getJobUncached(employer, slug));
 }
 
+type SimilarRow = {
+  id: string;
+  title: string;
+  employer_name: string;
+  employer_slug: string;
+  category: string;
+  cities: string[] | null;
+  location: string | null;
+  closing: string | null;
+  employment_type: string | null;
+  path: string;
+};
+
 async function similarOpenJobsUncached(job: JobDetail): Promise<ListJob[]> {
-  const rows = await query<ListRow>(
-    `select j.title, e.name as employer_name, j.location, j.closing_date::text as closing,
-            j.employment_type, j.path, '0' as total_count
+  const category = job.category || "";
+  const rows = await query<SimilarRow>(
+    `select j.id, j.title, e.name as employer_name, j.employer_slug, j.category, j.cities,
+            j.location, j.closing_date::text as closing, j.employment_type, j.path
      from jobs j
      join employers e on e.id = j.employer_id
      where ${OPEN}
        and j.id <> $1
-       and (j.employer_slug = $2 or j.category = $3)
-     order by (j.employer_slug = $2) desc, j.posted_date desc nulls last
-     limit 5`,
-    [job.id, job.employer_slug, job.category],
+       and (
+         ($3 <> '' and j.category = $3)
+         or j.employer_slug = $2
+       )`,
+    [job.id, job.employer_slug, category],
   );
-  return rows.map(toListJob);
+  const candidates: SimilarJobCandidate[] = rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    employer: row.employer_name,
+    employerSlug: row.employer_slug,
+    category: row.category || "",
+    cities: asCities(row.cities),
+    location: row.location || "",
+    closing: (row.closing || "").slice(0, 10),
+    type: row.employment_type || "",
+    path: row.path,
+  }));
+  return selectSimilarJobs(
+    { id: job.id, category, employerSlug: job.employer_slug, cities: job.cities },
+    candidates,
+  );
 }
 
 export function similarOpenJobs(job: JobDetail): Promise<ListJob[]> {
-  return publicCache(["similar", job.id], () => similarOpenJobsUncached(job));
+  return publicCache(["similar-jobs", job.id], () => similarOpenJobsUncached(job));
+}
+
+export type EmployerJobLink = { title: string; href: string };
+
+async function employerOpenJobLinksUncached(slug: string): Promise<EmployerJobLink[]> {
+  const rows = await query<{ title: string; path: string }>(
+    `select j.title, j.path
+     from jobs j
+     where j.employer_slug = $1
+       and ${OPEN}
+     order by lower(j.title) asc, j.title asc, j.path asc`,
+    [slug],
+  );
+  return rows.map((row) => ({ title: row.title, href: jobHref(row.path) }));
+}
+
+/** Title and path only. Cached with the other public list queries. */
+export function employerOpenJobLinks(slug: string): Promise<EmployerJobLink[]> {
+  return publicCache(["employer-open-titles", slug], () => employerOpenJobLinksUncached(slug));
 }
 
 async function getFacetsUncached(): Promise<Facets> {

@@ -41,7 +41,7 @@ export async function jobMetadata(employer: string, slug: string): Promise<Metad
 export async function JobView({ employer, slug }: { employer: string; slug: string }) {
   const job = await getJob(employer, slug);
   if (!job) notFound();
-  const similar = job.closed ? await similarOpenJobs(job) : [];
+  const similar = await similarOpenJobs(job);
   const rows = metaRows(job);
   const posting = jobPostingJsonLd(job);
   const descriptionHtml = formatDescription(job.description.trim() ? job.description : job.paragraphs.join("\n"));
@@ -84,9 +84,9 @@ export async function JobView({ employer, slug }: { employer: string; slug: stri
           employer. The employer can ask us to correct or remove a listing.{" "}
           <a href={`/report/?job=${encodeURIComponent(job.path)}`}>Report a fake or suspicious job</a>
         </p>
-        {job.closed && similar.length ? (
+        {similar.length ? (
           <section className="similar-jobs" aria-labelledby="similar-heading">
-            <h2 id="similar-heading">Similar open jobs</h2>
+            <h2 id="similar-heading">Similar jobs</h2>
             <JobList jobs={similar} />
           </section>
         ) : null}
