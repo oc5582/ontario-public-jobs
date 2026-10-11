@@ -13,7 +13,7 @@ function isEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-export function SignupForm({ consent }: { consent: string }) {
+export function SignupForm({ consent, sender }: { consent: string; sender: string }) {
   const [status, setStatus] = useState<{ message: string; ok: boolean } | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -109,9 +109,13 @@ export function SignupForm({ consent }: { consent: string }) {
         </div>
         <label className="checkbox signup-compact-consent" htmlFor="consent">
           <input type="checkbox" id="consent" name="casl_consent" value="yes" required />
-          <span id="casl-label">{consent}</span>
+          <span id="casl-label">
+            {consent}
+            <span className="consent-sender">{sender}</span>
+          </span>
           <span className="b2-phone b2-consent">
             {consent} <a href="/privacy/">Privacy</a>
+            <span className="consent-sender">{sender}</span>
           </span>
           <span className="signup-compact-links">
             <a href="/privacy/">Privacy</a> <a href="/terms/">Terms</a>

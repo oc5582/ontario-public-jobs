@@ -1451,6 +1451,16 @@ button[type="submit"]:disabled {
   min-width: 12rem;
 }
 
+/* Sender identification under the weekly email checkbox (homepage and /match/). */
+.consent-sender {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
 .signup-compact-links a {
   color: var(--civic);
   text-decoration: underline;

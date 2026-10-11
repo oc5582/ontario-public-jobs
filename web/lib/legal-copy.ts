@@ -32,12 +32,23 @@ export function refundShortLine(): string {
   return `Refund: full refund if you ask within ${LEGAL.refundWindowDays} days of your first purchase or of a renewal, once per account in any 12 months.`;
 }
 
+/** Checkbox label for the weekly job email (homepage and /match/). */
+export function alertConsentLabel(): string {
+  return "Email me new jobs once a week. Unsubscribe anytime.";
+}
+
+/** Sender identification shown in small grey type under the checkbox (CASL). */
+export function alertConsentSender(): string {
+  return `From ${LEGAL.businessName}, ${LEGAL.mailingAddress} \u00b7 ${LEGAL.supportEmail}`;
+}
+
+/** Wording stored in alert_consents. Same words as shown: the label, then the sender line. */
 export function homepageConsentText(): string {
-  return `I agree to receive job alert emails from PublicJobs.ca at this address. I can unsubscribe anytime. PublicJobs.ca, ${LEGAL.mailingAddress}, ${LEGAL.supportEmail}. I can withdraw this consent anytime.`;
+  return `${alertConsentLabel()} ${alertConsentSender()}`;
 }
 
 export function matchConsentText(): string {
-  return `Email me new jobs once a week from PublicJobs.ca, ${LEGAL.mailingAddress}, ${LEGAL.supportEmail}. I can unsubscribe anytime. Matching does not require this.`;
+  return `${alertConsentLabel()} ${alertConsentSender()}`;
 }
 
 export function checkoutCheckboxText(plan: PlanId): string {
