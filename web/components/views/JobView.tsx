@@ -5,6 +5,7 @@ import { formatDescription } from "@/lib/description";
 import { formatLongDate } from "@/lib/format";
 import { jobPostingJsonLd } from "@/lib/jsonld";
 import { hasDescription } from "@/lib/has-description";
+import { isFrench } from "@/lib/language";
 import { elsewhereJobs, getJob, neighbourJobs, similarOpenJobs } from "@/lib/jobs";
 import { pageMetadata } from "@/lib/seo";
 import type { JobDetail } from "@/lib/types";
@@ -54,7 +55,7 @@ export async function JobView({ employer, slug }: { employer: string; slug: stri
   return (
     <main>
       {posting ? <JsonLd data={posting} /> : null}
-      <article className="job-page content">
+      <article className="job-page content" {...(isFrench(job) ? { lang: "fr" } : {})}>
         <p className="crumb">
           <a href="/">All openings</a>
         </p>
