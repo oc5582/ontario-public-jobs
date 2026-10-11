@@ -269,6 +269,8 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
             paths.append(path)
             cur.execute(
                 """
+                -- first_seen_at is omitted on purpose. The column default sets it on
+                -- insert, and leaving it out of this update keeps that first day.
                 insert into jobs (
                   employer_id, employer_slug, job_slug, path, title, page_title,
                   meta_description, location, cities, location_places, closing_date,
@@ -297,7 +299,7 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
                   cities = excluded.cities,
                   location_places = excluded.location_places,
                   closing_date = excluded.closing_date,
-                  posted_date = excluded.posted_date,
+                  posted_date = least(jobs.posted_date, excluded.posted_date),
                   employment_type = excluded.employment_type,
                   job_types = excluded.job_types,
                   work_mode = excluded.work_mode,

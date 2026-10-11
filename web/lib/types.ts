@@ -2,6 +2,8 @@ export type ListJob = {
   title: string;
   employer: string;
   location: string;
+  /** Parsed places from jobs.location_places. Absent on older callers. */
+  location_places?: unknown;
   closing: string;
   type: string;
   href: string;
@@ -15,6 +17,7 @@ export type JobDetail = ListJob & {
   page_title: string;
   meta_description: string;
   posted: string;
+  first_seen: string;
   fetched: string;
   employment_type: string;
   work_mode: string;

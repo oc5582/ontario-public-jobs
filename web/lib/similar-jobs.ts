@@ -17,6 +17,7 @@ export type SimilarJobCandidate = {
   category: string;
   cities: readonly string[];
   location: string;
+  location_places?: unknown;
   closing: string;
   type: string;
   path: string;
@@ -95,6 +96,7 @@ export function selectSimilarJobs(
       title: item.candidate.title,
       employer: item.candidate.employer,
       location: item.candidate.location,
+      location_places: item.candidate.location_places,
       closing: item.candidate.closing.slice(0, 10),
       type: item.candidate.type,
       href: jobHref(item.candidate.path),

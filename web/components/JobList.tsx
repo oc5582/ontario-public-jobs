@@ -1,3 +1,4 @@
+import { displayLocation } from "@/lib/display-location";
 import { closingLabel, pillLabel } from "@/lib/format";
 import type { ListJob } from "@/lib/types";
 
@@ -7,6 +8,7 @@ export function JobList({ jobs, id }: { jobs: ListJob[]; id?: string }) {
       {jobs.map((job) => {
         const close = closingLabel(job.closing);
         const type = pillLabel(job.type);
+        const location = displayLocation(job.location, job.location_places);
         return (
           <li key={job.href}>
             <a className="job-row" href={job.href}>
@@ -19,9 +21,9 @@ export function JobList({ jobs, id }: { jobs: ListJob[]; id?: string }) {
                   </span>
                 ) : null}
               </span>
-              {job.location || close.text ? (
+              {location || close.text ? (
                 <span className="job-side">
-                  {job.location ? <span className="job-location">{job.location}</span> : null}
+                  {location ? <span className="job-location">{location}</span> : null}
                   {close.text ? (
                     <time className={close.urgent ? "job-closing is-urgent" : "job-closing"} dateTime={job.closing}>
                       {close.text}

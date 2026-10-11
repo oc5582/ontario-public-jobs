@@ -109,9 +109,9 @@ assert.deepEqual(
 );
 
 const employerView = readFileSync(new URL("../web/components/views/EmployerView.tsx", import.meta.url), "utf8");
-assert.match(employerView, /All open jobs at \{employer\.name\}/);
-assert.match(employerView, /<a href=\{job\.href\}>\{job\.title\}<\/a>/);
-assert.match(employerView, /employerOpenJobLinks\(employer\.slug\)/);
+assert.match(employerView, /UnlockCard/);
+assert.doesNotMatch(employerView, /All open jobs at/);
+assert.doesNotMatch(employerView, /employerOpenJobLinks/);
 
 const jobView = readFileSync(new URL("../web/components/views/JobView.tsx", import.meta.url), "utf8");
 assert.match(jobView, /Similar jobs/);
@@ -140,8 +140,9 @@ assert.match(employerPage, /path: `\/employers\/\$\{slug\}\/`/);
 assert.match(employerPage, /index: !filtering/);
 
 const jobsSource = readFileSync(new URL("../web/lib/jobs.ts", import.meta.url), "utf8");
-assert.match(jobsSource, /order by lower\(j\.title\) asc, j\.title asc, j\.path asc/);
 assert.match(jobsSource, /selectSimilarJobs\(/);
+assert.match(jobsSource, /neighbourJobs/);
+assert.doesNotMatch(jobsSource, /employerOpenJobLinks/);
 assert.match(jobsSource, /\$3 <> '' and j\.category = \$3/);
 assert.match(jobsSource, /j\.employer_slug = \$2/);
 

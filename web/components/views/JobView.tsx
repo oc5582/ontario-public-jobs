@@ -2,9 +2,12 @@ import { ApplyRow } from "@/components/ApplyRow";
 import { JobList } from "@/components/JobList";
 import { JsonLd } from "@/components/JsonLd";
 import { formatDescription } from "@/lib/description";
+import { displayLocation } from "@/lib/display-location";
 import { formatLongDate } from "@/lib/format";
 import { jobPostingJsonLd } from "@/lib/jsonld";
-import { getJob, similarOpenJobs } from "@/lib/jobs";
+import { hasDescription } from "@/lib/has-description";
+import { isFrench } from "@/lib/language";
+import { elsewhereJobs, getJob, neighbourJobs, similarOpenJobs } from "@/lib/jobs";
 import { pageMetadata } from "@/lib/seo";
 import type { JobDetail } from "@/lib/types";
 import type { Metadata } from "next";
@@ -16,8 +19,10 @@ const UNAVAILABLE =
 function metaRows(job: JobDetail): { label: string; value: string; href?: string }[] {
   const rows: { label: string; value: string; href?: string }[] = [
     { label: "Employer", value: job.employer, href: `/employers/${job.employer_slug}/` },
-    { label: "Location", value: job.location },
-    { label: "Posted", value: formatLongDate(job.posted) },
+    { label: "Location", value: displayLocation(job.location, job.location_places) },
+    job.posted
+      ? { label: "Posted", value: formatLongDate(job.posted) }
+      : { label: "Listed on PublicJobs.ca", value: formatLongDate(job.first_seen) },
     { label: "Closes", value: formatLongDate(job.closing) },
     { label: "Employment type", value: job.employment_type },
     { label: "Work mode", value: job.work_mode },
@@ -34,14 +39,16 @@ export async function jobMetadata(employer: string, slug: string): Promise<Metad
     title: job.page_title,
     description: job.meta_description,
     path: job.href,
-    index: !job.closed,
+    index: !job.closed && hasDescription(job),
   });
 }
 
 export async function JobView({ employer, slug }: { employer: string; slug: string }) {
   const job = await getJob(employer, slug);
   if (!job) notFound();
-  const similar = await similarOpenJobs(job);
+  const neighbours = job.closed ? [] : await neighbourJobs(job);
+  const elsewhere = job.closed ? [] : await elsewhereJobs(job, [job.path, ...neighbours.map((item) => item.path)]);
+  const similar = job.closed ? await similarOpenJobs(job) : [];
   const rows = metaRows(job);
   const posting = jobPostingJsonLd(job);
   const descriptionHtml = formatDescription(job.description.trim() ? job.description : job.paragraphs.join("\n"));
@@ -49,7 +56,7 @@ export async function JobView({ employer, slug }: { employer: string; slug: stri
   return (
     <main>
       {posting ? <JsonLd data={posting} /> : null}
-      <article className="job-page content">
+      <article className="job-page content" {...(isFrench(job) ? { lang: "fr" } : {})}>
         <p className="crumb">
           <a href="/">All openings</a>
         </p>
@@ -84,10 +91,27 @@ export async function JobView({ employer, slug }: { employer: string; slug: stri
           employer. The employer can ask us to correct or remove a listing.{" "}
           <a href={`/report/?job=${encodeURIComponent(job.path)}`}>Report a fake or suspicious job</a>
         </p>
-        {similar.length ? (
+        {job.closed && similar.length ? (
           <section className="similar-jobs" aria-labelledby="similar-heading">
             <h2 id="similar-heading">Similar jobs</h2>
             <JobList jobs={similar} />
+          </section>
+        ) : null}
+        {!job.closed && (neighbours.length || elsewhere.length) ? (
+          <section className="similar-jobs" aria-labelledby="related-heading">
+            <h2 id="related-heading">More jobs like this</h2>
+            {neighbours.length ? (
+              <>
+                <h3>More at {job.employer}</h3>
+                <JobList jobs={neighbours} />
+              </>
+            ) : null}
+            {elsewhere.length ? (
+              <>
+                <h3>Similar jobs elsewhere</h3>
+                <JobList jobs={elsewhere} />
+              </>
+            ) : null}
           </section>
         ) : null}
       </article>

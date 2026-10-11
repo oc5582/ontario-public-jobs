@@ -1,3 +1,16 @@
+# Ontario Public Jobs
+
+The live site is the Next.js app in `web/`. Root-level `*.html`, `jobs/`, `employers/`, `index.html`, `sitemap.xml`, and `robots.txt` are legacy GitHub Pages output and are **not** served. `scripts/` and `data/` are still used by the import. Do not edit the legacy HTML to change the live site.
+
+The weekday refresh lives on the owner's ops box. That box cannot reach Postgres; it sends the importer's SQL through an HTTPS connector. After a refresh, tell Google about new and closed URLs with:
+
+```
+pip install google-auth
+python3 scripts/notify_indexing.py --previous /path/to/previous.json --new /path/to/new.json
+```
+
+`GOOGLE_INDEXING_SA_JSON` is the service-account JSON, or `GOOGLE_INDEXING_SA_FILE` is a path to that file. Add `--dry-run` to print the URLs without calling Google.
+
 # Ontario Public Jobs — Combined feed
 
 Static GitHub Pages deploy folder containing combined Crown and agency job listings (Workday, Dayforce, SuccessFactors, and other ATS sources), detail pages, and the live site assets. Job descriptions are preserved from the supplied feed and apply links point to the employer sites.

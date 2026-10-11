@@ -1,4 +1,5 @@
 import { formatDescription } from "./description";
+import { validThrough } from "./format";
 import { LEGAL } from "./legal-config";
 import { SITE_URL } from "./site";
 import type { JobDetail, ListJob } from "./types";
@@ -71,6 +72,12 @@ export function itemListJsonLd(name: string, url: string, jobs: ListJob[]): unkn
 export function jobPostingJsonLd(job: JobDetail): unknown | null {
   if (job.closed || !job.jobposting) return null;
   const data: Record<string, unknown> = { ...job.jobposting, directApply: false };
+  const posted = job.posted || job.first_seen;
+  if (posted) data.datePosted = posted;
+  else delete data.datePosted;
+  const through = validThrough(job.closing);
+  if (through) data.validThrough = through;
+  else delete data.validThrough;
   const description = formatDescription(job.description);
   if (description) data.description = description;
   const org = data.hiringOrganization;

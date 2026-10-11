@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { query } from "./db";
 import { hasFilters, type JobFilters } from "./filters";
+import { neighbourRanks } from "./neighbour-jobs";
 import { selectSimilarJobs, type SimilarJobCandidate } from "./similar-jobs";
 import { FREE_LIST_LIMIT } from "./site";
 import type { Facets, JobDetail, ListJob } from "./types";
@@ -19,10 +20,19 @@ function listIsShared(filters: JobFilters): boolean {
 const OPEN = `j.removed_at is null
   and (j.closing_date is null or j.closing_date >= (timezone('America/Toronto', now()))::date)`;
 
+const HAS_DESCRIPTION = `(btrim(j.description) <> '' or (jsonb_typeof(j.paragraphs) = 'array' and jsonb_array_length(j.paragraphs) > 0))`;
+
+/** Feed posted date, or the day we first stored the job. */
+export const EFFECTIVE_POSTED = "coalesce(j.posted_date, j.first_seen_at::date)";
+
+/** Newest effective posted date, then fetch time, then title. Every job list uses this. */
+export const JOB_ORDER = `${EFFECTIVE_POSTED} desc nulls last, j.fetched_at desc nulls last, j.title asc`;
+
 type ListRow = {
   title: string;
   employer_name: string;
   location: string;
+  location_places?: unknown;
   closing: string | null;
   employment_type: string;
   path: string;
@@ -70,7 +80,7 @@ function whereFor(filters: JobFilters, params: unknown[]): string {
   }
   if (filters.postedSince) {
     params.push(filters.postedSince);
-    parts.push(`j.posted_date >= $${params.length}::date`);
+    parts.push(`${EFFECTIVE_POSTED} >= $${params.length}::date`);
   }
   if (filters.closesBy) {
     params.push(filters.closesBy);
@@ -90,6 +100,7 @@ function toListJob(row: ListRow): ListJob {
     title: row.title,
     employer: row.employer_name,
     location: row.location || "",
+    location_places: row.location_places,
     closing: (row.closing || "").slice(0, 10),
     type: row.employment_type || "",
     href: jobHref(row.path),
@@ -105,12 +116,12 @@ async function searchJobsUncached(
   const where = whereFor(filters, params);
   const limit = member ? "" : `limit ${FREE_LIST_LIMIT}`;
   const rows = await query<ListRow>(
-    `select j.title, e.name as employer_name, j.location, j.closing_date::text as closing,
+    `select j.title, e.name as employer_name, j.location, j.location_places, j.closing_date::text as closing,
             j.employment_type, j.path, count(*) over() as total_count
      from jobs j
      join employers e on e.id = j.employer_id
      where ${where}
-     order by j.posted_date desc nulls last, j.fetched_at desc nulls last, j.title asc
+     order by ${JOB_ORDER}
      ${limit}`,
     params,
   );
@@ -152,8 +163,10 @@ type DetailRow = {
   page_title: string;
   meta_description: string;
   location: string;
+  location_places: unknown;
   closing: string | null;
   posted: string | null;
+  first_seen: string | null;
   fetched: string | null;
   employment_type: string;
   work_mode: string;
@@ -199,6 +212,7 @@ function toDetail(row: DetailRow): JobDetail {
     title: row.title,
     employer_name: row.employer_name,
     location: row.location,
+    location_places: row.location_places,
     closing: row.closing,
     employment_type: row.employment_type,
     path: row.path,
@@ -212,6 +226,7 @@ function toDetail(row: DetailRow): JobDetail {
     page_title: row.page_title,
     meta_description: row.meta_description,
     posted: (row.posted || "").slice(0, 10),
+    first_seen: (row.first_seen || "").slice(0, 10),
     fetched: (row.fetched || "").slice(0, 10),
     employment_type: row.employment_type || "",
     work_mode: row.work_mode || "",
@@ -232,8 +247,9 @@ function toDetail(row: DetailRow): JobDetail {
 }
 
 const DETAIL_SQL = `select j.id, j.title, e.name as employer_name, j.employer_slug, j.job_slug,
-  j.path, j.page_title, j.meta_description, j.location, j.closing_date::text as closing,
-  j.posted_date::text as posted, j.fetched_at::date::text as fetched, j.employment_type, j.work_mode, j.salary, j.department,
+  j.path, j.page_title, j.meta_description, j.location, j.location_places, j.closing_date::text as closing,
+  j.posted_date::text as posted, j.first_seen_at::date::text as first_seen, j.fetched_at::date::text as fetched,
+  j.employment_type, j.work_mode, j.salary, j.department,
   j.description, j.paragraphs, j.apply_url, j.category, j.cities, j.fully_remote, e.website, e.logo_url, j.jobposting,
   (j.removed_at is not null) as removed,
   (j.removed_at is not null or (j.closing_date is not null and j.closing_date < (timezone('America/Toronto', now()))::date)) as closed
@@ -260,6 +276,7 @@ type SimilarRow = {
   category: string;
   cities: string[] | null;
   location: string | null;
+  location_places: unknown;
   closing: string | null;
   employment_type: string | null;
   path: string;
@@ -269,7 +286,7 @@ async function similarOpenJobsUncached(job: JobDetail): Promise<ListJob[]> {
   const category = job.category || "";
   const rows = await query<SimilarRow>(
     `select j.id, j.title, e.name as employer_name, j.employer_slug, j.category, j.cities,
-            j.location, j.closing_date::text as closing, j.employment_type, j.path
+            j.location, j.location_places, j.closing_date::text as closing, j.employment_type, j.path
      from jobs j
      join employers e on e.id = j.employer_id
      where ${OPEN}
@@ -288,6 +305,7 @@ async function similarOpenJobsUncached(job: JobDetail): Promise<ListJob[]> {
     category: row.category || "",
     cities: asCities(row.cities),
     location: row.location || "",
+    location_places: row.location_places,
     closing: (row.closing || "").slice(0, 10),
     type: row.employment_type || "",
     path: row.path,
@@ -302,23 +320,66 @@ export function similarOpenJobs(job: JobDetail): Promise<ListJob[]> {
   return publicCache(["similar-jobs", job.id], () => similarOpenJobsUncached(job));
 }
 
-export type EmployerJobLink = { title: string; href: string };
+type RankedRow = ListRow & { id: string; rn: string };
 
-async function employerOpenJobLinksUncached(slug: string): Promise<EmployerJobLink[]> {
-  const rows = await query<{ title: string; path: string }>(
-    `select j.title, j.path
-     from jobs j
-     where j.employer_slug = $1
-       and ${OPEN}
-     order by lower(j.title) asc, j.title asc, j.path asc`,
-    [slug],
-  );
-  return rows.map((row) => ({ title: row.title, href: jobHref(row.path) }));
+async function neighbourJobsUncached(job: JobDetail): Promise<ListJob[]> {
+  try {
+    const rows = await query<RankedRow>(
+      `with ranked as (
+         select j.id, j.title, e.name as employer_name, j.location, j.location_places,
+                j.closing_date::text as closing, j.employment_type, j.path,
+                row_number() over (order by ${JOB_ORDER}) as rn
+         from jobs j
+         join employers e on e.id = j.employer_id
+         where ${OPEN} and j.employer_slug = $1
+       )
+       select id, title, employer_name, location, location_places, closing, employment_type, path,
+              rn::text as rn, '0' as total_count
+       from ranked
+       order by rn::int`,
+      [job.employer_slug],
+    );
+    const me = rows.find((row) => row.id === job.id);
+    if (!me) return [];
+    const ranks = new Set(neighbourRanks(Number(me.rn), rows.length));
+    return rows.filter((row) => ranks.has(Number(row.rn))).map(toListJob);
+  } catch (error) {
+    console.error("neighbour jobs failed", error);
+    return [];
+  }
 }
 
-/** Title and path only. Cached with the other public list queries. */
-export function employerOpenJobLinks(slug: string): Promise<EmployerJobLink[]> {
-  return publicCache(["employer-open-titles", slug], () => employerOpenJobLinksUncached(slug));
+/** Open jobs just before and after this one in the employer's JOB_ORDER list. */
+export function neighbourJobs(job: JobDetail): Promise<ListJob[]> {
+  return publicCache(["neighbours", job.id], () => neighbourJobsUncached(job));
+}
+
+async function elsewhereJobsUncached(job: JobDetail, excludePaths: string[]): Promise<ListJob[]> {
+  try {
+    if (!job.category) return [];
+    const rows = await query<ListRow>(
+      `select j.title, e.name as employer_name, j.location, j.location_places, j.closing_date::text as closing,
+              j.employment_type, j.path, '0' as total_count
+       from jobs j
+       join employers e on e.id = j.employer_id
+       where ${OPEN}
+         and j.category = $1
+         and j.employer_slug <> $2
+         and not (j.path = any($3::text[]))
+       order by (j.cities && $4::text[]) desc, lower(j.title) asc, j.title asc, j.path asc
+       limit 2`,
+      [job.category, job.employer_slug, excludePaths.length ? excludePaths : [""], job.cities],
+    );
+    return rows.map(toListJob);
+  } catch (error) {
+    console.error("elsewhere jobs failed", error);
+    return [];
+  }
+}
+
+/** Two open jobs at other employers: same category and city, then same category. */
+export function elsewhereJobs(job: JobDetail, excludePaths: string[]): Promise<ListJob[]> {
+  return publicCache(["elsewhere", job.id, excludePaths.join("\n")], () => elsewhereJobsUncached(job, excludePaths));
 }
 
 async function getFacetsUncached(): Promise<Facets> {
@@ -456,9 +517,10 @@ function formatFetched(iso: string): string {
 function sitemapJobsUncached(): Promise<{ path: string; lastmod: string }[]> {
   return query<{ path: string; lastmod: string }>(
     `select j.path,
-            coalesce(j.posted_date::text, j.fetched_at::date::text, '') as lastmod
+            coalesce(${EFFECTIVE_POSTED}::text, '') as lastmod
      from jobs j
      where ${OPEN}
+       and ${HAS_DESCRIPTION}
      order by j.path`,
   );
 }

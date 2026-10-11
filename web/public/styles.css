@@ -1813,25 +1813,12 @@ a.apply-btn.secondary:visited,
   letter-spacing: -0.02em;
 }
 
-.similar-jobs .employer-list {
-  margin: 0.5rem 0 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--rule);
-}
-
-.similar-jobs .employer-list li {
-  margin: 0;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid var(--rule);
-}
-
-.similar-jobs .employer-list a {
-  color: var(--civic);
+.similar-jobs h3 {
+  margin: 1.25rem 0 0.45rem;
+  font-size: 1.125rem;
   font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
-  overflow-wrap: anywhere;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
 }
 
 .plan-list {
