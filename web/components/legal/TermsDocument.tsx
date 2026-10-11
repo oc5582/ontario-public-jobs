@@ -43,7 +43,7 @@ export function TermsDocument() {
       </p>
       <p>
         <strong>1. Who you are dealing with.</strong> PublicJobs.ca is operated by {LEGAL.legalName}, a sole proprietor
-        operating as {LEGAL.businessName}, {LEGAL.mailingAddress}, Ontario, Canada. Phone <Phone />. Email <Mail />.
+        operating as {LEGAL.businessName}, {LEGAL.mailingAddress}. Phone <Phone />. Email <Mail />.
         GST/HST {LEGAL.hstNumber}.
       </p>
       <p>

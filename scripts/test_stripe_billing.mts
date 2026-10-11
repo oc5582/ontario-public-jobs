@@ -10,6 +10,7 @@ import {
 } from "../web/lib/billing.ts";
 import { getPool, query } from "../web/lib/db.ts";
 import { grantsMemberAccess, membershipPeriodLabel } from "../web/lib/membership.ts";
+import { cardLast4FromCharge } from "../web/lib/agreement-mail.ts";
 import { handleStripeWebhook, membershipState, periodEndUnix, subscriptionWrite } from "../web/lib/stripe-webhook.ts";
 
 const envFile = readFileSync(new URL("../web/.env.local", import.meta.url), "utf8");
@@ -129,6 +130,15 @@ assert.equal(params.consent_collection?.terms_of_service, "required");
 assert.equal(params.metadata?.terms_version, "2026-10-11");
 assert.equal(params.metadata?.tax_province, "ON");
 assert.equal(params.automatic_tax, undefined);
+assert.deepEqual(params.adaptive_pricing, { enabled: false });
+assert.equal(
+  cardLast4FromCharge({
+    payment_method_details: { type: "card", card: { last4: "4242" } },
+  } as never),
+  "4242",
+);
+assert.equal(cardLast4FromCharge("ch_123" as never), "");
+assert.equal(cardLast4FromCharge({ payment_method_details: { type: "card", card: { last4: "the card" } } } as never), "");
 assert.deepEqual(params.line_items?.[0]?.tax_rates, ["txr_on"]);
 assert.match(params.custom_text?.submit?.message || "", /HST 13%/);
 assert.match(params.custom_text?.terms_of_service_acceptance?.message || "", /5-day refund/);

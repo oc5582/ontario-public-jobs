@@ -107,6 +107,8 @@ export function checkoutSessionCreateParams(
     allow_promotion_codes: false,
     payment_method_collection: "always",
     billing_address_collection: "required",
+    // Prices are CAD. Turn off Adaptive Pricing so Checkout does not present a converted currency.
+    adaptive_pricing: { enabled: false },
     customer_update: { name: "auto", address: "auto" },
     consent_collection: { terms_of_service: "required" },
     custom_text: {

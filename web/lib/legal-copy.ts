@@ -72,7 +72,7 @@ export function membershipTermsText(): string {
   return [
     `Membership terms`,
     `Last updated ${LEGAL.effectiveDate}. Version ${LEGAL.termsVersion}.`,
-    `1. Who you are dealing with. PublicJobs.ca is operated by ${LEGAL.legalName}, a sole proprietor operating as ${LEGAL.businessName}, ${LEGAL.mailingAddress}, Ontario, Canada. Phone ${LEGAL.phone}. Email ${LEGAL.supportEmail}. GST/HST ${LEGAL.hstNumber}.`,
+    `1. Who you are dealing with. PublicJobs.ca is operated by ${LEGAL.legalName}, a sole proprietor operating as ${LEGAL.businessName}, ${LEGAL.mailingAddress}. Phone ${LEGAL.phone}. Email ${LEGAL.supportEmail}. GST/HST ${LEGAL.hstNumber}.`,
     `2. What a membership is. A membership gives you, while it is active: (a) the full list of current openings on PublicJobs.ca with all filters, and (b) up to 20 resume matches a day. Matching compares your resume with current openings using automated tools, including AI, and shows openings that look like a fit with a short reason. Matches are suggestions and can be wrong. Job pages, Apply links and the weekly email stay free without a membership. A membership does not get you a job or an interview. PublicJobs.ca is a search tool. It is not an employment agency or recruiter, does not contact employers for you, and does not send your information to employers. PublicJobs.ca is independent and is not affiliated with or endorsed by any government or employer. You need an email address and a current web browser. Memberships are offered to people in ${LEGAL.sellTo}.`,
     `3. Prices. Monthly: CA$14.99 every month. 3 months: CA$29.99 every 3 months. Yearly: CA$59.00 every year. Prices are in Canadian dollars. ${taxLine()} There are no other fees.`,
     `4. Payment and automatic renewal. You pay by card through our payment processor, Stripe. We do not see or store your full card number. Your first payment is charged when you subscribe and your membership starts right away. Your membership renews automatically at the end of each period (every month, every 3 months, or every year, depending on your plan), and we charge the same card the price for your plan plus applicable GST/HST, until you cancel. We will email you a reminder before each renewal: at least ${LEGAL.yearlyReminderDays} days before a yearly renewal and at least ${LEGAL.quarterReminderDays} days before a 3-month renewal.`,
@@ -118,9 +118,18 @@ export function formatToronto(date: Date): string {
   }).format(date);
 }
 
+export function agreementPriceLine(input: Pick<AgreementEmailInput, "priceLabel" | "taxLabel" | "totalLabel" | "last4">): string {
+  const amounts = `${input.priceLabel} + ${input.taxLabel} = ${input.totalLabel}`;
+  const last4 = (input.last4 || "").trim();
+  if (!/^\d{4}$/.test(last4)) return `Price: ${amounts}`;
+  return `Price: ${amounts}, charged today to your card ending ${last4}`;
+}
+
 export function agreementEmail(input: AgreementEmailInput): { subject: string; text: string; html: string } {
   const item = planById(input.plan);
   const subject = "Your PublicJobs.ca membership agreement – please keep this email";
+  const seller = `Seller: ${sellerLine()}, ${LEGAL.mailingAddress} · ${LEGAL.phone} · ${LEGAL.supportEmail} · GST/HST ${LEGAL.hstNumber}`;
+  const priceLine = agreementPriceLine(input);
   const text = [
     `Hi ${input.customerName},`,
     "",
@@ -128,10 +137,10 @@ export function agreementEmail(input: AgreementEmailInput): { subject: string; t
     "",
     `Agreement date: ${formatToronto(input.agreedAt)}`,
     `Customer: ${input.customerName}, ${input.email}`,
-    `Seller: ${sellerLine()}, ${LEGAL.mailingAddress}, Ontario, Canada · ${LEGAL.phone} · ${LEGAL.supportEmail} · GST/HST ${LEGAL.hstNumber}`,
+    seller,
     "",
     `Plan: ${item.name}`,
-    `Price: ${input.priceLabel} + ${input.taxLabel} = ${input.totalLabel}, charged today to your card ending ${input.last4}`,
+    priceLine,
     `Renewal: Your membership renews automatically on ${input.renewsOn} and every ${renewalPeriodPhrase(input.plan)} after that at ${input.priceLabel} plus applicable GST/HST, until you cancel. We'll remind you before yearly and 3-month renewals.`,
     "What's included: the full filterable list of current openings and up to 20 resume matches a day, starting now. A membership does not get you a job or an interview. PublicJobs.ca is not a recruiter and is not affiliated with any government or employer.",
     `Cancel: anytime at ${SITE_URL}/account/, by replying to this email, or by calling ${LEGAL.phone}. Access continues until ${input.periodEnd}.`,
@@ -144,7 +153,9 @@ export function agreementEmail(input: AgreementEmailInput): { subject: string; t
     "",
     emailFooterText(),
   ].join("\n");
-  const html = `<!DOCTYPE html><html><body style="font-family:Georgia,serif;color:#16202c;line-height:1.45"><p>Hi ${escapeHtml(input.customerName)},</p><p>Thanks for subscribing. This email is your copy of your agreement.</p><p><strong>Agreement date:</strong> ${escapeHtml(formatToronto(input.agreedAt))}<br><strong>Customer:</strong> ${escapeHtml(input.customerName)}, ${escapeHtml(input.email)}<br><strong>Seller:</strong> ${escapeHtml(sellerLine())}, ${escapeHtml(LEGAL.mailingAddress)}, Ontario, Canada · ${escapeHtml(LEGAL.phone)} · ${escapeHtml(LEGAL.supportEmail)} · GST/HST ${escapeHtml(LEGAL.hstNumber)}</p><p><strong>Plan:</strong> ${escapeHtml(item.name)}<br><strong>Price:</strong> ${escapeHtml(input.priceLabel)} + ${escapeHtml(input.taxLabel)} = <strong>${escapeHtml(input.totalLabel)}</strong>, charged today to your card ending ${escapeHtml(input.last4)}<br><strong>Renewal:</strong> Your membership renews automatically on ${escapeHtml(input.renewsOn)} and every ${escapeHtml(renewalPeriodPhrase(input.plan))} after that at ${escapeHtml(input.priceLabel)} plus applicable GST/HST, until you cancel. We'll remind you before yearly and 3-month renewals.<br><strong>What's included:</strong> the full filterable list of current openings and up to 20 resume matches a day, starting now. A membership does not get you a job or an interview. PublicJobs.ca is not a recruiter and is not affiliated with any government or employer.<br><strong>Cancel:</strong> anytime at ${SITE_URL}/account/, by replying to this email, or by calling ${escapeHtml(LEGAL.phone)}. Access continues until ${escapeHtml(input.periodEnd)}.<br><strong>Refund:</strong> ${escapeHtml(refundSentence())}<br><strong>Your rights:</strong> These terms do not limit your rights under the Ontario Consumer Protection Act, 2002 or other consumer law.</p><p>The full Membership terms you agreed to (version ${escapeHtml(LEGAL.termsVersion)}) are below so you can save or print them.</p><pre style="white-space:pre-wrap;font-family:Georgia,serif">${escapeHtml(membershipTermsText())}</pre><p>${escapeHtml(emailFooterText())}</p></body></html>`;
+  const last4 = (input.last4 || "").trim();
+  const cardClause = /^\d{4}$/.test(last4) ? `, charged today to your card ending ${escapeHtml(last4)}` : "";
+  const html = `<!DOCTYPE html><html><body style="font-family:Georgia,serif;color:#16202c;line-height:1.45"><p>Hi ${escapeHtml(input.customerName)},</p><p>Thanks for subscribing. This email is your copy of your agreement.</p><p><strong>Agreement date:</strong> ${escapeHtml(formatToronto(input.agreedAt))}<br><strong>Customer:</strong> ${escapeHtml(input.customerName)}, ${escapeHtml(input.email)}<br><strong>Seller:</strong> ${escapeHtml(sellerLine())}, ${escapeHtml(LEGAL.mailingAddress)} · ${escapeHtml(LEGAL.phone)} · ${escapeHtml(LEGAL.supportEmail)} · GST/HST ${escapeHtml(LEGAL.hstNumber)}</p><p><strong>Plan:</strong> ${escapeHtml(item.name)}<br><strong>Price:</strong> ${escapeHtml(input.priceLabel)} + ${escapeHtml(input.taxLabel)} = <strong>${escapeHtml(input.totalLabel)}</strong>${cardClause}<br><strong>Renewal:</strong> Your membership renews automatically on ${escapeHtml(input.renewsOn)} and every ${escapeHtml(renewalPeriodPhrase(input.plan))} after that at ${escapeHtml(input.priceLabel)} plus applicable GST/HST, until you cancel. We'll remind you before yearly and 3-month renewals.<br><strong>What's included:</strong> the full filterable list of current openings and up to 20 resume matches a day, starting now. A membership does not get you a job or an interview. PublicJobs.ca is not a recruiter and is not affiliated with any government or employer.<br><strong>Cancel:</strong> anytime at ${SITE_URL}/account/, by replying to this email, or by calling ${escapeHtml(LEGAL.phone)}. Access continues until ${escapeHtml(input.periodEnd)}.<br><strong>Refund:</strong> ${escapeHtml(refundSentence())}<br><strong>Your rights:</strong> These terms do not limit your rights under the Ontario Consumer Protection Act, 2002 or other consumer law.</p><p>The full Membership terms you agreed to (version ${escapeHtml(LEGAL.termsVersion)}) are below so you can save or print them.</p><pre style="white-space:pre-wrap;font-family:Georgia,serif">${escapeHtml(membershipTermsText())}</pre><p>${escapeHtml(emailFooterText())}</p></body></html>`;
   return { subject, text, html };
 }
 

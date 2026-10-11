@@ -1,4 +1,5 @@
 import type Stripe from "stripe";
+import { getStripe } from "./billing";
 import { query } from "./db";
 import { agreementEmail, formatToronto, planById } from "./legal-copy";
 import { sendTransactional } from "./transactional-email";
@@ -43,7 +44,7 @@ export async function sendAgreementCopy(input: {
     priceLabel: input.priceLabel,
     taxLabel: tax,
     totalLabel: total,
-    last4: input.last4 || "the card you entered",
+    last4: input.last4,
   });
   const sent = await sendTransactional({
     to: input.email,
@@ -120,7 +121,96 @@ export async function fulfillCheckoutAgreement(session: Stripe.Checkout.Session,
     priceLabel: row.price_label || `${planById(plan).price} ${planById(plan).period}`,
     taxCents: session.total_details?.amount_tax ?? null,
     totalCents: session.amount_total ?? null,
-    last4: "the card you entered",
+    last4: await cardLast4ForCheckout(session),
     idempotencyKey: `agreement/${session.id || rowId}`,
   });
+}
+
+function fourDigits(value: string | null | undefined): string {
+  return value && /^\d{4}$/.test(value) ? value : "";
+}
+
+export function cardLast4FromCharge(charge: Stripe.Charge | string | null | undefined): string {
+  if (!charge || typeof charge === "string") return "";
+  return fourDigits(charge.payment_method_details?.card?.last4);
+}
+
+function cardLast4FromPaymentIntent(intent: Stripe.PaymentIntent | string | null | undefined): string {
+  if (!intent || typeof intent === "string") return "";
+  const fromCharge = cardLast4FromCharge(intent.latest_charge);
+  if (fromCharge) return fromCharge;
+  const method = intent.payment_method;
+  if (method && typeof method !== "string") return fourDigits(method.card?.last4);
+  return "";
+}
+
+function cardLast4FromInvoice(invoice: Stripe.Invoice | string | null | undefined): string {
+  if (!invoice || typeof invoice === "string") return "";
+  for (const payment of invoice.payments?.data || []) {
+    const fromIntent = cardLast4FromPaymentIntent(payment.payment?.payment_intent);
+    if (fromIntent) return fromIntent;
+    const fromCharge = cardLast4FromCharge(payment.payment?.charge);
+    if (fromCharge) return fromCharge;
+  }
+  return "";
+}
+
+async function paymentIntentLast4(stripe: Stripe, intent: Stripe.PaymentIntent | string): Promise<string> {
+  const loaded =
+    typeof intent === "string" || typeof intent.latest_charge === "string" || !intent.latest_charge
+      ? await stripe.paymentIntents.retrieve(typeof intent === "string" ? intent : intent.id, {
+          expand: ["latest_charge", "payment_method"],
+        })
+      : intent;
+  return cardLast4FromPaymentIntent(loaded);
+}
+
+async function invoiceLast4(stripe: Stripe, invoice: Stripe.Invoice | string): Promise<string> {
+  const loaded =
+    typeof invoice === "string" || !invoice.payments?.data?.length
+      ? await stripe.invoices.retrieve(typeof invoice === "string" ? invoice : invoice.id, {
+          expand: ["payments.data.payment.payment_intent", "payments.data.payment.charge"],
+        })
+      : invoice;
+  const direct = cardLast4FromInvoice(loaded);
+  if (direct) return direct;
+  for (const payment of loaded.payments?.data || []) {
+    const intent = payment.payment?.payment_intent;
+    if (typeof intent === "string") {
+      const found = await paymentIntentLast4(stripe, intent);
+      if (found) return found;
+    }
+    const charge = payment.payment?.charge;
+    if (typeof charge === "string") {
+      const found = cardLast4FromCharge(await stripe.charges.retrieve(charge));
+      if (found) return found;
+    }
+  }
+  return "";
+}
+
+/** Last4 from the Checkout payment, or "" when Stripe does not return one. */
+export async function cardLast4ForCheckout(session: Stripe.Checkout.Session): Promise<string> {
+  const onSession = cardLast4FromPaymentIntent(session.payment_intent) || cardLast4FromInvoice(session.invoice);
+  if (onSession) return onSession;
+  if (!session.id || !process.env.STRIPE_SECRET_KEY) return "";
+  try {
+    const stripe = getStripe();
+    if (session.payment_intent) return await paymentIntentLast4(stripe, session.payment_intent);
+    if (session.invoice) return await invoiceLast4(stripe, session.invoice);
+    const full = await stripe.checkout.sessions.retrieve(session.id, {
+      expand: ["payment_intent.latest_charge", "invoice"],
+    });
+    if (full.payment_intent) return await paymentIntentLast4(stripe, full.payment_intent);
+    if (full.invoice) return await invoiceLast4(stripe, full.invoice);
+    return "";
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        event: "agreement_last4_unavailable",
+        message: error instanceof Error ? error.message : "failed",
+      }),
+    );
+    return "";
+  }
 }

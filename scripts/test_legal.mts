@@ -59,8 +59,26 @@ assert.match(mail.text, /5 days/);
 assert.match(mail.text, /712442870RT0001/);
 assert.doesNotMatch(mail.text, /14 days/);
 assert.match(mail.text, /Consumer Protection Act/);
+assert.match(mail.text, /card ending 4242/);
+assert.match(mail.text, /603-65 Thorncliffe Park Drive/);
+assert.doesNotMatch(mail.text, /, Ontario, Canada/);
+assert.doesNotMatch(mail.text, /card you entered/);
 assert.doesNotMatch(mail.text, /%\s*off|discount|limited time|upgrade now/i);
 assert.doesNotMatch(mail.html, /%\s*off|discount|limited time|upgrade now/i);
+const mailWithoutCard = agreementEmail({
+  customerName: "Pat Example",
+  email: "pat@example.com",
+  plan: "quarter",
+  agreedAt: new Date("2026-10-10T15:00:00.000Z"),
+  renewsOn: "January 10, 2027",
+  periodEnd: "January 10, 2027",
+  priceLabel: planPriceLine("quarter"),
+  taxLabel: "GST/HST CA$3.90",
+  totalLabel: "CA$33.89",
+  last4: "",
+});
+assert.match(mailWithoutCard.text, /Price: CA\$29\.99 every 3 months \(about CA\$10 a month\) \+ GST\/HST CA\$3\.90 = CA\$33\.89$/m);
+assert.doesNotMatch(mailWithoutCard.text, /card ending|card you entered/);
 
 const renewal = renewalEmail({
   customerName: "Pat Example",
