@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { reportEvent } from "./analytics";
 import { isProvinceCode, provinceByCode, taxRateIdForProvince, type ProvinceCode } from "./ca-tax";
 import { query } from "./db";
 import { disclosureText, stripeSubmitMessage, stripeTermsMessage } from "./legal-copy";
@@ -218,6 +219,7 @@ export async function createCheckoutSession(input: CheckoutInput, stripe = getSt
     await query(`update agreement_acceptances set stripe_session_id = $2 where id = $1`, [agreementId, session.id]);
   }
   if (!session.url) throw new Error("Stripe Checkout did not return a URL.");
+  reportEvent("checkout_start", { plan: input.plan });
   return { url: session.url };
 }
 

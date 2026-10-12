@@ -1,5 +1,6 @@
 import type { PoolClient } from "pg";
 import Stripe from "stripe";
+import { reportEvent } from "./analytics";
 import { fulfillCheckoutAgreement } from "./agreement-mail";
 import { getStripe, planForPrice } from "./billing";
 import { query, withTransaction } from "./db";
@@ -53,6 +54,16 @@ function planFromMetadata(metadata: Stripe.Metadata | null | undefined): PlanId 
   const plan = metadata?.plan;
   if (plan === "month" || plan === "quarter" || plan === "year") return plan;
   return null;
+}
+
+/** Plan for a live Checkout completion that would turn a membership on. Test-mode events are ignored. */
+export function checkoutActivationPlan(event: Stripe.Event, subscription: Stripe.Subscription | null): PlanId | null {
+  if (event.livemode !== true || event.type !== "checkout.session.completed" || !subscription) return null;
+  const session = event.data.object as Stripe.Checkout.Session;
+  if (session.mode && session.mode !== "subscription") return null;
+  const write = subscriptionWrite(subscription);
+  if (write.touchOnly || write.status !== "active") return null;
+  return write.plan || planFromMetadata(session.metadata);
 }
 
 export function membershipState(status: string): MembershipState {
@@ -150,7 +161,7 @@ async function writeSubscription(
   event: Stripe.Event,
   sub: Stripe.Subscription,
   profileHint: string | null,
-): Promise<void> {
+): Promise<boolean> {
   const write = subscriptionWrite(sub);
   const profileId = await findProfile(client, {
     profileId: profileHint || write.profileId,
@@ -159,7 +170,7 @@ async function writeSubscription(
   });
   if (!profileId) {
     console.info(JSON.stringify({ event: "stripe_webhook_unmatched", type: event.type, id: event.id }));
-    return;
+    return false;
   }
   if (write.touchOnly) {
     await client.query(
@@ -177,9 +188,9 @@ async function writeSubscription(
          )`,
       [profileId, write.customerId, write.subscriptionId, event.created],
     );
-    return;
+    return false;
   }
-  await client.query(
+  const updated = await client.query<{ membership_status: string }>(
     `update profiles
      set stripe_customer_id = coalesce($2, stripe_customer_id),
          stripe_subscription_id = $3,
@@ -207,7 +218,8 @@ async function writeSubscription(
          stripe_subscription_id is null
          or stripe_subscription_id = $3
          or membership_status <> 'active'
-       )`,
+       )
+     returning membership_status`,
     [
       profileId,
       write.customerId,
@@ -219,6 +231,7 @@ async function writeSubscription(
       event.created,
     ],
   );
+  return updated.rows[0]?.membership_status === "active" && write.status === "active";
 }
 
 async function linkIds(
@@ -512,30 +525,36 @@ async function applyRevocation(client: PoolClient, event: Stripe.Event, plan: Re
   );
 }
 
-async function applyEvent(client: PoolClient, event: Stripe.Event, subscription: Stripe.Subscription | null): Promise<void> {
-  if (event.type === "charge.refunded" || event.type === "charge.dispute.created") return;
-  if (event.type === "invoice.upcoming") return;
+async function applyEvent(
+  client: PoolClient,
+  event: Stripe.Event,
+  subscription: Stripe.Subscription | null,
+): Promise<PlanId | null> {
+  if (event.type === "charge.refunded" || event.type === "charge.dispute.created") return null;
+  if (event.type === "invoice.upcoming") return null;
   if (event.type === "invoice.payment_failed") {
     await applyPaymentFailed(client, event);
-    return;
+    return null;
   }
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    if (session.mode && session.mode !== "subscription") return;
+    if (session.mode && session.mode !== "subscription") return null;
     const profileHint = uuidOrNull(session.client_reference_id) || uuidOrNull(session.metadata?.profile_id);
     if (subscription) {
-      await writeSubscription(client, event, subscription, profileHint);
-      return;
+      const activated = await writeSubscription(client, event, subscription, profileHint);
+      const plan = checkoutActivationPlan(event, subscription);
+      return activated && plan ? plan : null;
     }
-    if (session.payment_status === "no_payment_required") return;
+    if (session.payment_status === "no_payment_required") return null;
     await linkIds(client, event, {
       profileId: profileHint,
       customerId: idOf(session.customer),
       subscriptionId: typeof session.subscription === "string" ? session.subscription : null,
     });
-    return;
+    return null;
   }
   await writeSubscription(client, event, event.data.object as Stripe.Subscription, null);
+  return null;
 }
 
 export async function handleStripeWebhook(request: Request): Promise<Response> {
@@ -611,12 +630,28 @@ export async function handleStripeWebhook(request: Request): Promise<Response> {
          returning id`,
         [event.id, event.type],
       );
-      if (inserted.rowCount === 0) return { duplicate: true };
-      if (revocation) await applyRevocation(client, event, revocation);
-      else await applyEvent(client, event, subscription);
-      return { duplicate: false };
+      if (inserted.rowCount === 0) return { duplicate: true, purchasePlan: null as PlanId | null };
+      if (revocation) {
+        await applyRevocation(client, event, revocation);
+        return { duplicate: false, purchasePlan: null as PlanId | null };
+      }
+      const purchasePlan = await applyEvent(client, event, subscription);
+      return { duplicate: false, purchasePlan };
     });
     console.info(JSON.stringify({ event: "stripe_webhook", type: event.type, duplicate: result.duplicate }));
+    if (!result.duplicate && result.purchasePlan) {
+      try {
+        reportEvent("purchase", { plan: result.purchasePlan }, request);
+      } catch (error) {
+        console.error(
+          JSON.stringify({
+            event: "analytics_track_failed",
+            name: "purchase",
+            message: error instanceof Error ? error.message.slice(0, 160) : "failed",
+          }),
+        );
+      }
+    }
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       const unix = subscription ? periodEndUnix(subscription) : null;

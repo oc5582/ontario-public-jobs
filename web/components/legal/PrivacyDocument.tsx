@@ -139,6 +139,7 @@ export function PrivacyDocument() {
         records things like the page you visited, the referring site, your browser, and your country. It stays on
         because it does not use cookies.
       </p>
+      <p>We use Vercel Web Analytics, which is cookieless and collects anonymous, aggregated usage data.</p>
       <p>Our fonts are hosted on PublicJobs.ca itself, so loading them does not send your information to a font service.</p>
       <h2>How long we keep it</h2>
       <table>

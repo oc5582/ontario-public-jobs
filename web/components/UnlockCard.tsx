@@ -1,9 +1,12 @@
+import { PaywallView } from "@/components/AnalyticsEvents";
+
 export function UnlockCard({ total, shown }: { total: number; shown: number }) {
   const remaining = Math.max(0, total - shown);
   if (remaining === 0) return null;
   const noun = remaining === 1 ? "opening" : "openings";
   return (
     <section className="unlock" aria-label="More openings">
+      <PaywallView />
       <h2>
         {remaining.toLocaleString("en-CA")} more {noun}
       </h2>

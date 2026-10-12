@@ -68,12 +68,16 @@ for (const host of [
   "js.stripe.com",
   "connect.facebook.net",
   "static.cloudflareinsights.com",
+  "va.vercel-scripts.com",
   "supabase.co",
   "cdn.jsdelivr.net",
   "ontario-public-jobs-signup.publicjobs.workers.dev",
 ]) {
   assert.match(CONTENT_SECURITY_POLICY, new RegExp(host.replaceAll(".", "\\.")));
 }
+assert.match(productionCsp, /script-src[^;]*'self'[^;]*https:\/\/va\.vercel-scripts\.com/);
+assert.match(productionCsp, /connect-src 'self'/);
+assert.doesNotMatch(productionCsp, /vitals\.vercel-insights\.com/);
 
 const previousNodeEnv = process.env.NODE_ENV;
 process.env.NODE_ENV = "production";

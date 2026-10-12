@@ -1,4 +1,5 @@
 import { recordMatchAlertConsent } from "@/lib/alert-consent";
+import { reportEvent } from "@/lib/analytics";
 import { getViewer, requestOrigin } from "@/lib/auth";
 import { MSG, runMatch } from "@/lib/match";
 
@@ -26,14 +27,18 @@ export async function POST(request: Request) {
     const origin = await requestOrigin();
     await recordMatchAlertConsent(viewer.email, `${origin}/match/`);
   }
+  const gotcha = String(data._gotcha || "");
   const result = await runMatch({
     profileId: viewer.profile.id,
     email: viewer.email,
     isMember: viewer.isMember,
     resumeText: String(data.resume_text || ""),
     consent,
-    gotcha: String(data._gotcha || ""),
+    gotcha,
   });
+  if (result.status === 200 && result.body.ok && !gotcha.trim()) {
+    reportEvent("match_run", { tier: viewer.isMember ? "member" : "free" }, request);
+  }
   return Response.json(result.body, {
     status: result.status,
     headers: { "Cache-Control": "no-store" },
