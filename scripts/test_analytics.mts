@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { isFirstSignIn, signupMethod } from "../web/lib/analytics.ts";
+import { insightsEventUrl, isFirstSignIn, signupMethod } from "../web/lib/analytics.ts";
+import { installAnalyticsQueue } from "../web/lib/analytics-queue.ts";
 import { paywallPage } from "../web/lib/paywall-page.ts";
 import { checkoutActivationPlan } from "../web/lib/stripe-webhook.ts";
 
@@ -12,6 +13,33 @@ assert.equal(paywallPage("/employers/"), "other");
 assert.equal(paywallPage("/employers/city-of-toronto/"), "employer");
 assert.equal(paywallPage("/match/"), "match");
 assert.equal(paywallPage("/pricing/"), "other");
+
+const queued: { va?: (...params: unknown[]) => void; vaq?: unknown[][] } = {};
+installAnalyticsQueue(queued);
+queued.va?.("event", { name: "paywall_view", data: { page: "home" } });
+const real: unknown[][] = [];
+queued.vaq?.forEach(([command, payload]) => {
+  real.push([command, payload]);
+});
+assert.deepEqual(real, [["event", { name: "paywall_view", data: { page: "home" } }]]);
+const existing = { va: () => undefined, vaq: [] as unknown[][] };
+installAnalyticsQueue(existing);
+existing.va("event", { name: "pricing_view" });
+assert.equal(existing.vaq.length, 0);
+
+assert.equal(
+  insightsEventUrl("publicjobs.ca", false),
+  "https://publicjobs.ca/_vercel/insights/event",
+);
+assert.equal(
+  insightsEventUrl("www.publicjobs.ca, publicjobs.ca", true),
+  "https://www.publicjobs.ca/_vercel/insights/event",
+);
+assert.equal(
+  insightsEventUrl("publicjobs-preview-example.vercel.app", true),
+  "https://publicjobs.ca/_vercel/insights/event",
+);
+assert.equal(insightsEventUrl("publicjobs-preview-example.vercel.app", false), null);
 
 assert.equal(signupMethod({ app_metadata: { provider: "google" } }), "google");
 assert.equal(signupMethod({ app_metadata: { provider: "email" } }), "email");

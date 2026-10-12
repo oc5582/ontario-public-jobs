@@ -2,21 +2,33 @@
 
 import { track } from "@vercel/analytics";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { installAnalyticsQueue } from "@/lib/analytics-queue";
 import { paywallPage } from "@/lib/paywall-page";
+
+function trackEvent(name: string, properties?: Record<string, string>): void {
+  installAnalyticsQueue(window);
+  track(name, properties);
+}
 
 /** Mounted only when the membership card is on the page, once per page view. */
 export function PaywallView() {
   const pathname = usePathname() || "/";
+  const sent = useRef<string | null>(null);
   useEffect(() => {
-    track("paywall_view", { page: paywallPage(pathname) });
+    if (sent.current === pathname) return;
+    sent.current = pathname;
+    trackEvent("paywall_view", { page: paywallPage(pathname) });
   }, [pathname]);
   return null;
 }
 
 export function PricingView() {
+  const sent = useRef(false);
   useEffect(() => {
-    track("pricing_view");
+    if (sent.current) return;
+    sent.current = true;
+    trackEvent("pricing_view");
   }, []);
   return null;
 }
