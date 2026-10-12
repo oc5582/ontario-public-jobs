@@ -191,22 +191,30 @@ async function ensureExclusivePrice(stripe: Stripe, priceId: string): Promise<vo
 
 function dynamicTaxRejected(error: unknown): boolean {
   const message = error instanceof Error ? error.message : "";
-  return /dynamic[_\s]tax/i.test(message);
+  return /dynamic[_\s]tax/i.test(message) || (/tax rate/i.test(message) && /not supported|unsupported/i.test(message));
 }
+
+// dynamic_tax_rates was removed in Stripe API 2026-07-29.dahlia. Checkout on the
+// current API version cannot select a Canadian rate from the billing address
+// unless Stripe Tax is active, so the manual-rate path uses the last version
+// that still accepts the parameter.
+const DYNAMIC_TAX_API_VERSION = "2026-06-24.dahlia";
 
 async function openCheckoutSession(
   stripe: Stripe,
   params: Stripe.Checkout.SessionCreateParams,
+  apiVersion?: string,
 ): Promise<Stripe.Checkout.Session> {
+  const options = apiVersion ? { apiVersion } : undefined;
   try {
-    return await stripe.checkout.sessions.create(params);
+    return await stripe.checkout.sessions.create(params, options);
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     if (!/terms of service/i.test(message)) throw error;
     console.error(JSON.stringify({ event: "stripe_terms_url_missing" }));
     const withoutTerms = { ...params };
     delete withoutTerms.consent_collection;
-    return stripe.checkout.sessions.create(withoutTerms);
+    return stripe.checkout.sessions.create(withoutTerms, options);
   }
 }
 
@@ -279,7 +287,11 @@ export async function createCheckoutSession(input: CheckoutInput, stripe = getSt
   let params = checkoutSessionCreateParams({ ...input, agreementId }, customerId, priceId, tax);
   let session: Stripe.Checkout.Session;
   try {
-    session = await openCheckoutSession(stripe, params);
+    session = await openCheckoutSession(
+      stripe,
+      params,
+      tax.mode === "dynamic" ? DYNAMIC_TAX_API_VERSION : undefined,
+    );
   } catch (error) {
     if (tax.mode !== "dynamic" || !dynamicTaxRejected(error)) throw error;
     console.error(
