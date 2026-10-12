@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import { reportEvent } from "./analytics";
-import { CA_TAX_JURISDICTIONS, taxRateIdForProvince } from "./ca-tax";
+import { isProvinceCode, provinceByCode, taxRateIdForProvince, type ProvinceCode } from "./ca-tax";
 import { query } from "./db";
 import { disclosureText, stripeSubmitMessage, stripeTermsMessage } from "./legal-copy";
 import { LEGAL } from "./legal-config";
@@ -25,12 +25,9 @@ export type CheckoutInput = {
   email: string;
   plan: PlanId;
   origin: string;
+  province: ProvinceCode;
   agreementId?: string;
 };
-
-export type CheckoutTax =
-  | { mode: "stripe_tax" }
-  | { mode: "dynamic"; taxRateIds: string[] };
 
 export type PortalInput = {
   stripeCustomerId: string;
@@ -81,37 +78,30 @@ export function getStripe(): Stripe {
   return stripeClient;
 }
 
-type LineItemWithDynamicTax = Stripe.Checkout.SessionCreateParams.LineItem & {
-  dynamic_tax_rates?: string[];
-};
-
-/**
- * Stripe Tax when the account can calculate Canadian GST/HST.
- * Otherwise the exclusive provincial rates go on dynamic_tax_rates and Checkout
- * picks the one that matches the billing address. Prices stay exclusive of tax.
- * Hosted Checkout cannot limit the billing-country list, so the customer address
- * is preset to Canada and the submit message says memberships are sold in Canada only.
- */
 export function checkoutSessionCreateParams(
   input: CheckoutInput,
   customerId: string,
   priceId: string,
-  tax: CheckoutTax,
+  taxRateId: string,
 ): Stripe.Checkout.SessionCreateParams {
+  const province = provinceByCode(input.province);
+  if (!province) throw new BillingNotConfiguredError("Choose a Canadian billing province.");
   const metadata: Stripe.MetadataParam = {
     profile_id: input.profileId,
     plan: input.plan,
     terms_version: LEGAL.termsVersion,
-    tax_mode: tax.mode,
+    tax_province: input.province,
+    tax_rate_id: taxRateId,
   };
   if (input.agreementId) metadata.agreement_id = input.agreementId;
-  const lineItem: LineItemWithDynamicTax = { price: priceId, quantity: 1 };
-  if (tax.mode === "dynamic") lineItem.dynamic_tax_rates = tax.taxRateIds;
-  const params: Stripe.Checkout.SessionCreateParams = {
+  // Stripe dynamic_tax_rates does not support Canada. One exclusive tax rate,
+  // chosen from the province, is attached to the subscription item. Stripe Tax
+  // (automatic_tax) is not used.
+  return {
     mode: "subscription",
     customer: customerId,
     client_reference_id: input.profileId,
-    line_items: [lineItem],
+    line_items: [{ price: priceId, quantity: 1, tax_rates: [taxRateId] }],
     success_url: `${input.origin}/account/?checkout=success`,
     cancel_url: `${input.origin}/pricing/`,
     allow_promotion_codes: false,
@@ -123,7 +113,7 @@ export function checkoutSessionCreateParams(
     consent_collection: { terms_of_service: "required" },
     custom_text: {
       terms_of_service_acceptance: { message: stripeTermsMessage(input.plan) },
-      submit: { message: stripeSubmitMessage() },
+      submit: { message: stripeSubmitMessage(province) },
     },
     metadata,
     subscription_data: {
@@ -131,127 +121,10 @@ export function checkoutSessionCreateParams(
         profile_id: input.profileId,
         plan: input.plan,
         terms_version: LEGAL.termsVersion,
-        tax_mode: tax.mode,
+        tax_province: input.province,
       },
     },
   };
-  if (tax.mode === "stripe_tax") params.automatic_tax = { enabled: true };
-  return params;
-}
-
-/**
- * Stripe Tax is used when settings are active and a Canadian registration exists.
- * The live account is left as it is. In test mode only, a missing head office or
- * GST/HST registration is filled in so Checkout can calculate exclusive tax.
- * Quebec stays GST only: this does not add a provincial registration.
- */
-export async function stripeTaxReady(stripe: Stripe): Promise<boolean> {
-  try {
-    let settings: Stripe.Tax.Settings = await stripe.tax.settings.retrieve();
-    if (settings.livemode === false) settings = await ensureTestCanadianTax(stripe, settings);
-    if (settings.status !== "active") return false;
-    const page = await stripe.tax.registrations.list({ status: "active", limit: 100 });
-    const activeCa = page.data.some((item) => item.country === "CA" && item.status === "active");
-    if (activeCa) return true;
-    if (settings.livemode !== false) return false;
-    await stripe.tax.registrations.create({
-      country: "CA",
-      country_options: { ca: { type: "standard" } },
-      active_from: "now",
-    });
-    console.info(JSON.stringify({ event: "stripe_tax_test_registration" }));
-    return true;
-  } catch {
-    console.error(JSON.stringify({ event: "stripe_tax_settings_unavailable" }));
-    return false;
-  }
-}
-
-async function ensureTestCanadianTax(
-  stripe: Stripe,
-  settings: Stripe.Tax.Settings,
-): Promise<Stripe.Tax.Settings> {
-  if (settings.status === "active" && settings.defaults?.tax_behavior === "exclusive") return settings;
-  const updated = await stripe.tax.settings.update({
-    head_office: {
-      address: {
-        line1: LEGAL.streetAddress,
-        city: LEGAL.addressLocality,
-        state: "ON",
-        postal_code: LEGAL.postalCode,
-        country: "CA",
-      },
-    },
-    defaults: { tax_behavior: "exclusive", tax_code: "txcd_10103001" },
-  });
-  console.info(JSON.stringify({ event: "stripe_tax_test_settings", status: updated.status }));
-  return updated;
-}
-
-async function exclusiveTaxRateIds(stripe: Stripe): Promise<string[]> {
-  const ids: string[] = [];
-  const missing: string[] = [];
-  for (const item of CA_TAX_JURISDICTIONS) {
-    const id = await taxRateIdForProvince(stripe, item.code);
-    if (id) ids.push(id);
-    else missing.push(item.code);
-  }
-  if (missing.length > 0) {
-    throw new BillingNotConfiguredError(
-      `Stripe tax rate for ${missing.join(", ")} is not set. Run scripts/stripe_tax_rates.mjs.`,
-    );
-  }
-  return ids;
-}
-
-const exclusivePrices = new Set<string>();
-
-async function ensureExclusivePrice(stripe: Stripe, priceId: string): Promise<void> {
-  if (exclusivePrices.has(priceId)) return;
-  try {
-    const price = await stripe.prices.retrieve(priceId);
-    if (price.tax_behavior === "exclusive") {
-      exclusivePrices.add(priceId);
-      return;
-    }
-    if (price.tax_behavior === "inclusive") {
-      console.error(JSON.stringify({ event: "price_tax_inclusive" }));
-      return;
-    }
-    await stripe.prices.update(priceId, { tax_behavior: "exclusive" });
-    exclusivePrices.add(priceId);
-  } catch {
-    console.error(JSON.stringify({ event: "price_tax_behavior_update_failed" }));
-  }
-}
-
-function dynamicTaxRejected(error: unknown): boolean {
-  const message = error instanceof Error ? error.message : "";
-  return /dynamic[_\s]tax/i.test(message) || (/tax rate/i.test(message) && /not supported|unsupported/i.test(message));
-}
-
-// dynamic_tax_rates was removed in Stripe API 2026-07-29.dahlia. Checkout on the
-// current API version cannot select a Canadian rate from the billing address
-// unless Stripe Tax is active, so the manual-rate path uses the last version
-// that still accepts the parameter.
-const DYNAMIC_TAX_API_VERSION = "2026-06-24.dahlia";
-
-async function openCheckoutSession(
-  stripe: Stripe,
-  params: Stripe.Checkout.SessionCreateParams,
-  apiVersion?: string,
-): Promise<Stripe.Checkout.Session> {
-  const options = apiVersion ? { apiVersion } : undefined;
-  try {
-    return await stripe.checkout.sessions.create(params, options);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "";
-    if (!/terms of service/i.test(message)) throw error;
-    console.error(JSON.stringify({ event: "stripe_terms_url_missing" }));
-    const withoutTerms = { ...params };
-    delete withoutTerms.consent_collection;
-    return stripe.checkout.sessions.create(withoutTerms, options);
-  }
 }
 
 export function portalSessionCreateParams(input: PortalInput): Stripe.BillingPortal.SessionCreateParams {
@@ -303,10 +176,20 @@ export async function createCheckoutSession(input: CheckoutInput, stripe = getSt
   ) {
     throw new AlreadySubscribedError();
   }
+  if (!isProvinceCode(input.province)) throw new BillingNotConfiguredError("Choose a Canadian billing province.");
+  const province = provinceByCode(input.province);
+  const taxRateId = await taxRateIdForProvince(stripe, input.province);
+  if (!taxRateId || !province) {
+    throw new BillingNotConfiguredError(
+      `Stripe tax rate for ${input.province} is not set. Run scripts/stripe_tax_rates.mjs.`,
+    );
+  }
   const customerId = await ensureCustomer(stripe, input, profile.stripe_customer_id);
-  // Country only. Checkout collects the name and the rest of the billing address.
-  await stripe.customers.update(customerId, { address: { country: "CA" } });
-  const disclosure = `${disclosureText(input.plan)}\nName and Canadian billing address are collected on the payment page. GST/HST follows that province and is added before payment. GST/HST ${LEGAL.hstNumber}.`;
+  // Name is collected on Checkout and written from customer_details after payment.
+  await stripe.customers.update(customerId, {
+    address: { country: "CA", state: input.province },
+  });
+  const disclosure = `${disclosureText(input.plan)}\nBilling province: ${province.name} (${province.code}). ${province.displayName} ${province.percentage}% added on top. GST/HST ${LEGAL.hstNumber}.`;
   const inserted = await query<{ id: string }>(
     `insert into agreement_acceptances
        (profile_id, email, customer_name, plan, price_label, terms_version, disclosure_text)
@@ -315,28 +198,17 @@ export async function createCheckoutSession(input: CheckoutInput, stripe = getSt
     [input.profileId, input.email, null, input.plan, planPriceLine(input.plan), LEGAL.termsVersion, disclosure],
   );
   const agreementId = inserted[0]?.id;
-  let tax: CheckoutTax = (await stripeTaxReady(stripe))
-    ? { mode: "stripe_tax" }
-    : { mode: "dynamic", taxRateIds: await exclusiveTaxRateIds(stripe) };
-  if (tax.mode === "stripe_tax") await ensureExclusivePrice(stripe, priceId);
-  console.info(JSON.stringify({ event: "checkout_tax", mode: tax.mode }));
-  let params = checkoutSessionCreateParams({ ...input, agreementId }, customerId, priceId, tax);
+  const params = checkoutSessionCreateParams({ ...input, agreementId }, customerId, priceId, taxRateId);
   let session: Stripe.Checkout.Session;
   try {
-    session = await openCheckoutSession(
-      stripe,
-      params,
-      tax.mode === "dynamic" ? DYNAMIC_TAX_API_VERSION : undefined,
-    );
+    session = await stripe.checkout.sessions.create(params);
   } catch (error) {
-    if (tax.mode !== "dynamic" || !dynamicTaxRejected(error)) throw error;
-    console.error(
-      JSON.stringify({
-        event: "checkout_tax_dynamic_rejected",
-        message: (error instanceof Error ? error.message : "").slice(0, 400),
-      }),
-    );
-    throw new BillingNotConfiguredError();
+    const message = error instanceof Error ? error.message : "";
+    if (!/terms of service/i.test(message)) throw error;
+    console.error(JSON.stringify({ event: "stripe_terms_url_missing" }));
+    const withoutTerms = { ...params };
+    delete withoutTerms.consent_collection;
+    session = await stripe.checkout.sessions.create(withoutTerms);
   }
   if (agreementId && session.id) {
     await query(`update agreement_acceptances set stripe_session_id = $2 where id = $1`, [agreementId, session.id]);

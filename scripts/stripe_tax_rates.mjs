@@ -148,9 +148,7 @@ async function main() {
     console.log(`STRIPE_TAX_RATE_${code}=${id}  # ${action}`);
   }
   console.log("");
-  console.log("Checkout uses Stripe Tax when it is already active and a Canadian registration is active.");
-  console.log("Otherwise Checkout passes these exclusive rates as dynamic_tax_rates.");
-  console.log("Prices stay exclusive of tax. Quebec is GST only (no QST).");
+  console.log("Checkout uses these exclusive rates. Do not enable Stripe Tax (automatic_tax).");
   console.log("Optional: set the lines above on Vercel. If unset, the app looks them up by metadata.");
 }
 

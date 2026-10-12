@@ -16,7 +16,15 @@ function cardNote(id: PlanId, detail: string): string | null {
   return detail;
 }
 
-export function CheckoutForm({ action }: { action: (formData: FormData) => void | Promise<void> }) {
+type ProvinceOption = { code: string; label: string };
+
+export function CheckoutForm({
+  action,
+  provinces,
+}: {
+  action: (formData: FormData) => void | Promise<void>;
+  provinces: ProvinceOption[];
+}) {
   const [plan, setPlan] = useState<PlanId>("month");
   const agreeRef = useRef<HTMLInputElement>(null);
   const consent = consentParts(plan);
@@ -35,6 +43,21 @@ export function CheckoutForm({ action }: { action: (formData: FormData) => void 
         if (agreeRef.current && typeof selectedPlan === "string") agreeRef.current.value = selectedPlan;
       }}
     >
+      <div className="checkout-fields">
+        <label className="checkout-name" htmlFor="checkout-province">
+          Billing province
+          <select id="checkout-province" name="province" required defaultValue="">
+            <option value="" disabled>
+              Select a province or territory
+            </option>
+            {provinces.map((item) => (
+              <option key={item.code} value={item.code}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
       <fieldset>
         <legend>Select a plan</legend>
         <div className="plan-cards">
