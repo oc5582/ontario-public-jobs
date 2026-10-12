@@ -73,8 +73,9 @@ assert.equal(paywallFocus(filters), "");
 assert.equal(paywallFiltering({ ...filters, employer: "metrolinx" }), false);
 assert.equal(paywallFiltering({ ...filters, q: "IT" }), true);
 assert.equal(paywallFocus({ ...filters, q: "IT" }), "IT");
-assert.equal(paywallFocus({ ...filters, category: "Information technology" }), "Information technology");
-assert.equal(paywallFocus({ ...filters, q: "IT", category: "Other" }), "IT");
+assert.equal(paywallFocus({ ...filters, category: "information-technology" }), "Information technology");
+assert.equal(paywallFocus({ ...filters, category: "other" }), "");
+assert.equal(paywallFocus({ ...filters, q: "IT", category: "finance" }), "IT");
 assert.equal(paywallFocus({ ...filters, type: "full-time" }), "");
 
 assert.equal(postedSalaryLabel("$83,946 to $98,756", 83946, 98756), "$83,946 to $98,756");

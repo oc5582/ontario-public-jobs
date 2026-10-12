@@ -1,4 +1,5 @@
 import { hasFilters, type JobFilters } from "./filters";
+import { CATEGORY_LABELS } from "./site";
 
 /** Posted annual maximum that counts as the paywall salary stat. */
 export const PAYWALL_HIGH_SALARY = 100_000;
@@ -44,8 +45,8 @@ export function paywallFiltering(filters: JobFilters): boolean {
 export function paywallFocus(filters: JobFilters): string {
   const q = filters.q.trim().replace(/\s+/g, " ");
   if (q.length > 0 && q.length <= 40) return q;
-  const category = filters.category.trim().replace(/\s+/g, " ");
-  if (category.length > 0 && category.length <= 48) return category;
+  const category = CATEGORY_LABELS[filters.category.trim()] || "";
+  if (category && category !== "Other") return category;
   return "";
 }
 
