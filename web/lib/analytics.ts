@@ -1,6 +1,10 @@
 import { waitUntil } from "@vercel/functions";
 import { track } from "@vercel/analytics/server";
 import { query } from "./db";
+import { SITE_URL } from "./site";
+
+/** Matches the installed `@vercel/analytics` package. The server script reads this. */
+const ANALYTICS_SDK_VERSION = "2.0.1";
 
 type AnalyticsProperties = Record<string, string>;
 
@@ -17,9 +21,82 @@ async function requestHeaders(): Promise<Headers | undefined> {
   }
 }
 
+function hostName(value: string | null | undefined): string {
+  return (value || "").split(",")[0].trim().toLowerCase().replace(/:\d+$/, "");
+}
+
+function publicSiteHost(): string {
+  try {
+    return new URL(SITE_URL).host.toLowerCase();
+  } catch {
+    return "publicjobs.ca";
+  }
+}
+
+/**
+ * Where a server event should be posted.
+ * `track()` from `@vercel/analytics/server` posts to `https://$VERCEL_URL/_vercel/insights/event`.
+ * That hostname is the deployment URL, and Vercel Authentication answers it with 401.
+ * The public site accepts the same path. Preview deployments stay on `track()` so their
+ * events are not written onto production.
+ */
+export function insightsEventUrl(
+  hostHeader: string | null | undefined,
+  production = process.env.VERCEL_ENV === "production",
+): string | null {
+  const host = hostName(hostHeader);
+  const site = publicSiteHost();
+  const allowed = new Set([site, site.startsWith("www.") ? site.slice(4) : `www.${site}`]);
+  if (allowed.has(host)) return `https://${host}/_vercel/insights/event`;
+  if (production) return `https://${site}/_vercel/insights/event`;
+  return null;
+}
+
+async function postInsightsEvent(
+  url: string,
+  name: string,
+  properties: AnalyticsProperties | undefined,
+  headers: Headers,
+): Promise<void> {
+  const referer = headers.get("referer") || "";
+  const requestHeaders: Record<string, string> = {
+    "content-type": "application/json",
+    "x-va-server": "1",
+  };
+  const userAgent = headers.get("user-agent");
+  const forwardedFor = headers.get("x-forwarded-for");
+  const cookie = headers.get("cookie");
+  if (userAgent) requestHeaders["user-agent"] = userAgent;
+  if (forwardedFor) requestHeaders["x-vercel-ip"] = forwardedFor;
+  if (cookie) requestHeaders.cookie = cookie;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: requestHeaders,
+    body: JSON.stringify({
+      o: referer || new URL(url).origin,
+      ts: Date.now(),
+      sdkn: "@vercel/analytics/server",
+      sdkv: ANALYTICS_SDK_VERSION,
+      r: "",
+      en: name,
+      ed: properties,
+    }),
+  });
+  if (!response.ok) {
+    throw new Error(`insights ${response.status}`);
+  }
+}
+
 async function deliver(name: string, properties: AnalyticsProperties | undefined, request?: Request): Promise<void> {
   try {
     const headerSource = request?.headers ?? (await requestHeaders());
+    const url = headerSource
+      ? insightsEventUrl(headerSource.get("x-forwarded-host") || headerSource.get("host"))
+      : null;
+    if (url && headerSource) {
+      await postInsightsEvent(url, name, properties, headerSource);
+      return;
+    }
     await track(name, properties, headerSource ? { headers: headerSource } : undefined);
   } catch (error) {
     console.error(JSON.stringify({ event: "analytics_track_failed", name, message: failureMessage(error) }));
