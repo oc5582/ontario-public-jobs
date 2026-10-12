@@ -2005,6 +2005,42 @@ a.apply-btn.secondary:visited,
   letter-spacing: -0.02em;
 }
 
+.description .pricing-fine-print {
+  margin: 0.25rem 0 1.25rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.description .pricing-fine-print h2 {
+  margin: 0 0 0.25rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+
+.description .pricing-fine-print p,
+.description .pricing-fine-print li {
+  margin: 0 0 0.3rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.description .pricing-fine-print ul {
+  margin: 0 0 0.3rem;
+  padding-left: 1.1rem;
+}
+
+.description .pricing-fine-print a {
+  color: var(--civic);
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
 .legal-box p,
 .legal-box li {
   font-size: 0.95rem;

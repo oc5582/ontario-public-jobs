@@ -46,7 +46,6 @@ export default async function PricingPage({
             openings and up to 20 resume matches a day. Employers are never charged. PublicJobs.ca is a search tool,
             not a recruiter, and a membership does not get you a job or an interview.
           </p>
-          <p>PublicJobs.ca is independent and is not affiliated with any government or employer.</p>
           {subscribed && current && profile ? (
             <p>
               Your plan is {current.name} ({planPriceLine(current.id)}). {membershipPeriodLabel(profile)}
@@ -77,13 +76,6 @@ export default async function PricingPage({
               Choose your Canadian billing province so GST/HST can be added.
             </p>
           ) : null}
-          <Disclosure />
-          {checkout ? (
-            <p>
-              Check your name and the plan below. You can change them on this page before you continue. To decline,
-              leave this page without paying. <a href="/">No thanks</a>
-            </p>
-          ) : null}
           {checkout ? (
             <CheckoutForm
               action={startCheckout}
@@ -109,6 +101,12 @@ export default async function PricingPage({
               ))}
             </ul>
           )}
+          <p>
+            What you get: the full filterable list of current openings and up to 20 resume matches a day, starting right
+            away. Job pages, Apply links and the weekly email stay free. A membership does not get you a job or an
+            interview. PublicJobs.ca is not a recruiter and is not affiliated with any government or employer.
+          </p>
+          <Disclosure checkout={checkout} />
           <h2>Cancel and refunds</h2>
           <p>
             There is no free trial that turns into a charge, and there are no countdown timers. You create an account
@@ -127,18 +125,13 @@ export default async function PricingPage({
   );
 }
 
-function Disclosure() {
+function Disclosure({ checkout }: { checkout: boolean }) {
   return (
-    <div className="legal-box">
+    <div className="pricing-fine-print">
       <h2>Before you subscribe</h2>
       <p>
         Seller: {sellerLine()} · {LEGAL.mailingAddress} · <a href={LEGAL.phoneTel}>{LEGAL.phone}</a> ·{" "}
         <a href={`mailto:${LEGAL.supportEmail}`}>{LEGAL.supportEmail}</a> · GST/HST {LEGAL.hstNumber}
-      </p>
-      <p>
-        What you get: the full filterable list of current openings and up to 20 resume matches a day, starting right
-        away. Job pages, Apply links and the weekly email stay free. A membership does not get you a job or an
-        interview. PublicJobs.ca is not a recruiter and is not affiliated with any government or employer.
       </p>
       <p>Prices, in Canadian dollars. No other fees.</p>
       <ul>
@@ -162,6 +155,13 @@ function Disclosure() {
       <p>
         Terms version {LEGAL.termsVersion}. The full terms are on the <a href="/terms/">terms page</a>.
       </p>
+      <p>PublicJobs.ca is independent and is not affiliated with any government or employer.</p>
+      {checkout ? (
+        <p>
+          Check your name and the plan below. You can change them on this page before you continue. To decline, leave
+          this page without paying. <a href="/">No thanks</a>
+        </p>
+      ) : null}
     </div>
   );
 }
