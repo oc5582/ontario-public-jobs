@@ -4,17 +4,20 @@ import { JsonLd } from "@/components/JsonLd";
 import { UnlockCard } from "@/components/UnlockCard";
 import type { JobFilters } from "@/lib/filters";
 import { itemListJsonLd } from "@/lib/jsonld";
-import { employerBySlug, getFacets, searchJobs } from "@/lib/jobs";
+import { employerBySlug, getFacets, paywallPreview, searchJobs } from "@/lib/jobs";
+import { paywallFiltering, paywallFocus } from "@/lib/paywall";
 import { SITE_URL } from "@/lib/site";
 import { notFound } from "next/navigation";
 
 export async function EmployerView({ filters, member }: { filters: JobFilters; member: boolean }) {
   const employer = await employerBySlug(filters.employer);
   if (!employer) notFound();
-  const [result, facets] = await Promise.all([
-    searchJobs({ ...filters, employer: employer.slug }, member),
-    getFacets(),
-  ]);
+  const employerFilters = { ...filters, employer: employer.slug };
+  const [result, facets] = await Promise.all([searchJobs(employerFilters, member), getFacets()]);
+  const preview =
+    member || result.jobs.length >= result.total
+      ? null
+      : await paywallPreview(employerFilters, result.jobs.length);
   const noun = result.total === 1 ? "opening" : "openings";
   const intro = result.total
     ? `${result.total} current ${noun} at ${employer.name}. PublicJobs.ca lists them in one place. You apply on the employer's own website. We are independent and not affiliated with ${employer.name}.`
@@ -41,7 +44,17 @@ export async function EmployerView({ filters, member }: { filters: JobFilters; m
         ) : (
           <JobList jobs={result.jobs} />
         )}
-        {member ? null : <UnlockCard total={result.total} shown={result.jobs.length} />}
+        {member ? null : (
+          <UnlockCard
+            total={result.total}
+            shown={result.jobs.length}
+            place="employer"
+            employerName={employer.name}
+            filtering={paywallFiltering(employerFilters)}
+            focus={paywallFocus(employerFilters)}
+            preview={preview}
+          />
+        )}
       </article>
     </main>
   );

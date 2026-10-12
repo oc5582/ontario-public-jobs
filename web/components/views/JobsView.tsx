@@ -4,12 +4,14 @@ import { JsonLd } from "@/components/JsonLd";
 import { UnlockCard } from "@/components/UnlockCard";
 import type { JobFilters } from "@/lib/filters";
 import { itemListJsonLd } from "@/lib/jsonld";
-import { getFacets, searchJobs } from "@/lib/jobs";
+import { getFacets, paywallPreview, searchJobs } from "@/lib/jobs";
+import { paywallFiltering, paywallFocus } from "@/lib/paywall";
 import { SITE_URL } from "@/lib/site";
 
 export async function JobsView({ filters, member }: { filters: JobFilters; member: boolean }) {
   const [result, facets] = await Promise.all([searchJobs(filters, member), getFacets()]);
   const shown = result.jobs.length;
+  const preview = member || shown >= result.total ? null : await paywallPreview(filters, shown);
   const intro = member
     ? `${result.total} current openings from public employers in Toronto and the GTA. You are signed in, so this is the full list.`
     : `${result.total} current openings from public employers in Toronto and the GTA. Showing the newest ${shown}.`;
@@ -31,7 +33,16 @@ export async function JobsView({ filters, member }: { filters: JobFilters; membe
         ) : (
           <JobList jobs={result.jobs} />
         )}
-        {member ? null : <UnlockCard total={result.total} shown={shown} />}
+        {member ? null : (
+          <UnlockCard
+            total={result.total}
+            shown={shown}
+            place="jobs"
+            filtering={paywallFiltering(filters)}
+            focus={paywallFocus(filters)}
+            preview={preview}
+          />
+        )}
       </article>
     </main>
   );

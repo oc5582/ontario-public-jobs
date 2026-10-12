@@ -8,12 +8,17 @@ import { emptyFilters, queryFromFilters, type JobFilters } from "@/lib/filters";
 import { countNoun } from "@/lib/format";
 import { alertConsentLabel, alertConsentSender } from "@/lib/legal-copy";
 import { homeJsonLd, itemListJsonLd } from "@/lib/jsonld";
-import { searchJobs } from "@/lib/jobs";
+import { paywallPreview, searchJobs } from "@/lib/jobs";
+import { paywallFiltering, paywallFocus } from "@/lib/paywall";
 import { H1, SITE_URL, SUBHEAD } from "@/lib/site";
 
 export async function HomeView({ filters, member }: { filters: JobFilters; member: boolean }) {
   const filtering = Boolean(queryFromFilters(filters));
   const result = await searchJobs(filters, member);
+  const preview =
+    member || result.jobs.length >= result.total
+      ? null
+      : await paywallPreview(filters, result.jobs.length);
   const openTotal = filtering ? (await searchJobs(emptyFilters(), false)).total : result.total;
   const label = countNoun(result.total, filtering);
   const browseQuery = queryFromFilters(filters);
@@ -60,7 +65,16 @@ export async function HomeView({ filters, member }: { filters: JobFilters; membe
             </p>
           )}
           <JobList jobs={result.jobs} id="job-list" />
-          {member ? null : <UnlockCard total={result.total} shown={result.jobs.length} />}
+          {member ? null : (
+            <UnlockCard
+              total={result.total}
+              shown={result.jobs.length}
+              place="home"
+              filtering={paywallFiltering(filters)}
+              focus={paywallFocus(filters)}
+              preview={preview}
+            />
+          )}
         </section>
       </div>
     </main>

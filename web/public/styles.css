@@ -468,6 +468,25 @@ input[type="search"] {
   font-weight: 600;
 }
 
+.job-list.job-teasers {
+  margin-top: 0;
+  border-top: none;
+}
+
+.job-teaser {
+  cursor: default;
+  pointer-events: none;
+}
+
+.job-teaser-title {
+  filter: blur(3px);
+  user-select: none;
+}
+
+.job-teaser-salary {
+  display: block;
+}
+
 .listings-empty,
 .listings-note {
   margin: 1rem 0 0;
@@ -997,6 +1016,10 @@ button[type="submit"]:disabled {
     width: 100%;
     margin-top: 0.75rem;
     text-align: left;
+  }
+
+  .job-list.job-teasers {
+    margin-top: 0.75rem;
   }
 
   .meta-row {
