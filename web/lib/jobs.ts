@@ -3,6 +3,13 @@ import { query } from "./db";
 import { hasFilters, type JobFilters } from "./filters";
 import { neighbourRanks } from "./neighbour-jobs";
 import { selectSimilarJobs, type SimilarJobCandidate } from "./similar-jobs";
+import {
+  PAYWALL_HIGH_SALARY,
+  PAYWALL_TEASER_LIMIT,
+  PAYWALL_TEASER_SELECT,
+  parsePaywallTeasers,
+  type PaywallPreview,
+} from "./paywall";
 import { FREE_LIST_LIMIT } from "./site";
 import type { Facets, JobDetail, ListJob } from "./types";
 
@@ -138,6 +145,55 @@ export function searchJobs(
     ["search-jobs", JSON.stringify(filters), member ? "member" : "public"],
     () => searchJobsUncached(filters, member),
   );
+}
+
+async function paywallPreviewUncached(filters: JobFilters, offset: number): Promise<PaywallPreview> {
+  const params: unknown[] = [offset, PAYWALL_HIGH_SALARY];
+  const where = whereFor(filters, params);
+  const rows = await query<{ remaining: string; high_pay: string; teasers: unknown }>(
+    `select
+       count(*) filter (where rn > $1)::text as remaining,
+       count(*) filter (where rn > $1 and salary_annual_max >= $2)::text as high_pay,
+       coalesce(
+         jsonb_agg(
+           jsonb_build_object(
+             'salary', salary,
+             'salary_min', salary_annual_min,
+             'salary_max', salary_annual_max,
+             'type', employment_type,
+             'closing', closing
+           )
+           order by rn
+         ) filter (where rn > $1 and rn <= $1 + ${PAYWALL_TEASER_LIMIT}),
+         '[]'::jsonb
+       ) as teasers
+     from (
+       select ${PAYWALL_TEASER_SELECT},
+              row_number() over (order by ${JOB_ORDER}) as rn
+       from jobs j
+       join employers e on e.id = j.employer_id
+       where ${where}
+     ) ranked`,
+    params,
+  );
+  const row = rows[0];
+  return {
+    highPay: Number(row?.high_pay || 0),
+    teasers: parsePaywallTeasers(row?.teasers),
+  };
+}
+
+/** Remaining posted-salary count and locked-row fields. Null when the query fails. */
+export async function paywallPreview(filters: JobFilters, offset: number): Promise<PaywallPreview | null> {
+  try {
+    return await publicCache(["paywall-preview", JSON.stringify(filters), String(offset)], () =>
+      paywallPreviewUncached(filters, offset),
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "failed";
+    console.error(JSON.stringify({ event: "paywall_preview_failed", message: message.slice(0, 160) }));
+    return null;
+  }
 }
 
 async function countJobs(filters: JobFilters): Promise<number> {
