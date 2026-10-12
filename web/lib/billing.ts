@@ -139,17 +139,53 @@ export function checkoutSessionCreateParams(
   return params;
 }
 
-/** Active Stripe Tax settings plus an active Canadian registration. */
+/**
+ * Stripe Tax is used when settings are active and a Canadian registration exists.
+ * The live account is left as it is. In test mode only, a missing head office or
+ * GST/HST registration is filled in so Checkout can calculate exclusive tax.
+ * Quebec stays GST only: this does not add a provincial registration.
+ */
 export async function stripeTaxReady(stripe: Stripe): Promise<boolean> {
   try {
-    const settings = await stripe.tax.settings.retrieve();
+    let settings: Stripe.Tax.Settings = await stripe.tax.settings.retrieve();
+    if (settings.livemode === false) settings = await ensureTestCanadianTax(stripe, settings);
     if (settings.status !== "active") return false;
     const page = await stripe.tax.registrations.list({ status: "active", limit: 100 });
-    return page.data.some((item) => item.country === "CA" && item.status === "active");
+    const activeCa = page.data.some((item) => item.country === "CA" && item.status === "active");
+    if (activeCa) return true;
+    if (settings.livemode !== false) return false;
+    await stripe.tax.registrations.create({
+      country: "CA",
+      country_options: { ca: { type: "standard" } },
+      active_from: "now",
+    });
+    console.info(JSON.stringify({ event: "stripe_tax_test_registration" }));
+    return true;
   } catch {
     console.error(JSON.stringify({ event: "stripe_tax_settings_unavailable" }));
     return false;
   }
+}
+
+async function ensureTestCanadianTax(
+  stripe: Stripe,
+  settings: Stripe.Tax.Settings,
+): Promise<Stripe.Tax.Settings> {
+  if (settings.status === "active" && settings.defaults?.tax_behavior === "exclusive") return settings;
+  const updated = await stripe.tax.settings.update({
+    head_office: {
+      address: {
+        line1: LEGAL.streetAddress,
+        city: LEGAL.addressLocality,
+        state: "ON",
+        postal_code: LEGAL.postalCode,
+        country: "CA",
+      },
+    },
+    defaults: { tax_behavior: "exclusive", tax_code: "txcd_10103001" },
+  });
+  console.info(JSON.stringify({ event: "stripe_tax_test_settings", status: updated.status }));
+  return updated;
 }
 
 async function exclusiveTaxRateIds(stripe: Stripe): Promise<string[]> {
@@ -300,20 +336,7 @@ export async function createCheckoutSession(input: CheckoutInput, stripe = getSt
         message: (error instanceof Error ? error.message : "").slice(0, 400),
       }),
     );
-    tax = { mode: "stripe_tax" };
-    try {
-      await ensureExclusivePrice(stripe, priceId);
-      params = checkoutSessionCreateParams({ ...input, agreementId }, customerId, priceId, tax);
-      session = await openCheckoutSession(stripe, params);
-    } catch (retryError) {
-      console.error(
-        JSON.stringify({
-          event: "checkout_tax_failed",
-          message: (retryError instanceof Error ? retryError.message : "").slice(0, 400),
-        }),
-      );
-      throw new BillingNotConfiguredError();
-    }
+    throw new BillingNotConfiguredError();
   }
   if (agreementId && session.id) {
     await query(`update agreement_acceptances set stripe_session_id = $2 where id = $1`, [agreementId, session.id]);
