@@ -1,11 +1,12 @@
 import { PricingView } from "@/components/AnalyticsEvents";
+import { CheckoutForm } from "@/components/CheckoutForm";
 import { getViewer } from "@/lib/auth";
 import { CA_TAX_JURISDICTIONS } from "@/lib/ca-tax";
 import { LEGAL } from "@/lib/legal-config";
-import { checkoutCheckboxText, refundSentence, refundShortLine, sellerLine, taxLine } from "@/lib/legal-copy";
+import { refundSentence, refundShortLine, sellerLine, taxLine } from "@/lib/legal-copy";
 import { membershipPeriodLabel } from "@/lib/membership";
 import { pageMetadata } from "@/lib/seo";
-import { PLANS, planPriceLine, type PlanId } from "@/lib/site";
+import { PLANS, planPriceLine } from "@/lib/site";
 import { openPortal, startCheckout } from "../../billing/actions";
 
 export const metadata = pageMetadata({
@@ -45,7 +46,6 @@ export default async function PricingPage({
             openings and up to 20 resume matches a day. Employers are never charged. PublicJobs.ca is a search tool,
             not a recruiter, and a membership does not get you a job or an interview.
           </p>
-          <p>PublicJobs.ca is independent and is not affiliated with any government or employer.</p>
           {subscribed && current && profile ? (
             <p>
               Your plan is {current.name} ({planPriceLine(current.id)}). {membershipPeriodLabel(profile)}
@@ -66,40 +66,42 @@ export default async function PricingPage({
               Check the box to agree to the Terms before continuing.
             </p>
           ) : null}
-          {notice === "name" ? (
-            <p className="status err" role="alert">
-              Enter the name to put on the agreement.
-            </p>
-          ) : null}
           {notice === "province" ? (
             <p className="status err" role="alert">
               Choose your Canadian billing province so GST/HST can be added.
             </p>
           ) : null}
-          <Disclosure />
           {checkout ? (
-            <p>
-              Check your name and the plan below. You can change them on this page before you continue. To decline,
-              leave this page without paying. <a href="/">No thanks</a>
-            </p>
-          ) : null}
-          <ul className="plan-list">
-            {PLANS.map((plan) => (
-              <li key={plan.id}>
-                <span className="plan-name">{plan.name}</span>
-                <span className="plan-price">{planPriceLine(plan.id)}, plus applicable GST/HST</span>
-                <PlanAction
-                  planId={plan.id}
-                  signedIn={Boolean(viewer.email)}
-                  subscribed={subscribed}
-                  currentPlan={profile?.plan === plan.id}
-                  currentAndRenewing={
-                    subscribed && profile?.plan === plan.id && profile.membership_status === "active" && !profile.cancel_at
-                  }
-                />
-              </li>
-            ))}
-          </ul>
+            <CheckoutForm
+              action={startCheckout}
+              provinces={CA_TAX_JURISDICTIONS.map((item) => ({
+                code: item.code,
+                label: `${item.name} (${item.displayName} ${item.percentage}%${item.code === "QC" ? ", GST only" : ""})`,
+              }))}
+            />
+          ) : (
+            <ul className="plan-list">
+              {PLANS.map((plan) => (
+                <li key={plan.id}>
+                  <span className="plan-name">{plan.name}</span>
+                  <span className="plan-price">{planPriceLine(plan.id)}, plus applicable GST/HST</span>
+                  <PlanAction
+                    signedIn={Boolean(viewer.email)}
+                    currentPlan={profile?.plan === plan.id}
+                    currentAndRenewing={
+                      subscribed && profile?.plan === plan.id && profile.membership_status === "active" && !profile.cancel_at
+                    }
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+          <p>
+            What you get: the full filterable list of current openings and up to 20 resume matches a day, starting right
+            away. Job pages, Apply links and the weekly email stay free. A membership does not get you a job or an
+            interview. PublicJobs.ca is not a recruiter and is not affiliated with any government or employer.
+          </p>
+          <Disclosure checkout={checkout} />
           <h2>Cancel and refunds</h2>
           <p>
             There is no free trial that turns into a charge, and there are no countdown timers. You create an account
@@ -118,18 +120,13 @@ export default async function PricingPage({
   );
 }
 
-function Disclosure() {
+function Disclosure({ checkout }: { checkout: boolean }) {
   return (
-    <div className="legal-box">
+    <div className="pricing-fine-print">
       <h2>Before you subscribe</h2>
       <p>
         Seller: {sellerLine()} · {LEGAL.mailingAddress} · <a href={LEGAL.phoneTel}>{LEGAL.phone}</a> ·{" "}
         <a href={`mailto:${LEGAL.supportEmail}`}>{LEGAL.supportEmail}</a> · GST/HST {LEGAL.hstNumber}
-      </p>
-      <p>
-        What you get: the full filterable list of current openings and up to 20 resume matches a day, starting right
-        away. Job pages, Apply links and the weekly email stay free. A membership does not get you a job or an
-        interview. PublicJobs.ca is not a recruiter and is not affiliated with any government or employer.
       </p>
       <p>Prices, in Canadian dollars. No other fees.</p>
       <ul>
@@ -153,20 +150,24 @@ function Disclosure() {
       <p>
         Terms version {LEGAL.termsVersion}. The full terms are on the <a href="/terms/">terms page</a>.
       </p>
+      <p>PublicJobs.ca is independent and is not affiliated with any government or employer.</p>
+      {checkout ? (
+        <p>
+          Check the plan and your Canadian billing province above. You can change them on this page before you
+          continue. Your name is collected on the payment page. GST/HST for the province you choose is added before
+          you pay. To decline, leave this page without paying. <a href="/">No thanks</a>
+        </p>
+      ) : null}
     </div>
   );
 }
 
 function PlanAction({
-  planId,
   signedIn,
-  subscribed,
   currentPlan,
   currentAndRenewing,
 }: {
-  planId: PlanId;
   signedIn: boolean;
-  subscribed: boolean;
   currentPlan: boolean;
   currentAndRenewing: boolean;
 }) {
@@ -178,41 +179,10 @@ function PlanAction({
     );
   }
   if (currentAndRenewing) return <span className="plan-current">Current plan</span>;
-  if (subscribed) {
-    return (
-      <form action={openPortal}>
-        <button className="apply-btn secondary" type="submit">
-          {currentPlan ? "Manage billing" : "Change plan"}
-        </button>
-      </form>
-    );
-  }
   return (
-    <form action={startCheckout}>
-      <input type="hidden" name="plan" value={planId} />
-      <label className="checkout-name">
-        Your name
-        <input name="customer_name" type="text" required autoComplete="name" maxLength={120} />
-      </label>
-      <label className="checkout-name">
-        Billing province
-        <select name="province" required defaultValue="">
-          <option value="" disabled>
-            Select a province or territory
-          </option>
-          {CA_TAX_JURISDICTIONS.map((item) => (
-            <option key={item.code} value={item.code}>
-              {item.name} ({item.displayName} {item.percentage}%{item.code === "QC" ? ", GST only" : ""})
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="checkbox terms-ack">
-        <input type="checkbox" name="agree" value={planId} required />
-        <span>{checkoutCheckboxText(planId)}</span>
-      </label>
-      <button className="apply-btn" type="submit">
-        Continue to secure payment
+    <form action={openPortal}>
+      <button className="apply-btn secondary" type="submit">
+        {currentPlan ? "Manage billing" : "Change plan"}
       </button>
     </form>
   );

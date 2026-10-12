@@ -26,7 +26,6 @@ export type CheckoutInput = {
   plan: PlanId;
   origin: string;
   province: ProvinceCode;
-  customerName?: string;
   agreementId?: string;
 };
 
@@ -186,21 +185,17 @@ export async function createCheckoutSession(input: CheckoutInput, stripe = getSt
     );
   }
   const customerId = await ensureCustomer(stripe, input, profile.stripe_customer_id);
-  const name = (input.customerName || "").trim();
+  // Name is collected on Checkout and written from customer_details after payment.
   await stripe.customers.update(customerId, {
-    ...(name ? { name } : {}),
     address: { country: "CA", state: input.province },
   });
-  if (name) {
-    await query(`update profiles set customer_name = $2, updated_at = now() where id = $1`, [input.profileId, name]);
-  }
   const disclosure = `${disclosureText(input.plan)}\nBilling province: ${province.name} (${province.code}). ${province.displayName} ${province.percentage}% added on top. GST/HST ${LEGAL.hstNumber}.`;
   const inserted = await query<{ id: string }>(
     `insert into agreement_acceptances
        (profile_id, email, customer_name, plan, price_label, terms_version, disclosure_text)
      values ($1, $2, $3, $4, $5, $6, $7)
      returning id`,
-    [input.profileId, input.email, name || null, input.plan, planPriceLine(input.plan), LEGAL.termsVersion, disclosure],
+    [input.profileId, input.email, null, input.plan, planPriceLine(input.plan), LEGAL.termsVersion, disclosure],
   );
   const agreementId = inserted[0]?.id;
   const params = checkoutSessionCreateParams({ ...input, agreementId }, customerId, priceId, taxRateId);

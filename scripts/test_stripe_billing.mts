@@ -153,7 +153,10 @@ assert.equal(params.billing_address_collection, "required");
 assert.equal(params.consent_collection?.terms_of_service, "required");
 assert.equal(params.metadata?.terms_version, "2026-10-11");
 assert.equal(params.metadata?.tax_province, "ON");
+assert.equal(params.metadata?.tax_rate_id, "txr_on");
 assert.equal(params.automatic_tax, undefined);
+assert.equal(params.customer_update?.name, "auto");
+assert.equal(params.customer_update?.address, "auto");
 assert.deepEqual(params.adaptive_pricing, { enabled: false });
 assert.equal(
   cardLast4FromCharge({
@@ -250,7 +253,10 @@ assert.equal(
   "1881",
 );
 assert.deepEqual(params.line_items?.[0]?.tax_rates, ["txr_on"]);
+assert.equal(params.automatic_tax, undefined);
 assert.match(params.custom_text?.submit?.message || "", /HST 13%/);
+assert.match(params.custom_text?.submit?.message || "", /Ontario/);
+assert.match(params.custom_text?.submit?.message || "", /Canada only/);
 assert.match(params.custom_text?.terms_of_service_acceptance?.message || "", /5-day refund/);
 assert.equal(priceIdForPlan("quarter"), "price_quarter");
 
@@ -580,6 +586,7 @@ const fake = {
     },
     update: async (id: string, body: { name?: string; address?: { country?: string; state?: string } }) => {
       assert.equal(id, "cus_created");
+      assert.equal(body.name, undefined);
       assert.equal(body.address?.country, "CA");
       assert.equal(body.address?.state, "ON");
       return { id, object: "customer" };
@@ -592,6 +599,7 @@ const fake = {
         assert.equal(body.subscription_data?.trial_period_days, undefined);
         assert.equal(body.optional_items, undefined);
         assert.equal(body.automatic_tax, undefined);
+        assert.equal(body.metadata?.tax_province, "ON");
         assert.deepEqual(body.line_items?.[0]?.tax_rates, ["txr_on"]);
         return { url: "https://checkout.stripe.com/c/pay/cs_test_session" };
       },
@@ -607,7 +615,6 @@ const session = await createCheckoutSession(
     plan: "year",
     origin: "http://localhost:3000",
     province: "ON",
-    customerName: "Pat Example",
   },
   fake,
 );

@@ -68,7 +68,7 @@ export async function sendAgreementCopy(input: {
 export async function fulfillCheckoutAgreement(session: Stripe.Checkout.Session, periodEnd: Date | null): Promise<void> {
   const agreementId = session.metadata?.agreement_id;
   const email = session.customer_details?.email || session.customer_email || "";
-  const name = session.customer_details?.name || "";
+  const name = session.customer_details?.name || session.customer_details?.individual_name || "";
   const plan = planOf(session.metadata?.plan);
   if (!email) return;
   let rowId = agreementId || "";
