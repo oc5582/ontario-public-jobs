@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { getViewer, requestOrigin } from "@/lib/auth";
-import { isProvinceCode } from "@/lib/ca-tax";
 import {
   AlreadySubscribedError,
   BillingNotConfiguredError,
@@ -21,10 +20,6 @@ export async function startCheckout(formData: FormData) {
   const plan = String(formData.get("plan") || "");
   if (!isPlan(plan)) redirect("/pricing/?notice=plan");
   if (formData.get("agree") !== plan) redirect("/pricing/?notice=terms");
-  const customerName = String(formData.get("customer_name") || "").trim();
-  if (customerName.length < 2 || customerName.length > 120) redirect("/pricing/?notice=name");
-  const province = String(formData.get("province") || "");
-  if (!isProvinceCode(province)) redirect("/pricing/?notice=province");
   let url = "";
   try {
     const origin = await requestOrigin();
@@ -33,8 +28,6 @@ export async function startCheckout(formData: FormData) {
       email: viewer.email,
       plan,
       origin,
-      province,
-      customerName,
     });
     url = session.url;
   } catch (error) {

@@ -1,4 +1,3 @@
-import type { TaxJurisdiction } from "./ca-tax";
 import { LEGAL } from "./legal-config";
 import { PLANS, SITE_URL, planPriceLine, type PlanId } from "./site";
 
@@ -75,8 +74,8 @@ export function stripeTermsMessage(plan: PlanId): string {
   return `I agree to the PublicJobs.ca Terms. My membership renews automatically at the price shown plus applicable GST/HST every ${renewalPeriodPhrase(plan)} until I cancel. I can cancel anytime from my Account page. ${LEGAL.refundWindowDays}-day refund.`;
 }
 
-export function stripeSubmitMessage(province: TaxJurisdiction): string {
-  return `You'll be charged today, plus applicable ${province.displayName} ${province.percentage}% for ${province.name}, and on each renewal until you cancel. Seller: ${LEGAL.businessName}, ${LEGAL.phone}. Memberships are sold in Canada only.`;
+export function stripeSubmitMessage(): string {
+  return `You'll be charged today, plus applicable GST/HST for your Canadian billing address, and on each renewal until you cancel. Seller: ${LEGAL.businessName}, ${LEGAL.phone}. Memberships are sold in Canada only.`;
 }
 
 export function membershipTermsText(): string {

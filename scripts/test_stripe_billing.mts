@@ -132,11 +132,10 @@ const params = checkoutSessionCreateParams(
     email: "stripe-test@example.com",
     plan: "month",
     origin: "https://publicjobs.ca",
-    province: "ON",
   },
   "cus_1",
   "price_month",
-  "txr_on",
+  { mode: "dynamic", taxRateIds: ["txr_on", "txr_ab"] },
 );
 assert.equal(params.mode, "subscription");
 assert.equal(params.customer, "cus_1");
@@ -152,8 +151,11 @@ assert.equal(params.cancel_url, "https://publicjobs.ca/pricing/");
 assert.equal(params.billing_address_collection, "required");
 assert.equal(params.consent_collection?.terms_of_service, "required");
 assert.equal(params.metadata?.terms_version, "2026-10-11");
-assert.equal(params.metadata?.tax_province, "ON");
+assert.equal(params.metadata?.tax_mode, "dynamic");
+assert.equal(params.metadata?.tax_province, undefined);
 assert.equal(params.automatic_tax, undefined);
+assert.equal(params.customer_update?.name, "auto");
+assert.equal(params.customer_update?.address, "auto");
 assert.deepEqual(params.adaptive_pricing, { enabled: false });
 assert.equal(
   cardLast4FromCharge({
@@ -249,9 +251,35 @@ assert.equal(
   } as never),
   "1881",
 );
-assert.deepEqual(params.line_items?.[0]?.tax_rates, ["txr_on"]);
-assert.match(params.custom_text?.submit?.message || "", /HST 13%/);
+assert.equal(params.line_items?.[0]?.tax_rates, undefined);
+assert.deepEqual(
+  (params.line_items?.[0] as { dynamic_tax_rates?: string[] } | undefined)?.dynamic_tax_rates,
+  ["txr_on", "txr_ab"],
+);
+assert.match(params.custom_text?.submit?.message || "", /GST\/HST/);
+assert.match(params.custom_text?.submit?.message || "", /Canada only/);
+assert.doesNotMatch(params.custom_text?.submit?.message || "", /Ontario/);
 assert.match(params.custom_text?.terms_of_service_acceptance?.message || "", /5-day refund/);
+const stripeTaxParams = checkoutSessionCreateParams(
+  {
+    profileId: PROFILE,
+    email: "stripe-test@example.com",
+    plan: "month",
+    origin: "https://publicjobs.ca",
+  },
+  "cus_1",
+  "price_month",
+  { mode: "stripe_tax" },
+);
+assert.deepEqual(stripeTaxParams.automatic_tax, { enabled: true });
+assert.equal(stripeTaxParams.line_items?.[0]?.tax_rates, undefined);
+assert.equal(
+  (stripeTaxParams.line_items?.[0] as { dynamic_tax_rates?: string[] } | undefined)?.dynamic_tax_rates,
+  undefined,
+);
+assert.equal(stripeTaxParams.metadata?.tax_mode, "stripe_tax");
+assert.equal(stripeTaxParams.billing_address_collection, "required");
+assert.deepEqual(stripeTaxParams.adaptive_pricing, { enabled: false });
 assert.equal(priceIdForPlan("quarter"), "price_quarter");
 
 const portal = portalSessionCreateParams({ stripeCustomerId: "cus_1", origin: "https://publicjobs.ca" });
@@ -568,8 +596,15 @@ const unmatched = await post(
 assert.equal(unmatched.status, 200);
 
 let creates = 0;
-process.env.STRIPE_TAX_RATE_ON = "txr_on";
+for (const code of ["AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"]) {
+  process.env[`STRIPE_TAX_RATE_${code}`] = `txr_${code.toLowerCase()}`;
+}
 const fake = {
+  tax: {
+    settings: {
+      retrieve: async () => ({ status: "pending", object: "tax.settings" }),
+    },
+  },
   customers: {
     retrieve: async () => ({ id: "cus_existing", object: "customer" }),
     create: async (body: { email?: string; metadata?: { profile_id?: string } }) => {
@@ -580,8 +615,9 @@ const fake = {
     },
     update: async (id: string, body: { name?: string; address?: { country?: string; state?: string } }) => {
       assert.equal(id, "cus_created");
+      assert.equal(body.name, undefined);
       assert.equal(body.address?.country, "CA");
-      assert.equal(body.address?.state, "ON");
+      assert.equal(body.address?.state, undefined);
       return { id, object: "customer" };
     },
   },
@@ -592,7 +628,12 @@ const fake = {
         assert.equal(body.subscription_data?.trial_period_days, undefined);
         assert.equal(body.optional_items, undefined);
         assert.equal(body.automatic_tax, undefined);
-        assert.deepEqual(body.line_items?.[0]?.tax_rates, ["txr_on"]);
+        assert.equal(body.metadata?.tax_mode, "dynamic");
+        assert.equal(body.line_items?.[0]?.tax_rates, undefined);
+        const rates = (body.line_items?.[0] as { dynamic_tax_rates?: string[] } | undefined)?.dynamic_tax_rates;
+        assert.equal(rates?.length, 13);
+        assert.ok(rates?.includes("txr_on"));
+        assert.ok(rates?.includes("txr_ab"));
         return { url: "https://checkout.stripe.com/c/pay/cs_test_session" };
       },
     },
@@ -606,8 +647,6 @@ const session = await createCheckoutSession(
     email: "stripe-test@example.com",
     plan: "year",
     origin: "http://localhost:3000",
-    province: "ON",
-    customerName: "Pat Example",
   },
   fake,
 );
@@ -637,7 +676,6 @@ await assert.rejects(
         email: "stripe-test@example.com",
         plan: "month",
         origin: "http://localhost:3000",
-        province: "ON",
       },
       fake,
     ),

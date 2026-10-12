@@ -1,7 +1,6 @@
 import { PricingView } from "@/components/AnalyticsEvents";
 import { CheckoutForm } from "@/components/CheckoutForm";
 import { getViewer } from "@/lib/auth";
-import { CA_TAX_JURISDICTIONS } from "@/lib/ca-tax";
 import { LEGAL } from "@/lib/legal-config";
 import { refundSentence, refundShortLine, sellerLine, taxLine } from "@/lib/legal-copy";
 import { membershipPeriodLabel } from "@/lib/membership";
@@ -66,25 +65,7 @@ export default async function PricingPage({
               Check the box to agree to the Terms before continuing.
             </p>
           ) : null}
-          {notice === "name" ? (
-            <p className="status err" role="alert">
-              Enter the name to put on the agreement.
-            </p>
-          ) : null}
-          {notice === "province" ? (
-            <p className="status err" role="alert">
-              Choose your Canadian billing province so GST/HST can be added.
-            </p>
-          ) : null}
-          {checkout ? (
-            <CheckoutForm
-              action={startCheckout}
-              provinces={CA_TAX_JURISDICTIONS.map((item) => ({
-                code: item.code,
-                label: `${item.name} (${item.displayName} ${item.percentage}%${item.code === "QC" ? ", GST only" : ""})`,
-              }))}
-            />
-          ) : (
+          {checkout ? <CheckoutForm action={startCheckout} /> : (
             <ul className="plan-list">
               {PLANS.map((plan) => (
                 <li key={plan.id}>
@@ -158,7 +139,8 @@ function Disclosure({ checkout }: { checkout: boolean }) {
       <p>PublicJobs.ca is independent and is not affiliated with any government or employer.</p>
       {checkout ? (
         <p>
-          Check your name and the plan below. You can change them on this page before you continue. To decline, leave
+          Check the plan above. You can change it on this page before you continue. Your name and Canadian billing
+          address are collected on the payment page, and GST/HST is added there before you pay. To decline, leave
           this page without paying. <a href="/">No thanks</a>
         </p>
       ) : null}
