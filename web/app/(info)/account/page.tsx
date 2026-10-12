@@ -78,6 +78,9 @@ export default async function AccountPage({
             <a className="apply-btn" href="/pricing/">
               See membership plans
             </a>
+            <a className="apply-btn" href="/match/">
+              Resume Match
+            </a>
           </p>
           <p>{refundSentence()}</p>
           <form action={openPortal}>
