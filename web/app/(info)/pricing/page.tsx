@@ -1,11 +1,12 @@
 import { PricingView } from "@/components/AnalyticsEvents";
+import { CheckoutForm } from "@/components/CheckoutForm";
 import { getViewer } from "@/lib/auth";
 import { CA_TAX_JURISDICTIONS } from "@/lib/ca-tax";
 import { LEGAL } from "@/lib/legal-config";
-import { checkoutCheckboxText, refundSentence, refundShortLine, sellerLine, taxLine } from "@/lib/legal-copy";
+import { refundSentence, refundShortLine, sellerLine, taxLine } from "@/lib/legal-copy";
 import { membershipPeriodLabel } from "@/lib/membership";
 import { pageMetadata } from "@/lib/seo";
-import { PLANS, planPriceLine, type PlanId } from "@/lib/site";
+import { PLANS, planPriceLine } from "@/lib/site";
 import { openPortal, startCheckout } from "../../billing/actions";
 
 export const metadata = pageMetadata({
@@ -83,23 +84,31 @@ export default async function PricingPage({
               leave this page without paying. <a href="/">No thanks</a>
             </p>
           ) : null}
-          <ul className="plan-list">
-            {PLANS.map((plan) => (
-              <li key={plan.id}>
-                <span className="plan-name">{plan.name}</span>
-                <span className="plan-price">{planPriceLine(plan.id)}, plus applicable GST/HST</span>
-                <PlanAction
-                  planId={plan.id}
-                  signedIn={Boolean(viewer.email)}
-                  subscribed={subscribed}
-                  currentPlan={profile?.plan === plan.id}
-                  currentAndRenewing={
-                    subscribed && profile?.plan === plan.id && profile.membership_status === "active" && !profile.cancel_at
-                  }
-                />
-              </li>
-            ))}
-          </ul>
+          {checkout ? (
+            <CheckoutForm
+              action={startCheckout}
+              provinces={CA_TAX_JURISDICTIONS.map((item) => ({
+                code: item.code,
+                label: `${item.name} (${item.displayName} ${item.percentage}%${item.code === "QC" ? ", GST only" : ""})`,
+              }))}
+            />
+          ) : (
+            <ul className="plan-list">
+              {PLANS.map((plan) => (
+                <li key={plan.id}>
+                  <span className="plan-name">{plan.name}</span>
+                  <span className="plan-price">{planPriceLine(plan.id)}, plus applicable GST/HST</span>
+                  <PlanAction
+                    signedIn={Boolean(viewer.email)}
+                    currentPlan={profile?.plan === plan.id}
+                    currentAndRenewing={
+                      subscribed && profile?.plan === plan.id && profile.membership_status === "active" && !profile.cancel_at
+                    }
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
           <h2>Cancel and refunds</h2>
           <p>
             There is no free trial that turns into a charge, and there are no countdown timers. You create an account
@@ -158,15 +167,11 @@ function Disclosure() {
 }
 
 function PlanAction({
-  planId,
   signedIn,
-  subscribed,
   currentPlan,
   currentAndRenewing,
 }: {
-  planId: PlanId;
   signedIn: boolean;
-  subscribed: boolean;
   currentPlan: boolean;
   currentAndRenewing: boolean;
 }) {
@@ -178,41 +183,10 @@ function PlanAction({
     );
   }
   if (currentAndRenewing) return <span className="plan-current">Current plan</span>;
-  if (subscribed) {
-    return (
-      <form action={openPortal}>
-        <button className="apply-btn secondary" type="submit">
-          {currentPlan ? "Manage billing" : "Change plan"}
-        </button>
-      </form>
-    );
-  }
   return (
-    <form action={startCheckout}>
-      <input type="hidden" name="plan" value={planId} />
-      <label className="checkout-name">
-        Your name
-        <input name="customer_name" type="text" required autoComplete="name" maxLength={120} />
-      </label>
-      <label className="checkout-name">
-        Billing province
-        <select name="province" required defaultValue="">
-          <option value="" disabled>
-            Select a province or territory
-          </option>
-          {CA_TAX_JURISDICTIONS.map((item) => (
-            <option key={item.code} value={item.code}>
-              {item.name} ({item.displayName} {item.percentage}%{item.code === "QC" ? ", GST only" : ""})
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="checkbox terms-ack">
-        <input type="checkbox" name="agree" value={planId} required />
-        <span>{checkoutCheckboxText(planId)}</span>
-      </label>
-      <button className="apply-btn" type="submit">
-        Continue to secure payment
+    <form action={openPortal}>
+      <button className="apply-btn secondary" type="submit">
+        {currentPlan ? "Manage billing" : "Change plan"}
       </button>
     </form>
   );

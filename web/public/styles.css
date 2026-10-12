@@ -2016,6 +2016,123 @@ a.apply-btn.secondary:visited,
   font-weight: 600;
 }
 
+.checkout-form {
+  margin: 0.5rem 0 1.25rem;
+}
+
+.checkout-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1rem;
+}
+
+.checkout-form .checkout-name {
+  margin: 0.25rem 0 0.15rem;
+}
+
+.checkout-form .checkout-name input,
+.checkout-form .checkout-name select {
+  max-width: none;
+}
+
+.checkout-form fieldset {
+  margin: 0.35rem 0 1rem;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.checkout-form legend {
+  margin-bottom: 0.45rem;
+  padding: 0;
+  font-weight: 600;
+}
+
+.plan-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.plan-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.75rem 0.7rem;
+  border: 2px solid var(--rule);
+  background: var(--surface);
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.plan-card input {
+  margin: 0.2rem 0 0;
+  flex-shrink: 0;
+  accent-color: var(--civic);
+}
+
+.plan-card:has(input:checked) {
+  border-color: var(--civic);
+}
+
+.plan-card:has(input:focus-visible) {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.plan-card-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.plan-card-name,
+.plan-card-price {
+  font-weight: 600;
+}
+
+.plan-card-unit,
+.plan-card-note,
+.plan-card-tax {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.plan-card-price .plan-card-unit {
+  font-size: 0.875rem;
+}
+
+.checkout-form .terms-ack {
+  margin: 0.25rem 0 0;
+}
+
+.checkout-form .terms-ack span {
+  min-width: 0;
+}
+
+.checkout-form .terms-ack label {
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.checkout-form .terms-ack a {
+  color: var(--civic);
+  font-weight: 600;
+}
+
+.checkout-form .apply-btn {
+  margin-top: 0.9rem;
+}
+
+@media (max-width: 767px) {
+  .checkout-fields,
+  .plan-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
 .checkout-name input,
 .checkout-name select,
 .report-form input,
