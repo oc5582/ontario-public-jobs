@@ -2,8 +2,11 @@
  * Headers for every response. Checkout and the billing portal are full-page
  * redirects to Stripe, so this policy does not frame those pages. It does
  * allow the scripts the site actually loads: our own, the Cloudflare beacon,
- * the Meta Pixel (injected only after consent), pdf.js from jsdelivr, and
- * Stripe.js in case a Stripe page is embedded later.
+ * the Meta Pixel (injected only after consent), pdf.js from jsdelivr,
+ * Stripe.js in case a Stripe page is embedded later, and Vercel Web Analytics.
+ * The production script is /_vercel/insights/script.js on this origin, and
+ * page views and events POST to /_vercel/insights/view and /_vercel/insights/event.
+ * Both are covered by 'self'. Development loads the script from va.vercel-scripts.com.
  */
 export const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
@@ -11,7 +14,7 @@ export const CONTENT_SECURITY_POLICY = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self' https://ontario-public-jobs-signup.publicjobs.workers.dev",
-  "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://connect.facebook.net https://cdn.jsdelivr.net https://js.stripe.com",
+  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://static.cloudflareinsights.com https://connect.facebook.net https://cdn.jsdelivr.net https://js.stripe.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://www.facebook.com https://*.facebook.com https://*.stripe.com",
   "font-src 'self'",

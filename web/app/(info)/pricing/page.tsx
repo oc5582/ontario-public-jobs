@@ -1,3 +1,4 @@
+import { PricingView } from "@/components/AnalyticsEvents";
 import { getViewer } from "@/lib/auth";
 import { CA_TAX_JURISDICTIONS } from "@/lib/ca-tax";
 import { LEGAL } from "@/lib/legal-config";
@@ -32,6 +33,7 @@ export default async function PricingPage({
 
   return (
     <main>
+      <PricingView />
       <article className="job-page content">
         <p className="crumb">
           <a href="/">All openings</a>
