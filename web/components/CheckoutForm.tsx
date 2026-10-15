@@ -89,6 +89,7 @@ export function CheckoutForm({
                   </span>
                   {note ? <span className="plan-card-note">{note}</span> : null}
                   <span className="plan-card-tax">plus applicable GST/HST</span>
+                  <span className="plan-card-tax">{plan === item.id ? "Selected" : "Choose plan"}</span>
                 </span>
               </label>
             );
