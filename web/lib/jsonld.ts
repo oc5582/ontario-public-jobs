@@ -84,7 +84,9 @@ export function jobPostingJsonLd(job: JobDetail): unknown | null {
   if (org && typeof org === "object") {
     const organization = { ...(org as Record<string, unknown>) };
     if (job.website) organization.sameAs = job.website;
-    delete organization.logo;
+    // Only the employer's own official logo URL (employers.logo_url); never a guessed one.
+    if (job.logo_url) organization.logo = job.logo_url;
+    else delete organization.logo;
     data.hiringOrganization = organization;
   }
   return data;
