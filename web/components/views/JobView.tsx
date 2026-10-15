@@ -1,6 +1,7 @@
 import { ApplyRow } from "@/components/ApplyRow";
 import { JobList } from "@/components/JobList";
 import { JsonLd } from "@/components/JsonLd";
+import type { ReactNode } from "react";
 import { formatDescription } from "@/lib/description";
 import { displayLocation } from "@/lib/display-location";
 import { formatLongDate } from "@/lib/format";
@@ -43,10 +44,21 @@ export async function jobMetadata(employer: string, slug: string): Promise<Metad
   });
 }
 
-export async function JobView({ employer, slug }: { employer: string; slug: string }) {
+export async function JobView({
+  employer,
+  slug,
+  applyToggle = null,
+}: {
+  employer: string;
+  slug: string;
+  applyToggle?: ReactNode | Promise<ReactNode | null>;
+}) {
   const job = await getJob(employer, slug);
   if (!job) notFound();
-  const neighbours = job.closed ? [] : await neighbourJobs(job);
+  const [neighbours, toggle] = await Promise.all([
+    job.closed ? Promise.resolve([]) : neighbourJobs(job),
+    Promise.resolve(applyToggle ?? null),
+  ]);
   const elsewhere = job.closed ? [] : await elsewhereJobs(job, [job.path, ...neighbours.map((item) => item.path)]);
   const similar = job.closed ? await similarOpenJobs(job) : [];
   const rows = metaRows(job);
@@ -79,7 +91,7 @@ export async function JobView({ employer, slug }: { employer: string; slug: stri
             </div>
           ))}
         </dl>
-        <ApplyRow url={job.apply_url} />
+        <ApplyRow url={job.apply_url} extra={toggle} />
         <section className="description" aria-labelledby="desc-heading">
           <h2 id="desc-heading">Job description</h2>
           {descriptionHtml ? <div dangerouslySetInnerHTML={{ __html: descriptionHtml }} /> : <p>{UNAVAILABLE}</p>}

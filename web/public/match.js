@@ -79,6 +79,18 @@
       fileStatus.textContent = "We could not read this file. Please paste the text instead.";
     }
   });
+  var lastData = null;
+  var appliedKeys = null;
+  function jobKey(value) {
+    var path = String(value || "").trim();
+    try {
+      if (path.indexOf("http://") === 0 || path.indexOf("https://") === 0) path = new URL(path).pathname;
+    } catch (e) {
+      return "";
+    }
+    path = path.split("?")[0].split("#")[0].replace(/^\/+|\/+$/g, "");
+    return /^jobs\/[^/]+\/[^/]+$/.test(path) ? path : "";
+  }
   function render(listId, wrapId, items) {
     var list = document.getElementById(listId);
     list.innerHTML = "";
@@ -89,7 +101,16 @@
       a.textContent = j.title;
       var meta = document.createElement("p");
       meta.className = "meta";
-      meta.textContent = [j.employer, j.location, j.closing_date ? "Closes " + j.closing_date : ""].filter(Boolean).join(" · ");
+      var bits = [j.employer, j.location, j.closing_date ? "Closes " + j.closing_date : ""].filter(Boolean);
+      meta.appendChild(document.createTextNode(bits.join(" · ")));
+      var key = jobKey(j.url);
+      if (key && appliedKeys && appliedKeys[key]) {
+        if (bits.length) meta.appendChild(document.createTextNode(" "));
+        var tag = document.createElement("span");
+        tag.className = "pill";
+        tag.textContent = "Applied";
+        meta.appendChild(tag);
+      }
       var why = document.createElement("p");
       why.className = "why";
       why.textContent = j.reason;
@@ -100,6 +121,32 @@
     });
     document.getElementById(wrapId).hidden = items.length === 0;
   }
+  function shownHits(items, hide) {
+    if (!hide || !appliedKeys) return items;
+    return items.filter(function (j) { return !appliedKeys[jobKey(j.url)]; });
+  }
+  function renderResults() {
+    if (!lastData) return;
+    var hideEl = document.getElementById("hide-applied");
+    var hide = Boolean(hideEl && hideEl.checked);
+    var strong = shownHits(lastData.strong || [], hide);
+    var maybe = shownHits(lastData.maybe || [], hide);
+    render("strong-list", "strong-wrap", strong);
+    render("maybe-list", "maybe-wrap", maybe);
+    var empty = document.getElementById("applied-empty");
+    var had = (lastData.strong || []).length + (lastData.maybe || []).length;
+    if (empty) empty.hidden = !(hide && had > 0 && strong.length === 0 && maybe.length === 0);
+  }
+  async function loadApplied() {
+    if (!document.getElementById("hide-applied")) return;
+    var res = await fetch("/api/applications/", { headers: { Accept: "application/json" } });
+    if (!res.ok) return;
+    var data = await res.json().catch(function () { return {}; });
+    appliedKeys = {};
+    (data.paths || []).forEach(function (path) { appliedKeys[path] = true; });
+  }
+  var hideApplied = document.getElementById("hide-applied");
+  if (hideApplied) hideApplied.addEventListener("change", renderResults);
   function renderUnlock(locked) {
     var el = document.getElementById("unlock");
     el.replaceChildren();
@@ -153,8 +200,13 @@
       }
       setStatus("", false);
       document.getElementById("results-summary").textContent = data.summary || "";
-      render("strong-list", "strong-wrap", data.strong || []);
-      render("maybe-list", "maybe-wrap", data.maybe || []);
+      lastData = data;
+      try {
+        await loadApplied();
+      } catch (loadErr) {
+        appliedKeys = null;
+      }
+      renderResults();
       renderUnlock(data.locked || 0);
       document.getElementById("results").hidden = false;
       try {

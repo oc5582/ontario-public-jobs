@@ -8,8 +8,20 @@ import { getFacets, paywallPreview, searchJobs } from "@/lib/jobs";
 import { paywallFiltering, paywallFocus } from "@/lib/paywall";
 import { SITE_URL } from "@/lib/site";
 
-export async function JobsView({ filters, member }: { filters: JobFilters; member: boolean }) {
-  const [result, facets] = await Promise.all([searchJobs(filters, member), getFacets()]);
+export async function JobsView({
+  filters,
+  member,
+  applied,
+}: {
+  filters: JobFilters;
+  member: boolean;
+  applied?: Promise<ReadonlySet<string>>;
+}) {
+  const [result, facets, appliedSet] = await Promise.all([
+    searchJobs(filters, member),
+    getFacets(),
+    applied ?? Promise.resolve(undefined),
+  ]);
   const shown = result.jobs.length;
   const preview = member || shown >= result.total ? null : await paywallPreview(filters, shown);
   const intro = member
@@ -31,7 +43,7 @@ export async function JobsView({ filters, member }: { filters: JobFilters; membe
         {result.total === 0 ? (
           <p className="listings-empty">No openings match that search.</p>
         ) : (
-          <JobList jobs={result.jobs} />
+          <JobList jobs={result.jobs} applied={member ? appliedSet : undefined} />
         )}
         {member ? null : (
           <UnlockCard
