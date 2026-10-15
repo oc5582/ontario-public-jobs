@@ -103,3 +103,39 @@
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
+
+/* Jobs I applied to: the row is a div so Remove can sit beside the links. */
+.applied-list .job-title {
+  text-decoration: none;
+}
+
+.applied-list a.job-title:hover {
+  text-decoration: underline;
+}
+
+.applied-list .applied-link,
+.applied-list .applied-remove {
+  display: inline-block;
+  margin-top: 0.3rem;
+  color: var(--civic);
+  font-weight: 600;
+}
+
+.applied-list .applied-link + .applied-remove {
+  margin-left: 0.85rem;
+}
+
+.applied-list .applied-remove {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.applied-list .applied-remove:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

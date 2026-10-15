@@ -13,7 +13,7 @@ function currentKey(pathname: string): string {
   if (path === "/privacy") return "privacy";
   if (path === "/terms") return "terms";
   if (path === "/pricing") return "pricing";
-  if (path === "/account") return "account";
+  if (path === "/account" || path.startsWith("/account/")) return "account";
   if (path === "/login") return "login";
   return "";
 }

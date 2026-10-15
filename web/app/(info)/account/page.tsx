@@ -86,6 +86,11 @@ export default async function AccountPage({
             <a className="apply-btn" href="/match/">
               Resume Match
             </a>
+            {viewer.isMember ? (
+              <a className="apply-btn" href="/account/applied/">
+                Jobs I applied to
+              </a>
+            ) : null}
           </p>
           <p>{refundSentence()}</p>
           <form action={openPortal}>
@@ -111,7 +116,7 @@ export default async function AccountPage({
           <form action={deleteMyAccount} className="account-delete">
             <h2>Delete account</h2>
             <p>
-              This removes your profile and match history. Billing records the law requires, such as payment records,
+              This removes your profile, match history, and the jobs you marked as applied. Billing records the law requires, such as payment records,
               are kept. If a membership is still renewing, we cancel it first. If that cancellation cannot be completed,
               deletion waits until you cancel from Manage billing.
             </p>
