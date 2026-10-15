@@ -27,3 +27,21 @@ export function hideAppliedHits<T extends { url: string }>(
   if (!hide) return hits;
   return hits.filter((hit) => !isMarkedApplied(hit.url, applied));
 }
+
+/** Only http(s) links are rendered as the employer link on the applied list. */
+export function safeHttpUrl(value: string | null | undefined): string {
+  const raw = (value || "").trim();
+  if (!raw) return "";
+  try {
+    const url = new URL(raw);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+/** Where an applied entry links. Our page while the job row exists; nothing once it is gone. */
+export function appliedEntryHref(path: string, pageExists: boolean): string {
+  const key = applicationKey(path);
+  return pageExists && key ? `/${key}/` : "";
+}
