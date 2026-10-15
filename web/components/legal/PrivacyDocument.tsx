@@ -1,3 +1,4 @@
+import { sellerLine } from "@/lib/legal-copy";
 import { LEGAL } from "@/lib/legal-config";
 
 function Mail({ email }: { email: string }) {
@@ -10,32 +11,56 @@ function Mail({ email }: { email: string }) {
 export function PrivacyDocument() {
   return (
     <section className="description">
-      <p>Last updated: {LEGAL.effectiveDate}</p>
+      <p>Last updated: October 15, 2026</p>
       <p>
         PublicJobs.ca is an independent job board. It is not affiliated with any government or with any employer listed
         on the site. This page explains what personal information we collect, why, and how you can control it.
       </p>
       <h2>Who is responsible</h2>
       <p>
-        PublicJobs.ca is operated by {LEGAL.legalName} ({LEGAL.businessName}), {LEGAL.mailingAddress}. Our privacy
-        officer is {LEGAL.privacyOfficerName}, reachable at <Mail email={LEGAL.privacyOfficerEmail} /> or{" "}
-        <a href={LEGAL.phoneTel}>{LEGAL.phone}</a>.
-        We answer access and correction requests within 30 days.
+        PublicJobs.ca is operated by {sellerLine()}, {LEGAL.mailingAddress}. Our privacy officer is{" "}
+        {LEGAL.privacyOfficerName}, reachable at <Mail email={LEGAL.privacyOfficerEmail} /> or{" "}
+        <a href={LEGAL.phoneTel}>{LEGAL.phone}</a>. We answer access and correction requests within 30 days.
       </p>
       <h2>Browsing the site</h2>
       <p>
         You can read every job page and apply without an account. Lists show the newest 10 openings unless you have a
         membership. When you click &quot;Apply on employer site&quot;, you leave PublicJobs.ca and go to the
         employer&apos;s own website. That employer&apos;s privacy policy applies there. We do not receive your
-        application.
+        application, and we do not keep a list of jobs you applied to.
       </p>
       <h2>Accounts and membership</h2>
       <p>
-        To create an account, you sign in with a one-time link sent to your email address, or with Google. We store
-        your email address, the dates you signed in, and, if you buy a membership, your membership status, plan,
-        renewal date, your name as given at checkout, your billing province or postal code (to charge the right tax),
-        the date and version of the terms you agreed to, and the Stripe customer ID. Stripe, our payment processor,
-        collects and stores your card details; we never see your full card number.
+        To create an account, you sign in with a one-time link sent to your email address by Supabase Auth, or with
+        Google if you choose Continue with Google. There is no password. Supabase Auth stores your email address, the
+        date the account was created, and the time of your latest sign-in. It does not keep a list of every earlier
+        sign-in.
+      </p>
+      <p>
+        Our database stores a profile for that account: your email address, when the profile was created, your
+        membership status, your plan if you have one, the Stripe customer id and subscription id, when the current paid
+        period ends, and when a cancellation takes effect. After you pay, we also store the name collected at checkout.
+        We do not store a resume on the account.
+      </p>
+      <p>
+        Memberships are offered in Canada only. Prices are in Canadian dollars and are shown plus GST/HST. You can ask
+        for a full refund within {LEGAL.refundWindowDays} days of your first purchase and of each renewal, once per
+        account in any 12 months. The <a href="/terms/">terms page</a> has the full refund rules.
+      </p>
+      <h2>Payments</h2>
+      <p>
+        Stripe processes the payment. On our pricing page you choose a plan and your Canadian billing province. We send
+        that province to Stripe as a tax rate, and Stripe adds that GST or HST on top of the price. Quebec is charged
+        GST only, because we are not registered for Quebec sales tax. We do not use Stripe&apos;s automatic tax
+        product. Stripe&apos;s payment page then collects your name, billing address, and card details. The tax added
+        is the rate for the province you chose on our page.
+      </p>
+      <p>
+        We never see your full card number. After a successful payment we store your name, the plan, the membership
+        status, the Stripe customer id, the Stripe subscription id, the end of the paid period, the amount charged and
+        the tax amount, the last 4 digits of the card, the terms version and the time you agreed, and the billing
+        province you chose. The street address and postal code stay with Stripe. We also store each Stripe notice id so
+        the same notice is not applied twice.
       </p>
       <h2>Email alerts</h2>
       <p>If you sign up for email alerts, we collect:</p>
@@ -47,43 +72,40 @@ export function PrivacyDocument() {
       <p>
         We use this only to send you job alert emails from PublicJobs.ca and to understand interest in the service. We
         do not sell or rent your information, and we do not share it with employers. Matching is never conditional on
-        signing up for alerts.
+        signing up for alerts. The alert checkbox on the match page is optional. If you leave it unchecked, matching
+        does not add you to the weekly email.
       </p>
       <h2>Resume matching</h2>
-      <p>If you use resume matching, we use your resume only to find matching jobs.</p>
+      <p>If you use resume matching, we use your resume only to find matching jobs. You need to be signed in.</p>
+      <p>
+        A free account gets 1 match. That match shows the top 5 jobs. A membership gets up to 20 matches a day. A match
+        that fails is not counted.
+      </p>
       <p>
         You can upload a PDF or Word file, or paste the text. The file stays on your device. The page reads the text in
-        your browser and does not upload the file. For a PDF, it reads the first 10 pages. You need to be signed in. We
-        send that text to our matching service. We cut the text off at 15,000 characters. If you check the job alert
-        box, we also send your email address to the signup service. Matching itself does not sign you up.
+        your browser and does not upload the file. For a PDF, it reads the first 10 pages. We send that text to our
+        matching service. We cut the text off at 15,000 characters. If you check the job alert box, we also send your
+        email address to the signup service and we store the consent record described above. Matching itself does not
+        sign you up.
       </p>
       <p>
-        Your resume is read in your browser. Only the text (up to 15,000 characters) is sent to our servers and to
-        Cloudflare Workers AI, which may process it outside Canada, to find matching jobs. We do not keep the file or
-        the text. Remove anything you do not want to share, such as your home address or immigration details, before
-        matching.
+        Only the text (up to 15,000 characters) is sent to our servers and then to Cloudflare Workers AI, which may
+        process it outside Canada, to find matching jobs. We do not keep the file or the text. The text stays in memory
+        while the match runs, then we discard it. We do not save it to our database, and we do not write it to our
+        match logs. If matching fails, the log is a short error message, not your resume. Remove anything you do not
+        want to share, such as your home address or immigration details, before matching.
       </p>
       <p>
-        We use the text only to compare your experience with the current openings. We do not keep the file or the text.
-        The text stays in memory while the match runs, then we discard it. We do not save it to our database, and we do
-        not write it to our logs. If matching fails, the log is a short error message, not your resume.
+        We send the matches back to your browser. We do not store the matches or the list of jobs we showed you. To
+        count matches, we store a row on your account with the date of each match that finished, plus a scrambled form
+        of your email used only for that count.
       </p>
       <p>
-        Cloudflare processes the text to produce your matches. Under Cloudflare&apos;s published Workers AI terms, it
-        does not share it with other Cloudflare customers or use it to train AI models. We do not save the text to our
-        database or logs after the match. Cloudflare runs Workers and Workers AI on its global network, so this
-        processing may happen outside Canada. We send the matches back to your browser. We do not store the matches.
+        The matching service also keeps site-wide counters: how many matches ran that day, and an estimate of that
+        month&apos;s matching cost. Those are counts for the whole site, not a copy of your resume, and not a limit on
+        your household or your network.
       </p>
       <p>We do not sell resumes or share them with employers.</p>
-      <p>
-        To count matches, we store a row on your account with the date of each match that finished. A free account gets
-        1 match, and that match shows the top 5 jobs. A membership gets up to 20 matches a day. We do not store your
-        resume or the list of jobs we showed you. A match that fails is not counted.
-      </p>
-      <p>
-        The matching service also keeps scrambled email and IP counters for a site-wide daily cap and a monthly
-        spending cap. Those are counts for the whole site, not a limit on your household or your network.
-      </p>
       <h2>Service providers</h2>
       <p>
         We use these providers to run the site. Each processes personal information for us under its own terms and only
@@ -91,32 +113,37 @@ export function PrivacyDocument() {
       </p>
       <ul>
         <li>
-          <strong>Vercel</strong> (website hosting; servers in the United States) – handles every page request,
-          including resume text you send for matching, and keeps server logs such as IP address and browser.
+          <strong>Vercel</strong> (website hosting; the live site&apos;s functions run in Montreal) – handles every page
+          request, including resume text you send for matching, and keeps server logs such as IP address and browser.
+          Vercel Web Analytics is described under Site analytics.
         </li>
         <li>
           <strong>Supabase</strong> (database and sign-in; data stored in Canada, Montreal region) – accounts,
-          memberships and match counts.
+          memberships, agreement and alert-consent records, and match counts.
         </li>
         <li>
-          <strong>Stripe</strong> (payments; may process data in the United States and elsewhere) – card, billing name
-          and address, tax calculation.
+          <strong>Stripe</strong> (payments; may process data in the United States and elsewhere) – your name, billing
+          address, and card, and the tax rate we attach for the province you chose on our pricing page.
         </li>
         <li>
-          <strong>Cloudflare</strong> (security, cookieless analytics, email signup and resume matching through Workers
-          AI; may process data outside Canada).
+          <strong>Cloudflare</strong> (DNS, cookieless Web Analytics, the email-signup Worker, and resume matching
+          through Workers AI; may process data outside Canada).
         </li>
         <li>
-          <strong>Resend</strong> (sending email; United States) – your email address, consent record and unsubscribe
-          status.
+          <strong>Resend</strong> (sending email; United States) – weekly job alerts, the membership agreement email,
+          and renewal reminders. For alerts it holds your email address, consent record, and unsubscribe status.
         </li>
         <li>
           <strong>Google</strong> (sign-in, if you choose Continue with Google) – the account you use to sign in, under
           Google&apos;s own terms.
         </li>
         <li>
-          <strong>Meta</strong> (advertising measurement, only if you have not turned off ad tracking) – see Ads and the
-          Meta Pixel.
+          <strong>Meta</strong> (advertising measurement, only after you choose Allow) – see Ads and the Meta Pixel.
+          Pixel id 4654096711502773.
+        </li>
+        <li>
+          <strong>jsDelivr</strong> (script delivery) – your browser loads the PDF and Word readers from jsDelivr. The
+          resume file is not sent to jsDelivr.
         </li>
       </ul>
       <p>
@@ -139,7 +166,12 @@ export function PrivacyDocument() {
         records things like the page you visited, the referring site, your browser, and your country. It stays on
         because it does not use cookies.
       </p>
-      <p>We use Vercel Web Analytics, which is cookieless and collects anonymous, aggregated usage data.</p>
+      <p>
+        We use Vercel Web Analytics. It does not set a cookie. It records page views and these events: signup (first
+        sign-in, and whether it was email or Google), paywall_view (which page showed the membership card),
+        pricing_view, checkout_start (which plan), purchase (which plan), and match_run (free account or membership).
+        Those events do not include your name, email address, resume, or card.
+      </p>
       <p>Our fonts are hosted on PublicJobs.ca itself, so loading them does not send your information to a font service.</p>
       <h2>How long we keep it</h2>
       <table>
@@ -152,30 +184,27 @@ export function PrivacyDocument() {
         <tbody>
           <tr>
             <td>Alert email and consent record</td>
-            <td>
-              Until you unsubscribe, then the consent and unsubscribe record for 3 years to show we followed anti-spam
-              law; the email itself is deleted or suppressed.
-            </td>
+            <td>While you are subscribed. Unsubscribing stops the emails. The site does not delete that record on a timer.</td>
           </tr>
           <tr>
             <td>Account</td>
-            <td>Until you delete it, or 24 months after your last sign-in with no active membership.</td>
+            <td>Until you delete it.</td>
           </tr>
           <tr>
-            <td>Membership and payment records (no card numbers)</td>
-            <td>7 years after the transaction, for tax records.</td>
+            <td>Membership and payment records (no full card numbers)</td>
+            <td>6 years after the transaction, for Canadian tax records.</td>
           </tr>
           <tr>
-            <td>Agreement records (terms version, time agreed)</td>
-            <td>7 years after the membership ends.</td>
+            <td>Agreement records (terms version, time agreed, province, last 4 digits)</td>
+            <td>6 years after the transaction, with the payment records.</td>
           </tr>
           <tr>
             <td>Resume match counts</td>
-            <td>13 months.</td>
+            <td>Until you delete the account.</td>
           </tr>
           <tr>
-            <td>Anti-abuse counters (scrambled email and IP)</td>
-            <td>13 months.</td>
+            <td>Site-wide match counters</td>
+            <td>Kept as running counts. The software does not delete them on a schedule.</td>
           </tr>
           <tr>
             <td>Resume text</td>
@@ -189,10 +218,13 @@ export function PrivacyDocument() {
       </table>
       <h2>Your choices</h2>
       <p>
-        You can delete your account on the Account page. We cancel a Stripe subscription first, or we stop and ask you
-        to cancel it if we cannot. We then delete the profile and match counts. We keep billing and agreement records
-        the law requires, including tax records, and we say so on that page. You can unsubscribe from alerts using the
-        link in any email. You can turn off ad tracking at any time with the Ad tracking link in the site footer.
+        You can delete your account on the Account page. If a membership is still renewing, we cancel the Stripe
+        subscription first. If we cannot, we stop and ask you to cancel it from Manage billing. We then delete the
+        profile, the sign-in account, and the match counts. We keep the billing and agreement records described above,
+        including the email and name on those records. Stripe also keeps its own customer and payment record. Alert
+        signup records are not removed by deleting the account. You can unsubscribe from alerts using the link in any
+        email. You can turn off ad tracking at any time with the &quot;Turn off ad tracking&quot; button in the site
+        footer.
       </p>
       <h2>Unsubscribing</h2>
       <p>
