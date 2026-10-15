@@ -16,7 +16,7 @@ if (!/@(127\.0\.0\.1|localhost)[:/]/.test(url)) {
 }
 
 const { query } = await import("../web/lib/db.ts");
-const { listAppliedJobs, setApplication, countApplications } = await import("../web/lib/applications.ts");
+const { listAppliedJobs, setApplication, lapsedApplications } = await import("../web/lib/applications.ts");
 
 const USER = "00000000-0000-4000-8000-0000000000a1";
 await query(`delete from applications where user_id = $1`, [USER]);
@@ -68,7 +68,7 @@ assert.equal(list[0].pageExists, false);
 
 // Marks survive a lapsed membership (hidden by the page, not deleted).
 await query(`update profiles set membership_status = 'canceled' where id = $1`, [USER]);
-assert.equal(await countApplications(USER), 1);
+assert.equal((await lapsedApplications(USER)).count, 1);
 
 // Unmarking removes the entry, even when the job row is gone.
 assert.equal(await setApplication(USER, key, false), true);

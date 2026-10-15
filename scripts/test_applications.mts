@@ -74,3 +74,15 @@ assert.match(snapshotSql, /alter table public\.applications owner to publicjobs_
 assert.equal(/on delete cascade/.test(snapshotSql), false);
 
 console.log("applied history checks passed");
+
+// 30-day retention wiring.
+const cleanupRoute = readFileSync(new URL("../web/app/api/cron/applied-cleanup/route.ts", import.meta.url), "utf8");
+const retentionLib = readFileSync(new URL("../web/lib/applied-retention.ts", import.meta.url), "utf8");
+const vercelJson = JSON.parse(readFileSync(new URL("../web/vercel.json", import.meta.url), "utf8")) as {
+  crons: { path: string }[];
+};
+assert.match(cleanupRoute, /Bearer \$\{secret\}/, "cleanup cron requires CRON_SECRET");
+assert.ok(vercelJson.crons.some((cron) => cron.path === "/api/cron/applied-cleanup/"));
+assert.match(retentionLib, /p\.membership_status <> 'active'/, "active members are never purged");
+assert.match(retentionLib, /APPLIED_RETENTION_DAYS = 30/);
+console.log("applied retention checks passed");

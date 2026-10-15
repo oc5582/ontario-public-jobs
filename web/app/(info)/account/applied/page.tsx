@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { AppliedRemove } from "@/components/AppliedRemove";
 import { appliedEntryHref } from "@/lib/application-key";
-import { countApplications, listAppliedJobs } from "@/lib/applications";
+import { APPLIED_RETENTION_DAYS } from "@/lib/applied-retention";
+import { lapsedApplications, listAppliedJobs } from "@/lib/applications";
 import { getViewer } from "@/lib/auth";
 import { displayLocation } from "@/lib/display-location";
 import { closingLabel } from "@/lib/format";
@@ -21,8 +22,9 @@ export default async function AppliedJobsPage() {
   const profile = viewer.profile;
 
   if (!viewer.isMember) {
-    const kept = await countApplications(profile.id);
+    const { count: kept, deleteOn } = await lapsedApplications(profile.id);
     const noun = kept === 1 ? "job" : "jobs";
+    const until = formatTorontoTimestamp(deleteOn);
     return (
       <main>
         <article className="job-page content">
@@ -34,7 +36,7 @@ export default async function AppliedJobsPage() {
             <h2>Your applied list is part of a membership</h2>
             <p>
               {kept > 0
-                ? `You marked ${kept.toLocaleString("en-CA")} ${noun} as applied. The list is kept and shows here again when your membership is active.`
+                ? `You marked ${kept.toLocaleString("en-CA")} ${noun} as applied. The list is kept for ${APPLIED_RETENTION_DAYS} days after a membership ends${until ? `, until ${until}` : ""}, then deleted. Become a member again before then and it shows here again.`
                 : "Members can mark any job as applied and see every one here, even after the posting closes."}{" "}
               Apply stays free on every job page.
             </p>

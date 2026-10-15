@@ -1,4 +1,5 @@
 import { applicationKey, safeHttpUrl } from "./application-key";
+import { APPLIED_RETENTION_DAYS, HIDDEN_SINCE_SQL } from "./applied-retention";
 import { query } from "./db";
 
 export async function listApplicationKeys(userId: string): Promise<Set<string>> {
@@ -124,8 +125,18 @@ export async function listAppliedJobs(userId: string): Promise<AppliedEntry[]> {
   }));
 }
 
-/** Marks kept for a member whose membership has lapsed. Only the count is read. */
-export async function countApplications(userId: string): Promise<number> {
-  const rows = await query<{ n: number }>(`select count(*)::int as n from applications where user_id = $1`, [userId]);
-  return rows[0]?.n || 0;
+/**
+ * For a signed-in non-member: how many marks are still kept, and the day they are deleted
+ * (30 days after the list became hidden). Matches purgeLapsedApplications.
+ */
+export async function lapsedApplications(userId: string): Promise<{ count: number; deleteOn: string }> {
+  const rows = await query<{ n: number; delete_on: string | null }>(
+    `select (select count(*)::int from applications a where a.user_id = p.id) as n,
+            (coalesce(p.applications_hidden_since, ${HIDDEN_SINCE_SQL})
+              + make_interval(days => $2))::text as delete_on
+     from profiles p
+     where p.id = $1`,
+    [userId, APPLIED_RETENTION_DAYS],
+  );
+  return { count: rows[0]?.n || 0, deleteOn: rows[0]?.delete_on || "" };
 }

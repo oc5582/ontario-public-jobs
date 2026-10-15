@@ -49,8 +49,9 @@ export function PrivacyDocument() {
         on your &quot;Jobs I applied to&quot; list after the posting leaves the board. We do not store what you sent
         the employer. Only you can see that list. Choosing &quot;Applied ✓ (undo)&quot; on the job page, or
         &quot;Remove&quot; on the list, deletes that row and its copy. We keep the mark until you undo it or delete
-        your account. Deleting the account deletes these rows, because they are tied to the sign-in account. If your
-        membership ends, the list is hidden but kept, and it shows again if you become a member again.
+        your account, or until 30 days after your membership ends. Deleting the account deletes these rows, because
+        they are tied to the sign-in account. When your membership ends, the list is hidden. If you become a member
+        again within 30 days, it shows again. After 30 days without a membership, we delete it.
       </p>
       <p>
         Memberships are offered in Canada only. Prices are in Canadian dollars and are shown plus GST/HST. You can ask
@@ -215,7 +216,7 @@ export function PrivacyDocument() {
           </tr>
           <tr>
             <td>Jobs you marked as applied, with the copy of each job&apos;s details</td>
-            <td>Until you undo the mark or delete the account. Kept, but hidden, while you have no membership.</td>
+            <td>Until you undo the mark or delete the account. Deleted 30 days after your membership ends; hidden until then.</td>
           </tr>
           <tr>
             <td>Site-wide match counters</td>
