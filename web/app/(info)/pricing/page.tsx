@@ -3,7 +3,7 @@ import { CheckoutForm } from "@/components/CheckoutForm";
 import { getViewer } from "@/lib/auth";
 import { CA_TAX_JURISDICTIONS } from "@/lib/ca-tax";
 import { LEGAL } from "@/lib/legal-config";
-import { refundSentence, refundShortLine, sellerLine, taxLine } from "@/lib/legal-copy";
+import { refundSentence, sellerLine, taxLine } from "@/lib/legal-copy";
 import { membershipPeriodLabel } from "@/lib/membership";
 import { pageMetadata } from "@/lib/seo";
 import { PLANS, planPriceLine } from "@/lib/site";
@@ -41,11 +41,6 @@ export default async function PricingPage({
         </p>
         <h1>Membership</h1>
         <section className="description">
-          <p>
-            Every job page is free, and Apply goes to the employer. A membership opens the full filtered list of
-            openings and up to 20 resume matches a day. Employers are never charged. PublicJobs.ca is a search tool,
-            not a recruiter, and a membership does not get you a job or an interview.
-          </p>
           {subscribed && current && profile ? (
             <p>
               Your plan is {current.name} ({planPriceLine(current.id)}). {membershipPeriodLabel(profile)}
@@ -98,22 +93,11 @@ export default async function PricingPage({
           )}
           <p>
             What you get: the full filterable list of current openings and up to 20 resume matches a day, starting right
-            away. Job pages, Apply links and the weekly email stay free. A membership does not get you a job or an
-            interview. PublicJobs.ca is not a recruiter and is not affiliated with any government or employer.
+            away. Job pages, Apply links and the weekly email stay free, and Apply goes to the employer. Employers are
+            never charged. A membership does not get you a job or an interview. PublicJobs.ca is a search tool, not a
+            recruiter.
           </p>
           <Disclosure checkout={checkout} />
-          <h2>Cancel and refunds</h2>
-          <p>
-            There is no free trial that turns into a charge, and there are no countdown timers. You create an account
-            before you pay. You can cancel yourself from the account page. After you cancel, access continues until the
-            end of the period you already paid for. {refundSentence()}
-          </p>
-          <p>{taxLine()}</p>
-          <p>
-            The weekly email stays free. An active membership includes 20 resume matches a day. A free account includes
-            one match. Matching is never required to get the weekly email, and the weekly email is never required to
-            match.
-          </p>
         </section>
       </article>
     </main>
@@ -129,23 +113,21 @@ function Disclosure({ checkout }: { checkout: boolean }) {
         <a href={`mailto:${LEGAL.supportEmail}`}>{LEGAL.supportEmail}</a> · GST/HST {LEGAL.hstNumber}
       </p>
       <p>Prices, in Canadian dollars. No other fees.</p>
-      <ul>
-        {PLANS.map((plan) => (
-          <li key={plan.id}>
-            {plan.name}: {planPriceLine(plan.id)}
-          </li>
-        ))}
-      </ul>
       <p>{taxLine()}</p>
       <p>
         Each plan renews automatically at the same price, plus applicable GST/HST, until you cancel. We email a
         reminder at least {LEGAL.yearlyReminderDays} days before a yearly renewal and at least {LEGAL.quarterReminderDays}{" "}
-        days before a 3-month renewal.
+        days before a 3-month renewal. There is no free trial that turns into a charge, and there are no countdown
+        timers. You create an account before you pay.
       </p>
       <p>
-        Cancel anytime on your Account page, by email or by phone. Access lasts until the end of the paid period.
+        You can cancel yourself on your Account page, by email or by phone. After you cancel, access continues until
+        the end of the period you already paid for. {refundSentence()}
       </p>
-      <p>{refundShortLine()}</p>
+      <p>
+        A free account includes one resume match. Matching is never required to get the weekly email, and the weekly
+        email is never required to match.
+      </p>
       <p>Memberships are offered to people in {LEGAL.sellTo}.</p>
       <p>
         Terms version {LEGAL.termsVersion}. The full terms are on the <a href="/terms/">terms page</a>.
@@ -154,8 +136,8 @@ function Disclosure({ checkout }: { checkout: boolean }) {
       {checkout ? (
         <p>
           Check the plan and your Canadian billing province above. You can change them on this page before you
-          continue. Your name is collected on the payment page. GST/HST for the province you choose is added before
-          you pay. To decline, leave this page without paying. <a href="/">No thanks</a>
+          continue. Your name is collected on the payment page. To decline, leave this page without paying.{" "}
+          <a href="/">No thanks</a>
         </p>
       ) : null}
     </div>
