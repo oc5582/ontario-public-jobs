@@ -31,6 +31,7 @@ export async function HomeView({ filters, member }: { filters: JobFilters; membe
       <div className="content">
         <section className="hero" aria-labelledby="page-heading">
           <h1 id="page-heading">{H1}</h1>
+          <p className="hero-note">Independent job board. Not affiliated with any government or employer.</p>
           <p className="subhead">{SUBHEAD}</p>
           <div className="listings-toolbar">
             <div className="count-block" aria-live="polite">
