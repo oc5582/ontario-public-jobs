@@ -4,6 +4,7 @@ import { track } from "@vercel/analytics";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { installAnalyticsQueue } from "@/lib/analytics-queue";
+import { trackMeta } from "@/lib/meta-pixel";
 import { paywallPage } from "@/lib/paywall-page";
 
 function trackEvent(name: string, properties?: Record<string, string>): void {
@@ -29,6 +30,7 @@ export function PricingView() {
     if (sent.current) return;
     sent.current = true;
     trackEvent("pricing_view");
+    trackMeta("track", "ViewContent", { content_name: "pricing" });
   }, []);
   return null;
 }

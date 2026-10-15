@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import { checkoutCheckboxText } from "@/lib/legal-copy";
-import { PLANS, type PlanId } from "@/lib/site";
+import { trackMeta } from "@/lib/meta-pixel";
+import { PLANS, planPixel, type PlanId } from "@/lib/site";
 
 function consentParts(plan: PlanId): { before: string; after: string } {
   const text = checkoutCheckboxText(plan);
@@ -41,6 +42,14 @@ export function CheckoutForm({
       onSubmit={(event) => {
         const selectedPlan = new FormData(event.currentTarget).get("plan");
         if (agreeRef.current && typeof selectedPlan === "string") agreeRef.current.value = selectedPlan;
+        if (typeof selectedPlan !== "string") return;
+        const pixel = planPixel(selectedPlan);
+        if (!pixel) return;
+        trackMeta("track", "InitiateCheckout", {
+          value: pixel.value,
+          currency: "CAD",
+          content_name: pixel.contentName,
+        });
       }}
     >
       <div className="checkout-fields">

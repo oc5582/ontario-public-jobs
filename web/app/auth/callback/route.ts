@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { ensureProfileRow, isFirstSignIn, reportEvent, signupMethod } from "@/lib/analytics";
 import { safeNext } from "@/lib/auth";
+import { newRegistrationToken, REGISTRATION_COOKIE, registrationCookieOptions } from "@/lib/meta-registration";
 import { createClient } from "@/lib/supabase";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const next = safeNext(url.searchParams.get("next"), "/account/");
+  let registrationToken = "";
   if (code) {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
@@ -15,6 +17,7 @@ export async function GET(request: Request) {
     }
     const user = data.user;
     if (user?.id && user.email && isFirstSignIn(user)) {
+      registrationToken = newRegistrationToken();
       try {
         const ready = await ensureProfileRow(user.id, user.email);
         if (ready) reportEvent("signup", { method: signupMethod(user) }, request);
@@ -29,5 +32,9 @@ export async function GET(request: Request) {
       }
     }
   }
-  return NextResponse.redirect(new URL(next, url.origin));
+  const response = NextResponse.redirect(new URL(next, url.origin));
+  if (registrationToken) {
+    response.cookies.set(REGISTRATION_COOKIE, registrationToken, registrationCookieOptions());
+  }
+  return response;
 }

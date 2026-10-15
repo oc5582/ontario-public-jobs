@@ -126,12 +126,12 @@ export function PrivacyDocument() {
       <h2>Ads and the Meta Pixel</h2>
       <p>
         The Meta Pixel stays off until you choose Allow on the notice. After that, it tells Meta which pages you view
-        and whether you signed up for alerts or clicked through to an employer&apos;s site, so we can measure and
-        improve our Facebook and Instagram ads. Meta may use cookies and may link this to your Meta account under
-        Meta&apos;s own policies (<a href="https://facebook.com/privacy/policy">facebook.com/privacy/policy</a>). We do
-        not send Meta your email address or resume, and we do not load the Pixel on the resume matching, account,
-        billing, checkout or sign-in pages. To turn it off, use Turn off ad tracking in the footer. That choice is
-        saved in your browser.
+        and whether you signed up for alerts, created an account, finished a resume match, viewed membership prices,
+        started checkout, paid, or clicked through to an employer&apos;s site, so we can measure and improve our
+        Facebook and Instagram ads. Meta may use cookies and may link this to your Meta account under Meta&apos;s own
+        policies (<a href="https://facebook.com/privacy/policy">facebook.com/privacy/policy</a>). We do not send Meta
+        your name, email address, postal address, or resume. To turn it off, use Turn off ad tracking in the footer.
+        That choice is saved in your browser.
       </p>
       <h2>Site analytics and fonts</h2>
       <p>

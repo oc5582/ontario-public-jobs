@@ -14,12 +14,43 @@ export const SUBHEAD =
 export const FOOTER = "PublicJobs.ca is independent and not affiliated with any government.";
 
 export const PLANS = [
-  { id: "month", name: "Monthly", price: "CA$14.99", period: "per month", detail: "CA$14.99 a month" },
-  { id: "quarter", name: "3 months", price: "CA$29.99", period: "every 3 months", detail: "about CA$10 a month" },
-  { id: "year", name: "Year", price: "CA$59", period: "per year", detail: "about CA$4.92 a month" },
+  {
+    id: "month",
+    name: "Monthly",
+    price: "CA$14.99",
+    amount: 14.99,
+    contentName: "monthly",
+    period: "per month",
+    detail: "CA$14.99 a month",
+  },
+  {
+    id: "quarter",
+    name: "3 months",
+    price: "CA$29.99",
+    amount: 29.99,
+    contentName: "3months",
+    period: "every 3 months",
+    detail: "about CA$10 a month",
+  },
+  {
+    id: "year",
+    name: "Year",
+    price: "CA$59",
+    amount: 59,
+    contentName: "year",
+    period: "per year",
+    detail: "about CA$4.92 a month",
+  },
 ] as const;
 
 export type PlanId = (typeof PLANS)[number]["id"];
+
+/** Price before tax, shared by Stripe checkout and the Meta pixel. */
+export function planPixel(id: string): { value: number; contentName: string } | null {
+  const plan = PLANS.find((item) => item.id === id);
+  if (!plan) return null;
+  return { value: plan.amount, contentName: plan.contentName };
+}
 
 /** Price line shown on the site and stored with the agreement. */
 export function planPriceLine(id: PlanId): string {

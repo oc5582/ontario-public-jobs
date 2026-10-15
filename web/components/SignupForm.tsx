@@ -1,5 +1,6 @@
 "use client";
 
+import { trackMeta } from "@/lib/meta-pixel";
 import { SIGNUP_ENDPOINT } from "@/lib/site";
 import { weeklyAlertPayload } from "@/lib/weekly-alert";
 import { type FormEvent, useState } from "react";
@@ -55,8 +56,7 @@ export function SignupForm({ consent, sender }: { consent: string; sender: strin
       });
       const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!response.ok) throw new Error(body.error || "fail");
-      const fbq = (window as Window & { fbq?: (command: string, name: string) => void }).fbq;
-      if (body.ok === true && typeof fbq === "function") fbq("track", "Lead");
+      if (body.ok === true) trackMeta("track", "Lead");
       setStatus({ message: SUCCESS, ok: true });
       const label = form.querySelector("#casl-label");
       const consentText = label?.textContent || "";

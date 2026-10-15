@@ -147,7 +147,10 @@ assert.equal(params.payment_method_collection, "always");
 assert.equal(params.optional_items, undefined);
 assert.equal(params.subscription_data?.trial_period_days, undefined);
 assert.equal(params.line_items?.[0]?.price, "price_month");
-assert.equal(params.success_url, "https://publicjobs.ca/account/?checkout=success");
+assert.equal(
+  params.success_url,
+  "https://publicjobs.ca/account/?checkout=success&session_id={CHECKOUT_SESSION_ID}",
+);
 assert.equal(params.cancel_url, "https://publicjobs.ca/pricing/");
 assert.equal(params.billing_address_collection, "required");
 assert.equal(params.consent_collection?.terms_of_service, "required");
