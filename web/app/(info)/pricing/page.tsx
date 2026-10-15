@@ -91,6 +91,7 @@ export default async function PricingPage({
               ))}
             </ul>
           )}
+          {!viewer.email ? <p className="pricing-fine-print">Sign in to continue.</p> : null}
           <p>
             What you get: the full filterable list of current openings and up to 20 resume matches a day, starting right
             away. Job pages, Apply links and the weekly email stay free, and Apply goes to the employer. Employers are
@@ -156,15 +157,15 @@ function PlanAction({
   if (!signedIn) {
     return (
       <a className="apply-btn" href="/login/?next=/pricing/">
-        Sign in to continue
+        Choose plan
       </a>
     );
   }
-  if (currentAndRenewing) return <span className="plan-current">Current plan</span>;
+  if (currentAndRenewing) return <span className="plan-current">Selected</span>;
   return (
     <form action={openPortal}>
       <button className="apply-btn secondary" type="submit">
-        {currentPlan ? "Manage billing" : "Change plan"}
+        {currentPlan ? "Selected" : "Choose plan"}
       </button>
     </form>
   );
