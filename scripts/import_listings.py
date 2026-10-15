@@ -329,7 +329,7 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
                     job["_employer_slug"],
                     job["_job_slug"],
                     path,
-                    bp.text(job.get("title")) or "Untitled",
+                    bp.job_title(job),
                     job["_page_title"],
                     job["_meta_desc"],
                     bp.text(job.get("location")),

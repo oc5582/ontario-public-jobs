@@ -960,7 +960,7 @@ def salary_from_mapping(raw: dict) -> dict | None:
     return monetary_amount(text(raw.get("currency") or raw.get("currencyCode")), unit, numbers)
 
 
-def salary_from_text(raw: str) -> dict | None:
+def salary_from_text(raw: str, context: str = "") -> dict | None:
     cleaned = re.sub(r"\s+", " ", text(raw))
     if not cleaned:
         return None
@@ -979,44 +979,139 @@ def salary_from_text(raw: str) -> dict | None:
             numbers["minValue"] = minimum
             numbers["maxValue"] = maximum
         return monetary_amount(match.group("cur"), match.group("unit"), numbers)
-    return loose_salary_from_text(cleaned)
+    return loose_salary_from_text(cleaned, context)
 
 
-LOOSE_UNIT_RE = (
-    (re.compile(r"\b(?:per\s+hour|hourly|/\s*(?:hour|hr))\b", re.I), "HOUR"),
-    (re.compile(r"\b(?:per\s+(?:annum|year)|annually|annual|yearly|/\s*(?:year|yr))\b", re.I), "YEAR"),
-)
 LOOSE_AMOUNT_RE = re.compile(r"\$\s?(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)")
+# French amounts put the $ after the number and use a space for thousands: "94 193 $", "23.81$".
+FRENCH_AMOUNT_RE = re.compile(r"(?<![\d$.,])(\d{1,3}(?:[ \u00a0\u202f]\d{3})+|\d+)(?:[.,](\d{1,2}))?\s?\$")
+# Amounts that sit next to an employer-stated pay period.
+BIWEEKLY_RE = re.compile(r"\bbi-?\s?weekly\b|\bevery (?:two|2) weeks\b|\baux deux semaines\b", re.I)
+OTHER_PERIOD_RE = re.compile(
+    r"semi-?monthly|\bmonthly\b|\bdaily\b|per\s+(?:month|day)\b|/\s*(?:month|mo|day)\b|par\s+(?:mois|jour)\b",
+    re.I,
+)
+WEEKLY_RE = re.compile(r"per\s+week\b|/\s*(?:week|wk)\b|\bweekly\b|par\s+semaine\b", re.I)
+HOURLY_RE = re.compile(
+    r"per\s+(?:hour|hr)\b|\bhourly\b|/\s*(?:hour|hr|h)\b|\bp/hr\b|\ban hour\b|\bde l[’']heure\b|\bl[’']heure\b",
+    re.I,
+)
+YEARLY_RE = re.compile(
+    r"per\s+(?:annum|year)\b|\bannually\b|\bannual\b|\byearly\b|/\s*(?:year|yr)\b|\ba year\b|par\s+an(?:née)?\b",
+    re.I,
+)
+UNIT_BOUNDS = {"HOUR": (10, 500), "WEEK": (200, 20000), "YEAR": (10000, 1000000)}
 
 
-def loose_salary_from_text(cleaned: str) -> dict | None:
-    """Employer-stated CAD pay such as "$93,798.00 - $127,484.00" or "Starting at
-    $36.25 per hour". The unit must be stated, except that amounts of 20,000 or more
-    are read as yearly. Bi-weekly and other periods are left out."""
-    if re.search(r"bi-?weekly|semi-?monthly|per\s+(?:week|month|day)|monthly|weekly|daily", cleaned, re.I):
+def normalize_salary_text(raw: str) -> str:
+    """Tidy employer pay text without changing what it says: French number format,
+    stray spaces inside numbers, a missing $ on the second amount of a range, and
+    add-on premiums or training rates that are not the base pay."""
+    value = re.sub(r"\s+", " ", text(raw)).strip()
+
+    def french(match: re.Match) -> str:
+        whole = re.sub(r"[ \u00a0\u202f]", "", match.group(1))
+        return "$" + whole + (f".{match.group(2)}" if match.group(2) else "")
+
+    value = FRENCH_AMOUNT_RE.sub(french, value)
+    value = re.sub(r"\$\s+(?=\d)", "$", value)
+    value = re.sub(r"(\d),\s+(\d{3})\b", r"\1,\2", value)
+    value = re.sub(r"(\$\d[\d,]*(?:\.\d+)?)\s*(?:[-–—]|\bto\b|\bet\b)\s*(?=\d)", r"\1 - $", value)
+    # "$50.72 - Plus $1.75/hour Skilled Trade Premium ..." -> "$50.72"
+    value = re.sub(r"\s*[-–—,;(]*\s*\+?\s*\bplus\b\s*\$.*\bpremium\b.*$", "", value, flags=re.I)
+    # "$28.75/hr (Training Rate); $36.75/hr - $47.50/hr upon completing training"
+    parts = [part for part in value.split(";") if not re.search(r"training rate", part, re.I)]
+    if parts:
+        value = ";".join(parts).strip()
+    return value.strip(" -–—,;")
+
+
+def stated_pay_unit(value: str) -> str:
+    if BIWEEKLY_RE.search(value):
+        return "BIWEEKLY"
+    if OTHER_PERIOD_RE.search(value):
+        return "OTHER"
+    if WEEKLY_RE.search(value):
+        return "WEEK"
+    if HOURLY_RE.search(value):
+        return "HOUR"
+    if YEARLY_RE.search(value):
+        return "YEAR"
+    return ""
+
+
+def description_pay(description: str, first_amount: str) -> tuple[list[float], str]:
+    """When the pay field gives no period (or was cut short), read the same amount in the
+    description and the period written right next to it, e.g.
+    "Hiring salary range: $3,610.06 - $5,157.24 / Bi-weekly". Nothing is guessed: no
+    period beside the amount means no result."""
+    body = normalize_salary_text(description)
+    if not body or not first_amount:
+        return [], ""
+    start = body.find(first_amount)
+    if start < 0:
+        return [], ""
+    run = re.compile(
+        r"\$\d[\d,]*(?:\.\d+)?(?:\s*(?:-|–|—|to|et)\s*\$\d[\d,]*(?:\.\d+)?)?"
+    ).match(body, start)
+    if not run:
+        return [], ""
+    amounts = [float(a.replace(",", "")) for a in LOOSE_AMOUNT_RE.findall(run.group(0))]
+    after = body[run.end(): run.end() + 25]
+    before = body[max(0, start - 45): start]
+    # Labels such as "Salary/Hourly Range:" name two periods, so they settle nothing.
+    if re.search(r"(?:salary|annual)\s*/\s*hourly|hourly\s*(?:rate)?\s*/\s*(?:salary|annual)", before, re.I):
+        before = ""
+    unit = stated_pay_unit(after) or stated_pay_unit(before)
+    return amounts, unit
+
+
+def loose_salary_from_text(cleaned: str, context: str = "") -> dict | None:
+    """Employer-stated CAD pay such as "$93,798.00 - $127,484.00", "$48.15 - $52.66",
+    "Starting at $36.25 per hour", "$1,144.15 per week" or "82 586$ et 97 160$".
+
+    Period rules (Osama, 2026-10-14): a stated period wins (the pay text first, then the
+    words right next to the same amount in the description); bi-weekly pay is converted to
+    yearly (x26) only when the posting says bi-weekly; weekly only when it says weekly;
+    with no stated period, amounts under $200 are hourly and amounts of $20,000 or more are
+    yearly; anything else is left out. Monthly, daily and semi-monthly are left out."""
+    value = normalize_salary_text(cleaned)
+    if re.search(r"[-–—]\s*\$?\s*$", value) and value.count("$") < 2:  # cut-off "$123,900.46 - $"
         return None
-    if re.search(r"[-–—]\s*\$\s*$", cleaned):  # cut-off range such as "$123,900.46 - $"
-        return None
-    amounts = [float(a.replace(",", "")) for a in LOOSE_AMOUNT_RE.findall(cleaned)]
+    amounts = [float(a.replace(",", "")) for a in LOOSE_AMOUNT_RE.findall(value)]
     amounts = [a for a in amounts if a > 0]
     if not amounts or len(amounts) > 2:
         return None
-    unit = next((u for pattern, u in LOOSE_UNIT_RE if pattern.search(cleaned)), "")
-    if not unit and min(amounts) >= 20000:
-        unit = "YEAR"
+    unit = stated_pay_unit(value)
+    decidable = max(amounts) < 200 or min(amounts) >= 20000
+    if not unit and not decidable and context:
+        first = LOOSE_AMOUNT_RE.search(value)
+        found, nearby = description_pay(context, first.group(0) if first else "")
+        if nearby and found and found[0] == amounts[0] and len(found) <= 2:
+            amounts, unit = found, nearby
+    if unit == "OTHER":
+        return None
     if not unit:
+        if max(amounts) < 200:
+            unit = "HOUR"
+        elif min(amounts) >= 20000:
+            unit = "YEAR"
+        else:
+            return None
+    if unit == "BIWEEKLY":
+        amounts = [round(a * 26, 2) for a in amounts]
+        unit = "YEAR"
+    low_bound, high_bound = UNIT_BOUNDS[unit]
+    if min(amounts) < low_bound or max(amounts) > high_bound:
         return None
-    if unit == "HOUR" and max(amounts) > 500:
-        return None
-    if unit == "YEAR" and min(amounts) < 10000:
-        return None
-    num = lambda a: int(a) if a.is_integer() else a
+    num = lambda a: int(a) if float(a).is_integer() else a
     lo, hi = min(amounts), max(amounts)
     numbers = {"value": num(lo)} if lo == hi else {"minValue": num(lo), "maxValue": num(hi)}
     return monetary_amount("CAD", unit, numbers)
 
 
 def base_salary(job: dict) -> dict | None:
+    context = text(job.get("description"))
     for key in ("base_salary", "baseSalary", "salary_structured", "structured_salary"):
         raw = job.get(key)
         if isinstance(raw, dict):
@@ -1024,14 +1119,14 @@ def base_salary(job: dict) -> dict | None:
             if parsed:
                 return parsed
         elif isinstance(raw, str):
-            parsed = salary_from_text(raw)
+            parsed = salary_from_text(raw, context)
             if parsed:
                 return parsed
     raw_salary = job.get("salary")
     if isinstance(raw_salary, dict):
         return salary_from_mapping(raw_salary)
     if isinstance(raw_salary, str):
-        return salary_from_text(raw_salary)
+        return salary_from_text(raw_salary, context)
     return None
 
 
@@ -1218,8 +1313,30 @@ def job_locations(raw: str) -> list[dict]:
     return []
 
 
+REMOTE_ONTARIO_RE = re.compile(
+    r"\bOntario\s*\(\s*remote\s*\)|\bremote\b[^.\n]{0,40}\bOntario\b|\bOntario\b[^.\n]{0,40}\bremote\b"
+    r"|\b(?:resident of|reside in|residing in|live in|living in|located in|based in|anywhere in)\s+(?:the province of\s+)?Ontario\b",
+    re.I,
+)
+REMOTE_CANADA_RE = re.compile(
+    r"\bCanada\s*\(\s*remote\s*\)|\bremote\b[^.\n]{0,40}\bCanada\b|\bCanada\b[^.\n]{0,40}\bremote\b"
+    r"|\b(?:resident of|reside in|residing in|live in|living in|located in|based in|anywhere in)\s+Canada\b",
+    re.I,
+)
+
+
+def applicant_location_requirements(job: dict) -> dict | None:
+    """Where applicants for a fully remote job must live, as the posting states it."""
+    blob = " ".join(text(job.get(key)) for key in ("title", "location", "description"))
+    if REMOTE_ONTARIO_RE.search(blob) or re.fullmatch(r"\s*Ontario(?:,\s*Canada)?\s*", text(job.get("location")), re.I):
+        return {"@type": "State", "name": "Ontario"}
+    if REMOTE_CANADA_RE.search(blob) or re.fullmatch(r"\s*Canada\s*", text(job.get("location")), re.I):
+        return {"@type": "Country", "name": "CA"}
+    return None
+
+
 def job_posting_data(job: dict) -> dict | None:
-    title = text(job.get("title"))
+    title = display_title(text(job.get("title")))
     employer = text(job.get("employer"))
     description = job_description_html(job)
     if not title or not employer or not description:
@@ -1259,7 +1376,12 @@ def job_posting_data(job: dict) -> dict | None:
     elif places:
         data["jobLocation"] = places
     if fully_remote(job):
-        data["jobLocationType"] = "TELECOMMUTE"
+        # Google requires applicantLocationRequirements with TELECOMMUTE. Only the area the
+        # posting states is used; with none stated the job is not marked remote.
+        applicants = applicant_location_requirements(job)
+        if applicants:
+            data["jobLocationType"] = "TELECOMMUTE"
+            data["applicantLocationRequirements"] = applicants
     salary = base_salary(job)
     if salary:
         data["baseSalary"] = salary
@@ -1335,8 +1457,97 @@ SALARY_AMOUNT_RE = re.compile(
 )
 
 
+# Trailing location the ATS appends to the title: "(Toronto, ON, CA)", "(Ottawa or Toronto,
+# ON, CA)", "(Oshawa, ON, CA, L1H 8W8)". Google asks for the job title only.
+TITLE_LOCATION_RE = re.compile(
+    r"\s*\((?:[^()]*?,\s*)?ON,\s*CA(?:,\s*[A-Z]\d[A-Z]\s?\d[A-Z]\d)?\)\s*$", re.I
+)
+# Kept upper case when an ALL-CAPS title is converted to title case.
+TITLE_ACRONYMS = {
+    "AGCO", "AI", "AV", "BDC", "BI", "CBC", "CEO", "CFO", "CIO", "CMHC", "COO", "CPA", "CRM",
+    "CUPE", "ECS", "EDC", "ERP", "ESG", "FP&A", "GIS", "GTA", "HR", "HVAC", "I", "II", "III",
+    "IESO", "IT", "IV", "KYC", "LCBO", "LTC", "OPG", "OSC", "PF&R", "P&R", "PM", "PSW", "QA",
+    "RN", "RPN", "SAP", "SQL", "TCO", "TSSS", "TTC", "TW", "UI", "UX", "V", "VI", "VP",
+}
+TITLE_SPECIAL = {"SERVICENOW": "ServiceNow"}
+TITLE_SMALL = {
+    "a", "an", "and", "as", "at", "by", "de", "des", "du", "en", "et", "for", "from", "in",
+    "la", "le", "les", "of", "on", "or", "ou", "the", "to", "with",
+}
+
+
+def title_case_word(word: str, first: bool) -> str:
+    core = word.strip("()[],.:;")
+    if not core:
+        return word
+    upper = core.upper()
+    if upper in TITLE_SPECIAL:
+        cased = TITLE_SPECIAL[upper]
+    elif upper in TITLE_ACRONYMS or any(ch.isdigit() for ch in core):
+        cased = upper
+    elif not first and core.lower() in TITLE_SMALL:
+        cased = core.lower()
+    else:
+        cased = "-".join(
+            "/".join(piece[:1].upper() + piece[1:].lower() if piece.upper() not in TITLE_ACRONYMS else piece.upper()
+                     for piece in part.split("/"))
+            for part in core.split("-")
+        )
+    return word.replace(core, cased, 1)
+
+
+def smart_title_case(value: str) -> str:
+    words = value.split(" ")
+    out = []
+    first = True
+    for word in words:
+        out.append(title_case_word(word, first) if word else word)
+        if word:
+            first = word.endswith(("(", "-", "–", ":", "/"))
+    return " ".join(out)
+
+
+def display_title(raw: str) -> str:
+    """The job title as shown on pages, in the database and in JobPosting: without the
+    location suffix some ATSs append, and in title case when the source is ALL CAPS.
+    URLs keep using the raw title (title_slug), so no page moves."""
+    value = re.sub(r"\s+", " ", text(raw)).strip()
+    stripped = TITLE_LOCATION_RE.sub("", value).strip()
+    if stripped:
+        value = stripped
+    letters = re.sub(r"[^A-Za-z]", "", value)
+    if len(letters) > 8 and letters.isupper():
+        return smart_title_case(value)
+    return title_case_caps_runs(value)
+
+
+def title_case_caps_runs(value: str) -> str:
+    """Title-case ALL-CAPS stretches inside mixed titles ("ANALYST, KNOW YOUR CLIENT - Toronto").
+    A stretch converts only when it has at least two capitalised non-acronym words of 4+ letters."""
+    words = value.split(" ")
+    out: list[str] = []
+    run: list[str] = []
+
+    def flush() -> None:
+        caps = [w for w in run if re.sub(r"[^A-Za-z]", "", w)]
+        plain = [w for w in caps if w.strip("()[],.:;").upper() not in TITLE_ACRONYMS
+                 and len(re.sub(r"[^A-Za-z]", "", w)) >= 4]
+        out.extend(smart_title_case(" ".join(run)).split(" ") if len(plain) >= 2 else run)
+        run.clear()
+
+    for word in words:
+        letters = re.sub(r"[^A-Za-z]", "", word)
+        if not letters or letters.isupper():
+            run.append(word)
+        else:
+            flush()
+            out.append(word)
+    flush()
+    return " ".join(out)
+
+
 def job_title(job: dict) -> str:
-    return text(job.get("title")) or "Untitled"
+    return display_title(text(job.get("title"))) or "Untitled"
 
 
 def short_employer(name: str) -> str:
@@ -1701,7 +1912,7 @@ def render_meta_rows(job: dict) -> str:
 
 
 def render_job_page(job: dict, closed: bool = False) -> str:
-    title = text(job.get("title")) or "Untitled"
+    title = job_title(job)
     employer = text(job.get("employer"))
     page_title = text(job.get("_page_title")) or fit_page_title(title, short_employer(employer))
     paragraphs = html_to_paragraphs(text(job.get("description")))
@@ -1745,7 +1956,7 @@ def render_job_page(job: dict, closed: bool = False) -> str:
 def listing_record(job: dict) -> dict:
     employer = text(job.get("employer"))
     record = {
-        "title": text(job.get("title")) or "Untitled",
+        "title": job_title(job),
         "employer": employer,
         "location": text(job.get("location")),
         "closing": iso_date(text(job.get("closing_date"))),
