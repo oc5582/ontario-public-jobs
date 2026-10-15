@@ -27,7 +27,7 @@ export function PrivacyDocument() {
         You can read every job page and apply without an account. Lists show the newest 10 openings unless you have a
         membership. When you click &quot;Apply on employer site&quot;, you leave PublicJobs.ca and go to the
         employer&apos;s own website. That employer&apos;s privacy policy applies there. We do not receive your
-        application, and we do not keep a list of jobs you applied to.
+        application.
       </p>
       <h2>Accounts and membership</h2>
       <p>
@@ -41,6 +41,14 @@ export function PrivacyDocument() {
         membership status, your plan if you have one, the Stripe customer id and subscription id, when the current paid
         period ends, and when a cancellation takes effect. After you pay, we also store the name collected at checkout.
         We do not store a resume on the account.
+      </p>
+      <p>
+        If you have a membership, you can mark a job as applied. We store your account id, the job id while that
+        posting is still on the site, the job page address, and the time you marked it. We do not store what you sent
+        the employer. Only you can see that list. The button reads &quot;Applied ✓ (undo)&quot;; choosing it deletes
+        that row. We keep the mark until you undo it or delete your account. Deleting the account deletes these rows,
+        because they are tied to the sign-in account. If a posting is later removed from the board, the mark stays
+        until you undo it or delete the account.
       </p>
       <p>
         Memberships are offered in Canada only. Prices are in Canadian dollars and are shown plus GST/HST. You can ask
@@ -119,7 +127,7 @@ export function PrivacyDocument() {
         </li>
         <li>
           <strong>Supabase</strong> (database and sign-in; data stored in Canada, Montreal region) – accounts,
-          memberships, agreement and alert-consent records, and match counts.
+          memberships, agreement and alert-consent records, match counts, and the jobs a member has marked as applied.
         </li>
         <li>
           <strong>Stripe</strong> (payments; may process data in the United States and elsewhere) – your name, billing
@@ -169,8 +177,9 @@ export function PrivacyDocument() {
       <p>
         We use Vercel Web Analytics. It does not set a cookie. It records page views and these events: signup (first
         sign-in, and whether it was email or Google), paywall_view (which page showed the membership card),
-        pricing_view, checkout_start (which plan), purchase (which plan), and match_run (free account or membership).
-        Those events do not include your name, email address, resume, or card.
+        pricing_view, checkout_start (which plan), purchase (which plan), match_run (free account or membership), and
+        mark_applied (whether a member marked a job applied or undid it). Those events do not include your name, email
+        address, resume, card, or which job you marked.
       </p>
       <p>Our fonts are hosted on PublicJobs.ca itself, so loading them does not send your information to a font service.</p>
       <h2>How long we keep it</h2>
@@ -203,6 +212,10 @@ export function PrivacyDocument() {
             <td>Until you delete the account.</td>
           </tr>
           <tr>
+            <td>Jobs you marked as applied</td>
+            <td>Until you undo the mark or delete the account.</td>
+          </tr>
+          <tr>
             <td>Site-wide match counters</td>
             <td>Kept as running counts. The software does not delete them on a schedule.</td>
           </tr>
@@ -220,7 +233,7 @@ export function PrivacyDocument() {
       <p>
         You can delete your account on the Account page. If a membership is still renewing, we cancel the Stripe
         subscription first. If we cannot, we stop and ask you to cancel it from Manage billing. We then delete the
-        profile, the sign-in account, and the match counts. We keep the billing and agreement records described above,
+        profile, the sign-in account, the match counts, and the jobs you marked as applied. We keep the billing and agreement records described above,
         including the email and name on those records. Stripe also keeps its own customer and payment record. Alert
         signup records are not removed by deleting the account. You can unsubscribe from alerts using the link in any
         email. You can turn off ad tracking at any time with the &quot;Turn off ad tracking&quot; button in the site
