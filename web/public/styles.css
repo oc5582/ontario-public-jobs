@@ -309,11 +309,22 @@ button,
 }
 
 .hero h1 {
-  margin: 0 0 1rem;
+  margin: 0 0 0.65rem;
   font-size: clamp(2rem, 4vw + 1rem, 2.5rem);
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.12;
+}
+
+.hero-note {
+  margin: 0 0 1rem;
+  max-width: 40rem;
+  padding-left: 0.7rem;
+  border-left: 3px solid var(--civic);
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.45;
 }
 
 .subhead {
@@ -910,7 +921,11 @@ button[type="submit"]:disabled {
   }
 
   .hero h1 {
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .hero-note {
+    margin-bottom: 0.65rem;
   }
 
   .subhead {
