@@ -99,6 +99,17 @@ export default async function MatchPage() {
           Your matches
         </h2>
         <p id="results-summary" />
+        {viewer.isMember ? (
+          <>
+            <label className="checkbox" htmlFor="hide-applied">
+              <input type="checkbox" id="hide-applied" />
+              <span>Hide jobs I applied to</span>
+            </label>
+            <p id="applied-empty" className="hint" hidden>
+              All of these matches are jobs you marked as applied.
+            </p>
+          </>
+        ) : null}
         <div id="strong-wrap" hidden>
           <h2>Strong matches</h2>
           <ol className="results" id="strong-list" />

@@ -1,23 +1,27 @@
+import { applicationKey } from "@/lib/application-key";
 import { displayLocation } from "@/lib/display-location";
 import { closingLabel, pillLabel } from "@/lib/format";
 import type { ListJob } from "@/lib/types";
 
-export function JobList({ jobs, id }: { jobs: ListJob[]; id?: string }) {
+export function JobList({ jobs, id, applied }: { jobs: ListJob[]; id?: string; applied?: ReadonlySet<string> }) {
   return (
     <ul className="job-list" id={id} tabIndex={id ? -1 : undefined}>
       {jobs.map((job) => {
         const close = closingLabel(job.closing);
         const type = pillLabel(job.type);
         const location = displayLocation(job.location, job.location_places);
+        const marked = applied ? applicationKey(job.path) : null;
+        const showApplied = Boolean(marked && applied?.has(marked));
         return (
           <li key={job.href}>
             <a className="job-row" href={job.href}>
               <span className="job-main">
                 <span className="job-title">{job.title}</span>
-                {job.employer || type ? (
+                {job.employer || type || showApplied ? (
                   <span className="job-sub">
                     {job.employer ? <span className="job-employer">{job.employer}</span> : null}
                     {type ? <span className="pill">{type}</span> : null}
+                    {showApplied ? <span className="pill">Applied</span> : null}
                   </span>
                 ) : null}
               </span>

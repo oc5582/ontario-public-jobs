@@ -1,4 +1,5 @@
 import { JobsView } from "@/components/views/JobsView";
+import { listApplicationKeys } from "@/lib/applications";
 import { getViewer } from "@/lib/auth";
 import { filtersFromSearch, hasFilters, hasPageParam, searchWithoutPage } from "@/lib/filters";
 import { pageMetadata } from "@/lib/seo";
@@ -30,5 +31,7 @@ export default async function LiveJobsPage({ searchParams }: Props) {
   }
   const filters = filtersFromSearch(params);
   const viewer = await getViewer();
-  return <JobsView filters={filters} member={viewer.isMember} />;
+  const applied =
+    viewer.isMember && viewer.profile ? listApplicationKeys(viewer.profile.id) : undefined;
+  return <JobsView filters={filters} member={viewer.isMember} applied={applied} />;
 }
