@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { AdNotice } from "@/components/AdNotice";
+import { MetaEvents } from "@/components/MetaEvents";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteScripts } from "@/components/SiteScripts";
 import { BRAND, META_DESCRIPTION, PAGE_TITLE, SITE_URL } from "@/lib/site";
@@ -63,6 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <SiteFooter />
         <AdNotice pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID || ""} />
+        <MetaEvents />
         <SiteScripts />
         <Analytics />
       </body>

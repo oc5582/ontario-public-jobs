@@ -102,7 +102,7 @@ export function checkoutSessionCreateParams(
     customer: customerId,
     client_reference_id: input.profileId,
     line_items: [{ price: priceId, quantity: 1, tax_rates: [taxRateId] }],
-    success_url: `${input.origin}/account/?checkout=success`,
+    success_url: `${input.origin}/account/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${input.origin}/pricing/`,
     allow_promotion_codes: false,
     payment_method_collection: "always",

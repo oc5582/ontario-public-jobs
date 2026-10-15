@@ -157,6 +157,11 @@
       render("maybe-list", "maybe-wrap", data.maybe || []);
       renderUnlock(data.locked || 0);
       document.getElementById("results").hidden = false;
+      try {
+        if (typeof window.pjTrackMeta === "function") window.pjTrackMeta("trackCustom", "MatchComplete");
+      } catch (ignore) {
+        /* pixel missing or consent denied */
+      }
       document.getElementById("results-title").focus();
     } catch (err) {
       setStatus("Something went wrong. Please check your connection and try again.", true);

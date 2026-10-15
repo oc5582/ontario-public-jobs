@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import { PurchasePixel } from "@/components/PurchasePixel";
 import { getViewer } from "@/lib/auth";
+import { claimPurchasePixel } from "@/lib/meta-purchase";
 import { refundSentence } from "@/lib/legal-copy";
 import { membershipPeriodLabel } from "@/lib/membership";
 import { pageMetadata } from "@/lib/seo";
@@ -35,10 +37,13 @@ export default async function AccountPage({
   const plan = PLANS.find((item) => item.id === profile.plan);
   const notice = typeof params.notice === "string" ? params.notice : "";
   const checkout = typeof params.checkout === "string" ? params.checkout : "";
+  const sessionId = typeof params.session_id === "string" ? params.session_id : "";
+  const purchase = sessionId ? await claimPurchasePixel(sessionId, profile.id) : null;
   const period = membershipPeriodLabel(profile);
 
   return (
     <main>
+      <PurchasePixel event={purchase} />
       <article className="job-page content">
         <p className="crumb">
           <a href="/">All openings</a>
