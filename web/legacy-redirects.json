@@ -93,7 +93,7 @@
   },
   {
     "from": "/jobs/cppib-senior-analyst-tfm-risk-and-total-fund-management-technology.html",
-    "to": "/jobs/canada-pension-plan-investment-board-cppib/senior-analyst-tfm-risk-total-fund-management-technology/"
+    "to": "/jobs/canada-pension-plan-investment-board-cppib/senior-business-analyst-tfm-risk-total-fund-management-technology/"
   },
   {
     "from": "/jobs/cppib-senior-engineer-data-enablement-data-platforms.html",
@@ -110,10 +110,6 @@
   {
     "from": "/jobs/edc-696-fr-analyste-principal-e-des-risques-ergp.html",
     "to": "/jobs/export-development-canada-edc/696-fr-analyste-principal-e-des-risques-ergp/"
-  },
-  {
-    "from": "/jobs/edc-analyste-principal-e-de-syst-mes-de-gestion-servicenow-csm-fr-125.html",
-    "to": "/jobs/export-development-canada-edc/analyste-principal-e-de-syst-mes-de-gestion-servicenow-csm-fr-125/"
   },
   {
     "from": "/jobs/edc-analyste-principale-analyste-principal-des-syst-mes-de-gestion-fr-006.html",
@@ -292,10 +288,6 @@
     "to": "/jobs/ontario-cannabis-retail-corporation-ontario-cannabis-store/senior-policy-advisor/"
   },
   {
-    "from": "/jobs/osc-compliance-accountants-regulatory-examinations.html",
-    "to": "/jobs/ontario-securities-commission/compliance-accountants-regulatory-examinations/"
-  },
-  {
     "from": "/jobs/osc-senior-legal-counsel.html",
     "to": "/jobs/ontario-securities-commission/senior-legal-counsel-jr100922/"
   },
@@ -326,10 +318,6 @@
   {
     "from": "/jobs/tchc-special-constable-in-training.html",
     "to": "/jobs/toronto-community-housing-corporation/special-constable-in-training/"
-  },
-  {
-    "from": "/jobs/tfo-agent-e-aux-pr-achats-et-acquisitions-ii.html",
-    "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/agent-e-aux-pr-achats-et-acquisitions-ii/"
   },
   {
     "from": "/jobs/tfo-candidature-spontan-e.html",
@@ -408,10 +396,6 @@
     "to": "/jobs/canadian-broadcasting-corporation-cbc-radio-canada/brand-ambassador-radio-canada-on-call-french-services/"
   },
   {
-    "from": "/jobs/workday-cxs-compliance-accountants-regulatory-examinations.html",
-    "to": "/jobs/ontario-securities-commission/compliance-accountants-regulatory-examinations/"
-  },
-  {
     "from": "/jobs/workday-cxs-director-data-enablement-data-platforms.html",
     "to": "/jobs/canada-pension-plan-investment-board-cppib/director-data-enablement-data-platforms/"
   },
@@ -453,7 +437,7 @@
   },
   {
     "from": "/jobs/workday-cxs-senior-analyst-tfm-risk-total-fund-management-technology.html",
-    "to": "/jobs/canada-pension-plan-investment-board-cppib/senior-analyst-tfm-risk-total-fund-management-technology/"
+    "to": "/jobs/canada-pension-plan-investment-board-cppib/senior-business-analyst-tfm-risk-total-fund-management-technology/"
   },
   {
     "from": "/jobs/workday-cxs-senior-engineer-data-enablement-data-platforms.html",
@@ -502,10 +486,6 @@
   {
     "from": "/telefilm-advisor-corporate-impact-edia.html",
     "to": "/jobs/telefilm-canada/advisor-corporate-impact-edia/"
-  },
-  {
-    "from": "/tfo-agent-e-aux-pr-achats-et-acquisitions-ii.html",
-    "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/agent-e-aux-pr-achats-et-acquisitions-ii/"
   },
   {
     "from": "/tfo-candidature-spontan-e.html",
@@ -574,5 +554,13 @@
   {
     "from": "/tssa-risk-advisor.html",
     "to": "/jobs/technical-standards-and-safety-authority-tssa/risk-advisor/"
+  },
+  {
+    "from": "/tvo-labour-and-employee-relations-manager.html",
+    "to": "/jobs/ontario-educational-communications-authority-tvo/labour-and-employee-relations-manager/"
+  },
+  {
+    "from": "/wsib-senior-it-business-analyst.html",
+    "to": "/jobs/workplace-safety-and-insurance-board/senior-it-business-analyst/"
   }
 ]
