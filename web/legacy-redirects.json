@@ -76,10 +76,6 @@
     "to": "/jobs/canada-pension-plan-investment-board-cppib/lead-engineer-total-fund-management-financing-public-markets-technology/"
   },
   {
-    "from": "/jobs/cppib-lead-software-engineer-ai-and-emerging-tech-jr00309.html",
-    "to": "/jobs/canada-pension-plan-investment-board-cppib/lead-software-engineer-ai-emerging-tech/"
-  },
-  {
     "from": "/jobs/cppib-lead-software-engineer-public-markets-technology.html",
     "to": "/jobs/canada-pension-plan-investment-board-cppib/lead-software-engineer-public-markets-technology/"
   },
@@ -216,10 +212,6 @@
     "to": "/jobs/law-society-of-ontario/director-enterprise-planning-and-performance-permanent/"
   },
   {
-    "from": "/jobs/lso-discipline-counsel-litigation-services-permanent.html",
-    "to": "/jobs/law-society-of-ontario/discipline-counsel-litigation-services-permanent/"
-  },
-  {
     "from": "/jobs/lso-intermediate-dynamics-365-developer-it-12-month-contract.html",
     "to": "/jobs/law-society-of-ontario/intermediate-dynamics-365-developer-it-12-month-contract/"
   },
@@ -288,12 +280,8 @@
     "to": "/jobs/ontario-cannabis-retail-corporation-ontario-cannabis-store/senior-policy-advisor/"
   },
   {
-    "from": "/jobs/osc-senior-legal-counsel.html",
-    "to": "/jobs/ontario-securities-commission/senior-legal-counsel-jr100922/"
-  },
-  {
     "from": "/jobs/pho-medical-laboratory-technologist-1.html",
-    "to": "/jobs/public-health-ontario-ontario-agency-for-health-protection-and-promotion/medical-laboratory-technologist-1-jr100100/"
+    "to": "/jobs/public-health-ontario-ontario-agency-for-health-protection-and-promotion/medical-laboratory-technologist-1/"
   },
   {
     "from": "/jobs/rom-future-career-opportunities-at-royal-ontario-museum-rom.html",
@@ -328,10 +316,6 @@
     "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/conseiller-re-ventes-publicitaires/"
   },
   {
-    "from": "/jobs/toronto-hydro-associate-financial-analyst-capital-planning-and-reporting-toronto-on-ca.html",
-    "to": "/jobs/toronto-hydro-corporation/associate-financial-analyst-capital-planning-reporting-toronto-on-ca/"
-  },
-  {
     "from": "/jobs/toronto-hydro-building-system-technician-toronto-on-ca.html",
     "to": "/jobs/toronto-hydro-corporation/building-system-technician-toronto-on-ca/"
   },
@@ -354,10 +338,6 @@
   {
     "from": "/jobs/tpa-maintenance-grade-2-nights.html",
     "to": "/jobs/toronto-parking-authority/maintenance-grade-2-nights/"
-  },
-  {
-    "from": "/jobs/tpa-specialist-client-accounts.html",
-    "to": "/jobs/toronto-parking-authority/specialist-client-accounts/"
   },
   {
     "from": "/jobs/tpa-specialist-sales-and-partnerships.html",
@@ -416,10 +396,6 @@
     "to": "/jobs/canada-pension-plan-investment-board-cppib/lead-engineer-total-fund-management-financing-public-markets-technology/"
   },
   {
-    "from": "/jobs/workday-cxs-lead-software-engineer-ai-emerging-tech-jr00309.html",
-    "to": "/jobs/canada-pension-plan-investment-board-cppib/lead-software-engineer-ai-emerging-tech/"
-  },
-  {
     "from": "/jobs/workday-cxs-lead-software-engineer-public-markets-technology.html",
     "to": "/jobs/canada-pension-plan-investment-board-cppib/lead-software-engineer-public-markets-technology/"
   },
@@ -429,7 +405,7 @@
   },
   {
     "from": "/jobs/workday-cxs-medical-laboratory-technologist-1.html",
-    "to": "/jobs/public-health-ontario-ontario-agency-for-health-protection-and-promotion/medical-laboratory-technologist-1-jr100100/"
+    "to": "/jobs/public-health-ontario-ontario-agency-for-health-protection-and-promotion/medical-laboratory-technologist-1/"
   },
   {
     "from": "/jobs/workday-cxs-portfolio-manager-dynamic-portfolio-management.html",
@@ -442,10 +418,6 @@
   {
     "from": "/jobs/workday-cxs-senior-engineer-data-enablement-data-platforms.html",
     "to": "/jobs/canada-pension-plan-investment-board-cppib/senior-engineer-data-enablement-data-platforms/"
-  },
-  {
-    "from": "/jobs/workday-cxs-senior-legal-counsel.html",
-    "to": "/jobs/ontario-securities-commission/senior-legal-counsel-jr100922/"
   },
   {
     "from": "/jobs/workday-cxs-senior-quality-engineer-real-assets-alternative-investment-technology.html",
@@ -484,10 +456,6 @@
     "to": "/jobs/toronto-community-housing-corporation/special-constable-in-training/"
   },
   {
-    "from": "/telefilm-advisor-corporate-impact-edia.html",
-    "to": "/jobs/telefilm-canada/advisor-corporate-impact-edia/"
-  },
-  {
     "from": "/tfo-candidature-spontan-e.html",
     "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/candidature-spontan-e/"
   },
@@ -496,12 +464,12 @@
     "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/conseiller-re-ventes-publicitaires/"
   },
   {
-    "from": "/toronto-hydro-associate-financial-analyst-capital-planning-and-reporting-toronto-on-ca.html",
-    "to": "/jobs/toronto-hydro-corporation/associate-financial-analyst-capital-planning-reporting-toronto-on-ca/"
-  },
-  {
     "from": "/toronto-hydro-building-system-technician-toronto-on-ca.html",
     "to": "/jobs/toronto-hydro-corporation/building-system-technician-toronto-on-ca/"
+  },
+  {
+    "from": "/toronto-hydro-capital-and-maintenance-program-analyst-12-month-contract-toronto-on-ca.html",
+    "to": "/jobs/toronto-hydro-corporation/capital-maintenance-program-analyst-12-month-contract-toronto-on-ca/"
   },
   {
     "from": "/toronto-hydro-engineer-toronto-on-ca.html",
@@ -520,12 +488,12 @@
     "to": "/jobs/toronto-hydro-corporation/manager-stations-toronto-on-ca-605749717/"
   },
   {
-    "from": "/tpa-maintenance-grade-2-nights.html",
-    "to": "/jobs/toronto-parking-authority/maintenance-grade-2-nights/"
+    "from": "/toronto-hydro-two-2-engineer-toronto-on-ca.html",
+    "to": "/jobs/toronto-hydro-corporation/two-2-engineer-toronto-on-ca/"
   },
   {
-    "from": "/tpa-specialist-client-accounts.html",
-    "to": "/jobs/toronto-parking-authority/specialist-client-accounts/"
+    "from": "/tpa-maintenance-grade-2-nights.html",
+    "to": "/jobs/toronto-parking-authority/maintenance-grade-2-nights/"
   },
   {
     "from": "/tpa-specialist-sales-and-partnerships.html",
