@@ -9,15 +9,16 @@
   var statusEl = document.getElementById("status");
   var btn = document.getElementById("submit-btn");
   var fileText = "";
-  function setStatus(msg, isError, href, label) {
+  function setStatus(msg, isError, links) {
     statusEl.replaceChildren();
-    if (msg) statusEl.appendChild(document.createTextNode(msg + (href ? " " : "")));
-    if (href) {
+    if (msg) statusEl.appendChild(document.createTextNode(msg));
+    (links || []).forEach(function (item) {
+      statusEl.appendChild(document.createTextNode(" "));
       var link = document.createElement("a");
-      link.href = href;
-      link.textContent = label || "See membership";
+      link.href = item.href;
+      link.textContent = item.label;
       statusEl.appendChild(link);
-    }
+    });
     statusEl.className = "status" + (isError ? " error" : "");
     statusEl.hidden = !msg;
   }
@@ -147,9 +148,42 @@
   }
   var hideApplied = document.getElementById("hide-applied");
   if (hideApplied) hideApplied.addEventListener("change", renderResults);
+  var FREE_RESULTS = 10;
+  var TEASER_ROWS = 5;
+  function renderLocked(locked) {
+    // Placeholder rows only. The server sends a count, never the hidden jobs.
+    var list = document.getElementById("locked-list");
+    if (!list) {
+      list = document.createElement("ol");
+      list.id = "locked-list";
+      list.className = "results locked-results";
+      list.setAttribute("aria-hidden", "true");
+      var unlockEl = document.getElementById("unlock");
+      unlockEl.parentNode.insertBefore(list, unlockEl);
+    }
+    list.replaceChildren();
+    for (var i = 0; i < Math.min(locked, TEASER_ROWS); i++) {
+      var li = document.createElement("li");
+      var title = document.createElement("span");
+      title.className = "locked-title";
+      title.textContent = "Member-only match";
+      var meta = document.createElement("p");
+      meta.className = "meta locked-text";
+      meta.textContent = "Public-sector employer · Toronto";
+      var why = document.createElement("p");
+      why.className = "why locked-text";
+      why.textContent = "Why this job fits your experience, shown with a membership.";
+      li.appendChild(title);
+      li.appendChild(meta);
+      li.appendChild(why);
+      list.appendChild(li);
+    }
+    list.hidden = locked === 0;
+  }
   function renderUnlock(locked) {
     var el = document.getElementById("unlock");
     el.replaceChildren();
+    renderLocked(locked);
     if (!locked) {
       el.hidden = true;
       return;
@@ -157,7 +191,7 @@
     var heading = document.createElement("h2");
     heading.textContent = locked + " more " + (locked === 1 ? "match" : "matches");
     var copy = document.createElement("p");
-    copy.textContent = "This match shows the top 5. The rest are part of a membership. Apply stays free on every job page.";
+    copy.textContent = "This free match shows the top " + FREE_RESULTS + ". See every match, plus up to 20 matches a day, with a membership. Apply stays free on every job page.";
     var actions = document.createElement("p");
     actions.className = "unlock-actions";
     var link = document.createElement("a");
@@ -173,6 +207,13 @@
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
     var consent = document.getElementById("consent").checked;
+    var emailEl = document.getElementById("email");
+    var email = emailEl ? emailEl.value.trim() : "";
+    if (emailEl && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setStatus("Enter a valid email address.", true);
+      emailEl.focus();
+      return;
+    }
     var resume = (textArea.value.trim() || fileText).slice(0, MAX);
     if (resume.length < 80) {
       setStatus("Add your resume. Upload a PDF or Word file, or paste the text.", true);
@@ -186,6 +227,7 @@
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
+          email: email,
           casl_consent: consent ? "yes" : "",
           resume_text: resume,
           _gotcha: document.getElementById("gotcha").value,
@@ -193,9 +235,11 @@
       });
       var data = await res.json().catch(function () { return {}; });
       if (!res.ok || !data.ok) {
-        var href = data.upgrade || data.login || "";
-        var label = data.upgrade ? "See membership" : "Sign in";
-        setStatus(data.error || "Something went wrong. Please try again.", true, href, label);
+        var links = [];
+        if (data.upgrade) links.push({ href: data.upgrade, label: "See membership" });
+        if (data.login) links.push({ href: data.login, label: data.upgrade ? "or sign in" : "Sign in" });
+        setStatus(data.error || "Something went wrong. Please try again.", true, links);
+        if (data.code === "free_used" && emailEl) btn.hidden = true;
         return;
       }
       setStatus("", false);
@@ -209,6 +253,10 @@
       renderResults();
       renderUnlock(data.locked || 0);
       document.getElementById("results").hidden = false;
+      if (data.guest) {
+        // One free run per browser: hide the button so a second click does not look like it should work.
+        btn.hidden = true;
+      }
       try {
         if (typeof window.pjTrackMeta === "function") window.pjTrackMeta("trackCustom", "MatchComplete");
       } catch (ignore) {

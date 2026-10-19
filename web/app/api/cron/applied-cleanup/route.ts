@@ -1,4 +1,5 @@
 import { purgeLapsedApplications } from "@/lib/applied-retention";
+import { purgeFreeMatchRecords } from "@/lib/match-retention";
 
 export const dynamic = "force-dynamic";
 
@@ -7,8 +8,10 @@ async function run(request: Request): Promise<Response> {
   if (!secret) return Response.json({ error: "CRON_SECRET is not set." }, { status: 503 });
   const header = request.headers.get("authorization") || "";
   if (header !== `Bearer ${secret}`) return Response.json({ error: "Unauthorized." }, { status: 401 });
+  // Free-match cleanup runs first and never throws, so it cannot block the applied-list cleanup.
+  const freeMatch = await purgeFreeMatchRecords();
   const result = await purgeLapsedApplications();
-  return Response.json(result);
+  return Response.json({ ...result, freeMatch });
 }
 
 export function GET(request: Request) {

@@ -26,8 +26,8 @@ function hits(prefix: string, count: number): MatchHit[] {
   }));
 }
 
-const strong = hits("Strong", 6);
-const maybe = hits("Maybe", 3);
+const strong = hits("Strong", 8);
+const maybe = hits("Maybe", 6);
 
 let mode = "ok";
 const calls: { email: string; casl_consent: string; trusted: string }[] = [];
@@ -80,25 +80,27 @@ await ensure(FREE_ID, "free-match@example.com", "none");
 await ensure(FAIL_ID, "fail-match@example.com", "none");
 await ensure(MEMBER_ID, "test@example.com", "active");
 await query("delete from resume_match_usage where profile_id = any($1::uuid[])", [[FREE_ID, FAIL_ID, MEMBER_ID]]);
+await query("delete from match_free_runs where email_key like '%@example.com'");
 
 try {
   const capped = capResults(strong, maybe, false);
-  assert.equal(capped.strong.length, 5);
-  assert.equal(capped.maybe.length, 0);
+  assert.equal(capped.strong.length, 8);
+  assert.equal(capped.maybe.length, 2);
+  assert.equal(capped.shown, 10);
   assert.equal(capped.locked, 4);
   assert.equal(capResults(strong, maybe, true).locked, 0);
-  assert.equal(capResults(strong, maybe, true).shown, 9);
+  assert.equal(capResults(strong, maybe, true).shown, 14);
 
   const first = await runMatch(
     { profileId: FREE_ID, email: "free-match@example.com", isMember: false, resumeText: RESUME, consent: false },
     deps,
   );
   assert.equal(first.status, 200);
-  assert.equal(first.body.strong?.length, 5);
-  assert.equal(first.body.maybe?.length, 0);
-  assert.equal(first.body.shown, 5);
+  assert.equal(first.body.strong?.length, 8);
+  assert.equal(first.body.maybe?.length, 2);
+  assert.equal(first.body.shown, 10);
   assert.equal(first.body.locked, 4);
-  assert.match(first.body.summary || "", /top 5/);
+  assert.match(first.body.summary || "", /top 10/);
   assert.equal((first.body.summary || "").includes("inbox"), false);
   assert.equal(calls.length, 1);
   assert.equal(calls[0].email, "");
@@ -165,8 +167,8 @@ try {
     );
     assert.equal(result.status, 200, `member match ${i}: ${JSON.stringify(result.body)}`);
     assert.equal(result.body.locked, 0);
-    assert.equal(result.body.strong?.length, 6);
-    assert.equal(result.body.maybe?.length, 3);
+    assert.equal(result.body.strong?.length, 8);
+    assert.equal(result.body.maybe?.length, 6);
   }
   assert.equal(calls.length, callsBefore + 20);
   assert.equal(calls[callsBefore].email, "test@example.com");
@@ -197,6 +199,7 @@ try {
   console.log("match limit tests passed");
 } finally {
   await query("delete from resume_match_usage where profile_id = any($1::uuid[])", [[FREE_ID, FAIL_ID, MEMBER_ID]]);
+  await query("delete from match_free_runs where email_key like '%@example.com'");
   const pool = (await import("../web/lib/db.ts")).getPool();
   await pool.end();
 }

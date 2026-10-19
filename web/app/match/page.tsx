@@ -1,4 +1,6 @@
+import { cookies } from "next/headers";
 import { getViewer } from "@/lib/auth";
+import { FREE_COOKIE, FREE_RESULTS } from "@/lib/match";
 import { alertConsentLabel, alertConsentSender } from "@/lib/legal-copy";
 import { pageMetadata } from "@/lib/seo";
 import { BRAND } from "@/lib/site";
@@ -7,21 +9,49 @@ import type { Metadata } from "next";
 export const metadata: Metadata = pageMetadata({
   title: `Match your resume to public-sector jobs | ${BRAND}`,
   description:
-    "Upload your resume and see which current public sector jobs in Toronto and the GTA fit your experience. Free, 1 match. Sign in to use it. Your resume is not stored.",
+    "Upload your resume and see which current public sector jobs in Toronto and the GTA fit your experience. One free match, no account needed. Your resume is not stored.",
   path: "/match/",
 });
 
 export default async function MatchPage() {
   const viewer = await getViewer();
   const signedIn = Boolean(viewer.email && viewer.profile);
+  const guestUsed = !signedIn && (await cookies()).get(FREE_COOKIE)?.value === "1";
+
+  const resumeFields = (
+    <fieldset>
+      <legend>2. Your resume</legend>
+      <p className="hint">
+        We use your resume only to find matching jobs. <a href="/privacy/">Privacy policy</a>
+      </p>
+      <label htmlFor="resume-file">Upload a PDF or Word file</label>
+      <input
+        type="file"
+        id="resume-file"
+        accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      />
+      <p className="hint" id="file-status" aria-live="polite">
+        Your file stays on your device. Only the text is read.
+      </p>
+      <p className="or">Or paste your resume text</p>
+      <label htmlFor="resume-text">Resume text</label>
+      <textarea
+        id="resume-text"
+        maxLength={15000}
+        placeholder="Paste your work experience, education and skills"
+      />
+    </fieldset>
+  );
 
   return (
     <main className="match">
       <h1>Match your resume</h1>
       <p className="lede">
         Add your resume. We compare it with the current openings on PublicJobs.ca and show the ones that look like a
-        fit, with a short reason. Matches are suggestions and can be wrong. One match is free and shows the top 5. Sign
-        in to use it. Matching does not require job alerts.
+        fit, with a short reason. Matches are suggestions and can be wrong.
+        {viewer.isMember
+          ? " Matching does not require job alerts."
+          : ` One match is free and shows the top ${FREE_RESULTS}. No account needed, just your email. Matching does not require job alerts.`}
       </p>
 
       {signedIn ? (
@@ -32,7 +62,7 @@ export default async function MatchPage() {
             {viewer.isMember ? (
               <p className="hint">A membership includes matches every day, up to 20 a day.</p>
             ) : (
-              <p className="hint">Your account includes 1 free match. It shows the top 5 jobs.</p>
+              <p className="hint">Your account includes 1 free match. It shows the top {FREE_RESULTS} jobs.</p>
             )}
             <label className="checkbox" htmlFor="consent">
               <input type="checkbox" id="consent" name="casl_consent" value="yes" />
@@ -44,28 +74,7 @@ export default async function MatchPage() {
             <p className="hint">Optional. Matching does not add you to the weekly email unless you check this.</p>
           </fieldset>
 
-          <fieldset>
-            <legend>2. Your resume</legend>
-            <p className="hint">
-              We use your resume only to find matching jobs. <a href="/privacy/">Privacy policy</a>
-            </p>
-            <label htmlFor="resume-file">Upload a PDF or Word file</label>
-            <input
-              type="file"
-              id="resume-file"
-              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            />
-            <p className="hint" id="file-status" aria-live="polite">
-              Your file stays on your device. Only the text is read.
-            </p>
-            <p className="or">Or paste your resume text</p>
-            <label htmlFor="resume-text">Resume text</label>
-            <textarea
-              id="resume-text"
-              maxLength={15000}
-              placeholder="Paste your work experience, education and skills"
-            />
-          </fieldset>
+          {resumeFields}
 
           <div className="hp" aria-hidden="true">
             <label htmlFor="gotcha">Leave this field blank</label>
@@ -80,18 +89,64 @@ export default async function MatchPage() {
           </p>
           <div id="status" className="status" role="status" aria-live="polite" hidden />
         </form>
-      ) : (
-        <section className="unlock" aria-label="Sign in to match">
-          <h2>Sign in to match your resume</h2>
+      ) : guestUsed ? (
+        <section className="unlock" id="free-used" aria-label="Free match used">
+          <h2>You&apos;ve used your free match</h2>
           <p>
-            The free match is saved on your account, so it is counted once per person. Job alert emails stay optional.
+            A membership includes up to 20 matches a day and the full list of openings. Apply stays free on every job
+            page.
           </p>
           <p className="unlock-actions">
-            <a className="apply-btn" href="/login/?next=/match/">
-              Sign in
+            <a className="apply-btn" href="/pricing/">
+              See membership
             </a>
+            <a href="/login/?next=/match/">Sign in</a>
           </p>
         </section>
+      ) : (
+        <form id="match-form" noValidate>
+          <fieldset>
+            <legend>1. Your email</legend>
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              autoComplete="email"
+              inputMode="email"
+              maxLength={254}
+              placeholder="you@example.com"
+            />
+            <p className="hint">
+              Needed for your free match. It shows the top {FREE_RESULTS} jobs. Already a member?{" "}
+              <a href="/login/?next=/match/">Sign in</a>
+            </p>
+            <label className="checkbox" htmlFor="consent">
+              <input type="checkbox" id="consent" name="casl_consent" value="yes" />
+              <span>
+                {alertConsentLabel()}
+                <span className="consent-sender">{alertConsentSender()}</span>
+              </span>
+            </label>
+            <p className="hint">Optional. We only send the weekly email if you check this.</p>
+          </fieldset>
+
+          {resumeFields}
+
+          <div className="hp" aria-hidden="true">
+            <label htmlFor="gotcha">Leave this field blank</label>
+            <input type="text" id="gotcha" name="_gotcha" tabIndex={-1} autoComplete="off" />
+          </div>
+
+          <button type="submit" id="submit-btn">
+            Find my jobs
+          </button>
+          <p className="hint">
+            Your resume is read to find matches and is not stored. <a href="/privacy/">Privacy policy</a>
+          </p>
+          <div id="status" className="status" role="status" aria-live="polite" hidden />
+        </form>
       )}
 
       <section id="results" hidden aria-labelledby="results-title">
