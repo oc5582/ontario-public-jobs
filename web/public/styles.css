@@ -1215,6 +1215,23 @@ button[type="submit"]:disabled {
   margin: 0.25rem 0 0;
 }
 
+/* Locked matches under the free top 10. Placeholder text only, like the list paywall. */
+.match ol.locked-results li {
+  pointer-events: none;
+  user-select: none;
+}
+
+.match .locked-title {
+  display: inline-block;
+  font-weight: 600;
+  color: var(--civic);
+  filter: blur(3px);
+}
+
+.match .locked-text {
+  filter: blur(3px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

@@ -184,9 +184,11 @@ node --import ./scripts/register-ts.mjs --experimental-strip-types scripts/test_
 
 ## Resume matching
 
-`/match/` posts to `POST /api/match/` on this app. The route requires a signed-in account.
+`/match/` posts to `POST /api/match/` on this app. No account is needed for the free match.
 
-- A free account (`membership_status` is not `active`) gets 1 match. The response keeps the top 5 jobs. The page shows an unlock card for the rest, linking to `/pricing/`.
+- Signed out: the visitor enters an email (required, checked on the server) and can tick the optional weekly-email box (unchecked by default). Up to `FREE_RUNS_PER_EMAIL` (5) free matches per normalised email (lowercase, trimmed, `+tag` removed, Gmail dots removed), shared with free accounts, and per browser (`pj_free_match` HttpOnly cookie holding a count 1-5, 1 year). Customer-facing copy still says one free match; the "used" card shows only after 5. Each run is counted in `match_free_runs` before the Worker is called and given back if the match fails. Each submit carries a client `run_id`; a resend of the same submit (same email and run id within 5 minutes, at most 2 repeats) is treated as the same run: it calls the Worker again so the browser gets results, but does not count a run, take a network slot, or raise the `pj_free_match` cookie. A further copy past the 2 repeats gets a retryable 409 `repeat_limit` (“Something went wrong. Please try again.”), counts nothing, and leaves the cookie alone; a new submit gets a new run id. This guards against a POST delivered twice (seen once on the preview). A network gets 5 signed-out matches per Toronto day (`match_free_networks`, keyed by an HMAC of IP + day with `MATCH_TRUSTED_SECRET`; rows older than 7 days are pruned). `match_free_runs` rows are deleted 90 days after the last free run by the daily cron `GET /api/cron/applied-cleanup/` (08:30 UTC, `CRON_SECRET`), which also deletes network rows older than 7 days; after that the same email can get another free run. Honeypot `_gotcha` returns an empty result and uses nothing. If the ledger table is missing or the database is down, the guest path returns “not available” before any AI spend. Once the 5 runs are used, a submit shows “You've used your free match” with links to `/pricing/` and sign-in; a returning browser sees that card instead of the form.
+- If the box is ticked, the consent record is written to `alert_consents` and the Worker subscribes the address through the signup Worker (same Resend segment and welcome email as the homepage). Unticked sends no email address to the Worker.
+- A free account (`membership_status` is not `active`) gets 1 match, shared with the signed-out ledger by email. Free matches (signed out or free account) keep the top 10 jobs. Only those 10 and a count reach the browser; the page draws up to 5 blurred placeholder rows and an unlock card linking to `/pricing/`.
 - An active member gets 20 matches per day, dated in America/Toronto. The next one returns “You've hit today's member limit. Try again tomorrow.”
 - A second free match returns “You've used your free match.” with a link to `/pricing/`.
 - A failed Worker call, a partial batch, or a crash does not insert a `resume_match_usage` row.
@@ -199,6 +201,7 @@ The Worker source to deploy later is `workers/resume-match/`. Do not deploy it a
 
 ```bash
 node --import ./scripts/register-ts.mjs --experimental-strip-types scripts/test_match_limits.mts
+node --import ./scripts/register-ts.mjs --experimental-strip-types scripts/test_match_guest.mts
 node workers/resume-match/worker.test.mjs
 ```
 

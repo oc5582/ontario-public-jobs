@@ -87,10 +87,16 @@ export function PrivacyDocument() {
         does not add you to the weekly email.
       </p>
       <h2>Resume matching</h2>
-      <p>If you use resume matching, we use your resume only to find matching jobs. You need to be signed in.</p>
       <p>
-        A free account gets 1 match. That match shows the top 5 jobs. A membership gets up to 20 matches a day. A match
-        that fails is not counted.
+        If you use resume matching, we use your resume only to find matching jobs. If you are not signed in, we ask for
+        your email address so the free match is counted once per person.
+      </p>
+      <p>
+        One match is free per person, with or without an account. That match shows the top 10 jobs. A membership gets up
+        to 20 matches a day. A match that fails is not counted. To count the free match, we keep the email address, whether
+        you checked the job alert box, and when the match ran, for 90 days after the match. After that the record is
+        deleted. We also set a cookie on your browser that marks the free match as used, and we keep a daily count per
+        network, stored as a scrambled code rather than your IP address and deleted after 7 days.
       </p>
       <p>
         You can upload a PDF or Word file, or paste the text. The file stays on your device. The page reads the text in
@@ -180,7 +186,8 @@ export function PrivacyDocument() {
       <p>
         We use Vercel Web Analytics. It does not set a cookie. It records page views and these events: signup (first
         sign-in, and whether it was email or Google), paywall_view (which page showed the membership card),
-        pricing_view, checkout_start (which plan), purchase (which plan), match_run (free account or membership), and
+        pricing_view, checkout_start (which plan), purchase (which plan), match_email (an email was entered for a free
+        match, and whether the alert box was checked), match_run (no account, free account or membership), and
         mark_applied (whether a member marked a job applied or undid it). Those events do not include your name, email
         address, resume, card, or which job you marked.
       </p>
@@ -213,6 +220,10 @@ export function PrivacyDocument() {
           <tr>
             <td>Resume match counts</td>
             <td>Until you delete the account.</td>
+          </tr>
+          <tr>
+            <td>Free match record when you are not signed in (email address, alert choice, date)</td>
+            <td>90 days after the free match, then deleted automatically.</td>
           </tr>
           <tr>
             <td>Jobs you marked as applied, with the copy of each job&apos;s details</td>

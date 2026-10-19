@@ -126,7 +126,7 @@ function Disclosure({ checkout }: { checkout: boolean }) {
         the end of the period you already paid for. {refundSentence()}
       </p>
       <p>
-        A free account includes one resume match. Matching is never required to get the weekly email, and the weekly
+        One resume match is free, with or without an account. Matching is never required to get the weekly email, and the weekly
         email is never required to match.
       </p>
       <p>Memberships are offered to people in {LEGAL.sellTo}.</p>
