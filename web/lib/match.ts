@@ -195,6 +195,22 @@ function guestUsedBody(): MatchBody {
   return { ok: false, code: "free_used", error: MSG.guestUsed, upgrade: "/pricing/", login: "/login/?next=/match/" };
 }
 
+/** Too many copies of one submit. Retryable: a new submit gets a new run id. Nothing was counted. */
+function repeatLimitBody(): MatchBody {
+  return { ok: false, code: "repeat_limit", error: MSG.error };
+}
+
+/**
+ * New value for the pj_free_match cookie after a guest response, or null to leave it alone.
+ * Only a counted run raises it; a repeat of a run already counted never does (the original
+ * response, if the browser got it, already did). free_used fills it so the page shows the card.
+ */
+export function guestCookieRuns(status: number, body: MatchBody, browserRuns: number): number | null {
+  if (status === 200 && body.ok) return body.repeat ? null : Math.min(FREE_RUNS_PER_EMAIL, browserRuns + 1);
+  if (body.code === "free_used") return FREE_RUNS_PER_EMAIL;
+  return null;
+}
+
 function workerFailure(code: string, fallback: string): { error: string; limit: string | null } {
   if (code === "paused") return { error: MSG.paused, limit: "worker_spend" };
   if (code === "daily") return { error: MSG.daily, limit: "worker_daily" };
@@ -380,6 +396,16 @@ async function claimFreeRun(email: string, consent: boolean, runId: string): Pro
   return rows.length > 0;
 }
 
+/** This run id was claimed for the email within the window (so a failed claimRepeat means its repeats are used up). */
+async function recentRunId(email: string, runId: string): Promise<boolean> {
+  const rows = await query<{ hit: number }>(
+    `select 1 as hit from match_free_runs
+     where email_key = $1 and run_id = $2 and run_id_at > now() - make_interval(mins => $3)`,
+    [normalizeEmail(email), runId, RUN_ID_WINDOW_MINUTES],
+  );
+  return rows.length > 0;
+}
+
 /** Gives the run back after a failed match. A guest row that drops to zero runs is removed. */
 async function releaseFreeRun(email: string, runId: string): Promise<void> {
   const key = normalizeEmail(email);
@@ -540,6 +566,11 @@ export async function runGuestMatch(input: GuestInput, deps: MatchDeps = {}): Pr
   try {
     // A resent copy of a submit we already counted: same run, no new count, no network slot.
     if (run.fromClient) repeat = await claimRepeat(email, run.id);
+    if (!repeat && run.fromClient && (await recentRunId(email, run.id))) {
+      // Same submit again after its repeats ran out: not a new run, and not "used up" either.
+      console.log(JSON.stringify({ event: "resume_match_limit", limit: "guest_repeat" }));
+      return { status: 409, body: repeatLimitBody() };
+    }
     if (!repeat) {
       if (input.browserRuns >= FREE_RUNS_PER_EMAIL) {
         console.log(JSON.stringify({ event: "resume_match_limit", limit: "guest_browser" }));
@@ -560,6 +591,10 @@ export async function runGuestMatch(input: GuestInput, deps: MatchDeps = {}): Pr
         tookNetwork = false;
         // Lost a race with a copy of the same submit: treat it as that run.
         if (run.fromClient) repeat = await claimRepeat(email, run.id);
+        if (!repeat && run.fromClient && (await recentRunId(email, run.id))) {
+          console.log(JSON.stringify({ event: "resume_match_limit", limit: "guest_repeat" }));
+          return { status: 409, body: repeatLimitBody() };
+        }
         if (!repeat) {
           console.log(JSON.stringify({ event: "resume_match_limit", limit: "guest_email" }));
           return { status: 429, body: guestUsedBody() };

@@ -8,6 +8,7 @@ import {
   FREE_RUNS_PER_EMAIL,
   MSG,
   cookieRuns,
+  guestCookieRuns,
   isValidEmail,
   runGuestMatch,
   runMatch,
@@ -71,12 +72,11 @@ export async function POST(request: Request) {
         : undefined,
     });
     const headers: Record<string, string> = { ...NO_STORE };
-    if (result.status === 200 && result.body.ok && !gotcha.trim()) {
-      // A resent copy carries the same cookie as the original, so this still counts the run once.
-      headers["Set-Cookie"] = freeCookie(request, browserRuns + 1);
-      if (!result.body.repeat) reportEvent("match_run", { tier: "guest" }, request);
-    } else if (result.body.code === "free_used") {
-      headers["Set-Cookie"] = freeCookie(request, FREE_RUNS_PER_EMAIL);
+    if (!gotcha.trim()) {
+      // Only a counted run raises the browser counter; a resent copy of a counted run never does.
+      const nextRuns = guestCookieRuns(result.status, result.body, browserRuns);
+      if (nextRuns !== null) headers["Set-Cookie"] = freeCookie(request, nextRuns);
+      if (result.status === 200 && result.body.ok && !result.body.repeat) reportEvent("match_run", { tier: "guest" }, request);
     }
     return Response.json(result.body, { status: result.status, headers });
   }

@@ -6,6 +6,7 @@ import {
   GUEST_NETWORK_DAILY,
   cleanRunId,
   cookieRuns,
+  guestCookieRuns,
   MSG,
   isValidEmail,
   normalizeEmail,
@@ -323,10 +324,23 @@ try {
   assert.equal(resend.status, 200);
   assert.equal(resend.body.repeat, true);
   assert.equal((await ledger("race@example.com"))?.runs, 1);
-  //   c) repeats of one run id are capped
+  //   c) repeats of one run id are capped: retryable error, not "used up", nothing counted
   before = calls.length;
-  const capped = await runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0001" }), deps);
-  assert.equal(capped.status, 429);
+  netBefore = await networkCount();
+  const capped = await runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0001", ip: "203.0.113.90" }), deps);
+  assert.equal(capped.status, 409);
+  assert.equal(capped.body.code, "repeat_limit");
+  assert.equal(capped.body.error, MSG.error);
+  assert.equal(capped.body.upgrade, undefined);
+  assert.equal(calls.length, before);
+  assert.equal(await networkCount(), netBefore);
+  assert.equal((await ledger("race@example.com"))?.runs, 1);
+  //      and the browser counter is left alone (not filled to the limit)
+  assert.equal(guestCookieRuns(capped.status, capped.body, 1), null);
+  assert.equal(guestCookieRuns(capped.status, capped.body, 0), null);
+  //      concurrent copies past the cap: all retryable, none counted
+  const overCap = await Promise.all([1, 2, 3].map(() => runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0001" }), deps)));
+  assert.deepEqual(overCap.map((r) => r.body.code), ["repeat_limit", "repeat_limit", "repeat_limit"]);
   assert.equal(calls.length, before);
   assert.equal((await ledger("race@example.com"))?.runs, 1);
   //   d) a new run id is a new run
@@ -348,7 +362,13 @@ try {
   assert.equal(fifthAgain.status, 200);
   assert.equal(fifthAgain.body.repeat, true);
   assert.equal((await ledger("race@example.com"))?.runs, 5);
-  assert.equal((await runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0006" }), deps)).status, 429);
+  //      past the cap on the 5th run it is still retryable, not "used up"
+  assert.equal((await runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0005", browserRuns: 5 }), deps)).status, 200);
+  const fifthCapped = await runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0005", browserRuns: 5 }), deps);
+  assert.equal(fifthCapped.body.code, "repeat_limit");
+  const raceSixth = await runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0006" }), deps);
+  assert.equal(raceSixth.status, 429);
+  assert.equal(raceSixth.body.code, "free_used");
   //   g) if the first copy failed, a resend runs as a new counted run
   mode = "error";
   assert.notEqual((await runGuestMatch(guest({ email: "flaky@example.com", runId: "flaky-run-001" }), deps)).status, 200);
@@ -373,6 +393,28 @@ try {
   assert.deepEqual([x.status, y.status].sort(), [200, 429]);
   assert.equal(calls.length, netBefore + 1);
   assert.equal((await ledger("flaky@example.com"))?.runs, 5);
+
+  // 12j. Browser counter (pj_free_match) after each kind of guest response
+  const okBody = { ok: true, strong: [], maybe: [], jobs_checked: 0, shown: 0, locked: 0, member: false, alerts: false, summary: "", guest: true };
+  assert.equal(guestCookieRuns(200, { ...okBody, repeat: false }, 0), 1);
+  assert.equal(guestCookieRuns(200, { ...okBody, repeat: false }, 3), 4);
+  assert.equal(guestCookieRuns(200, { ...okBody, repeat: false }, FREE_RUNS_PER_EMAIL), FREE_RUNS_PER_EMAIL);
+  //      a repeat never raises it: not when the browser got the first answer, nor when it did not
+  assert.equal(guestCookieRuns(200, { ...okBody, repeat: true }, 1), null);
+  assert.equal(guestCookieRuns(200, { ...okBody, repeat: true }, 0), null);
+  assert.equal(guestCookieRuns(200, { ...okBody, repeat: true }, 4), null);
+  //      real responses: original then its resend, with the cookie the browser holds after the original
+  const cookieRun = cleanRunId("cookie-run-00000001").id;
+  const original = await runGuestMatch(guest({ email: "cookie@example.com", runId: cookieRun, browserRuns: 2 }), deps);
+  const afterOriginal = guestCookieRuns(original.status, original.body, 2);
+  assert.equal(afterOriginal, 3);
+  const resent = await runGuestMatch(guest({ email: "cookie@example.com", runId: cookieRun, browserRuns: afterOriginal! }), deps);
+  assert.equal(resent.body.repeat, true);
+  assert.equal(guestCookieRuns(resent.status, resent.body, afterOriginal!), null);
+  //      free_used fills it; other errors leave it
+  assert.equal(guestCookieRuns(429, { ok: false, code: "free_used", error: MSG.guestUsed }, 1), FREE_RUNS_PER_EMAIL);
+  assert.equal(guestCookieRuns(429, { ok: false, code: "network", error: MSG.network }, 1), null);
+  assert.equal(guestCookieRuns(502, { ok: false, code: "error", error: MSG.error }, 1), null);
 
   // 13. Retention: free-match emails deleted 90 days after the last run, network rows after 7 days
   assert.equal(FREE_MATCH_RETENTION_DAYS, 90);
