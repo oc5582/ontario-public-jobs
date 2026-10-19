@@ -1,11 +1,21 @@
-import { createHash, createHmac } from "crypto";
+import { createHash, createHmac, randomUUID } from "crypto";
 import { query } from "./db";
 
-export const FREE_MATCH_LIMIT = 1;
+/**
+ * Free matches per normalised email (signed out or free account), and per browser.
+ * Customer-facing copy still says one free match.
+ */
+export const FREE_RUNS_PER_EMAIL = 5;
+export const FREE_MATCH_LIMIT = FREE_RUNS_PER_EMAIL;
+/** A repeat of the same submit (same email and run id) within this window is the same run, not a new one. */
+export const RUN_ID_WINDOW_MINUTES = 5;
+/** How many times one run id may be repeated (each repeat calls the Worker again but is not counted). */
+export const RUN_ID_MAX_REPEATS = 2;
 export const FREE_RESULTS = 10;
 /** Signed-out free matches per network per Toronto day (successful or in progress). */
 export const GUEST_NETWORK_DAILY = 5;
 /** Browser flag set after a signed-out free match. Checked on the server. */
+/** Browser counter of free matches (HttpOnly, value 0-5). Checked on the server. */
 export const FREE_COOKIE = "pj_free_match";
 export const FREE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 export const MEMBER_DAILY_LIMIT = 20;
@@ -52,6 +62,8 @@ export type MatchBody = {
   alerts?: boolean;
   summary?: string;
   guest?: boolean;
+  /** This response is for a resent copy of a submit already counted. */
+  repeat?: boolean;
 };
 
 type WorkerPayload = {
@@ -295,41 +307,93 @@ export function normalizeEmail(value: string): string {
   return `${local}@${domain}`;
 }
 
-/** True when this email already had its free match, as a guest or on a free account. */
-async function freeRunTaken(email: string): Promise<boolean> {
-  const rows = await query<{ taken: boolean }>(
-    `select exists (select 1 from match_free_runs where email_key = $1 and runs > 0)
-         or exists (
-           select 1 from resume_match_usage u
-           join profiles p on p.id = u.profile_id
-           where lower(p.email) = $2
-         ) as taken`,
+const RUN_ID_RE = /^[A-Za-z0-9_-]{8,64}$/;
+
+/** The client's run id if it looks valid, otherwise a server one (no dedupe for that request). */
+export function cleanRunId(value: unknown): { id: string; fromClient: boolean } {
+  const raw = String(value || "").trim();
+  return RUN_ID_RE.test(raw) ? { id: raw, fromClient: true } : { id: `srv-${randomUUID()}`, fromClient: false };
+}
+
+/** Browser counter from the cookie value. Unknown or bad values count as 0; the old "1" flag counts as 1. */
+export function cookieRuns(value: string | undefined): number {
+  const n = Number.parseInt(String(value || ""), 10);
+  return Number.isFinite(n) && n > 0 ? Math.min(n, FREE_RUNS_PER_EMAIL) : 0;
+}
+
+/** Free runs this email has used, as a guest (ledger) or on a free account. */
+async function freeRunsUsed(email: string): Promise<number> {
+  const rows = await query<{ used: number }>(
+    `select greatest(
+       coalesce((select runs from match_free_runs where email_key = $1), 0),
+       (select count(*)::int from resume_match_usage u
+          join profiles p on p.id = u.profile_id
+          where lower(p.email) = $2)
+     )::int as used`,
     [normalizeEmail(email), email.trim().toLowerCase()],
   );
-  return Boolean(rows[0]?.taken);
+  return Number(rows[0]?.used || 0);
 }
 
-/** Claims the email's free run before the Worker is called. False when it is already taken. */
-async function reserveFreeRun(email: string, consent: boolean): Promise<string | null> {
-  const rows = await query<{ token: string }>(
-    `insert into match_free_runs (email_key, email, alerts_consent, source, runs)
-     values ($1, $2, $3, 'guest', 1)
-     on conflict (email_key) do nothing
-     returning created_at::text as token`,
-    [normalizeEmail(email), email.trim().toLowerCase().slice(0, 254), consent],
+/**
+ * Same submit seen again (same email and run id, recent): allowed without counting a run
+ * or a network slot, at most RUN_ID_MAX_REPEATS times.
+ */
+async function claimRepeat(email: string, runId: string): Promise<boolean> {
+  const rows = await query<{ runs: number }>(
+    `update match_free_runs
+       set run_id_repeats = run_id_repeats + 1
+     where email_key = $1
+       and run_id = $2
+       and run_id_at > now() - make_interval(mins => $3)
+       and run_id_repeats < $4
+     returning runs`,
+    [normalizeEmail(email), runId, RUN_ID_WINDOW_MINUTES, RUN_ID_MAX_REPEATS],
   );
-  return rows[0]?.token || null;
+  return rows.length > 0;
 }
 
-/** Gives the free run back after a failed match. Only removes the row this request created. */
-async function releaseFreeRun(email: string, token: string): Promise<void> {
-  await query(`delete from match_free_runs where email_key = $1 and created_at = $2::timestamptz and source = 'guest'`, [
-    normalizeEmail(email),
-    token,
-  ]);
+/**
+ * Counts one free run for the email before the Worker is called. False when the email has
+ * used all its free runs, or when this run id was just claimed (a repeat, handled by claimRepeat).
+ * One statement, so two requests at once cannot both take the last run.
+ */
+async function claimFreeRun(email: string, consent: boolean, runId: string): Promise<boolean> {
+  const rows = await query<{ runs: number }>(
+    `insert into match_free_runs (email_key, email, alerts_consent, source, runs, run_id, run_id_at, run_id_repeats)
+     values ($1, $2, $3, 'guest', 1, $4, now(), 0)
+     on conflict (email_key) do update
+       set runs = match_free_runs.runs + 1,
+           last_run_at = now(),
+           run_id = excluded.run_id,
+           run_id_at = now(),
+           run_id_repeats = 0,
+           alerts_consent = match_free_runs.alerts_consent or excluded.alerts_consent
+       where match_free_runs.runs < $5
+         and not (
+           match_free_runs.run_id is not distinct from excluded.run_id
+           and match_free_runs.run_id_at > now() - make_interval(mins => $6)
+         )
+     returning runs`,
+    [normalizeEmail(email), email.trim().toLowerCase().slice(0, 254), consent, runId, FREE_RUNS_PER_EMAIL, RUN_ID_WINDOW_MINUTES],
+  );
+  return rows.length > 0;
 }
 
-/** A free account used its match: note the email so the guest form does not give a second one. */
+/** Gives the run back after a failed match. A guest row that drops to zero runs is removed. */
+async function releaseFreeRun(email: string, runId: string): Promise<void> {
+  const key = normalizeEmail(email);
+  await query(
+    `update match_free_runs
+       set runs = greatest(runs - 1, 0),
+           run_id = case when run_id = $2 then null else run_id end
+     where email_key = $1`,
+    [key, runId],
+  );
+  await query(`delete from match_free_runs where email_key = $1 and runs = 0 and source = 'guest'`, [key]);
+}
+
+/** A free account used a free match: count it on the email so the guest form shares the same limit. */
 async function noteAccountFreeRun(email: string, consent: boolean): Promise<void> {
   await query(
     `insert into match_free_runs (email_key, email, alerts_consent, source, runs)
@@ -403,10 +467,10 @@ export async function runMatch(input: MatchInput, deps: MatchDeps = {}): Promise
     return { status: 429, body: limitBody(input.isMember) };
   }
   if (!input.isMember) {
-    // The same email already had a signed-out free match. A ledger error never blocks the account.
+    // The same email already used its free runs (signed out or on this account). A ledger error never blocks the account.
     const taken = await query<{ taken: boolean }>(
-      `select exists (select 1 from match_free_runs where email_key = $1 and runs > 0) as taken`,
-      [normalizeEmail(input.email)],
+      `select exists (select 1 from match_free_runs where email_key = $1 and runs >= $2) as taken`,
+      [normalizeEmail(input.email), FREE_RUNS_PER_EMAIL],
     ).then((rows) => Boolean(rows[0]?.taken)).catch((error) => {
       quiet("account_check")(error);
       return false;
@@ -435,15 +499,17 @@ export async function runMatch(input: MatchInput, deps: MatchDeps = {}): Promise
 }
 
 // ---------------------------------------------------------------------------
-// Signed-out match: email required, one free run per email and per browser
+// Signed-out match: email required, FREE_RUNS_PER_EMAIL per email and per browser
 
 export type GuestInput = {
   email: string;
   resumeText: string;
   consent: boolean;
   gotcha?: string;
-  /** The browser already has the free-match cookie. */
-  usedCookie: boolean;
+  /** Free matches this browser has already had (from the HttpOnly cookie). */
+  browserRuns: number;
+  /** Client run id for this submit. A repeat of the same id is the same run. */
+  runId?: unknown;
   /** Client IP from the platform headers. Only its HMAC is stored. */
   ip: string;
   /** Runs only when alerts are checked, once the free run is reserved and right before the Worker call (records the consent). */
@@ -461,36 +527,44 @@ export async function runGuestMatch(input: GuestInput, deps: MatchDeps = {}): Pr
   if (resume.length < MIN_RESUME_CHARS) return { status: 400, body: { ok: false, code: "resume", error: MSG.resume } };
   if (resume.length > MAX_RESUME_CHARS) resume = resume.slice(0, MAX_RESUME_CHARS);
 
-  if (input.usedCookie) {
-    console.log(JSON.stringify({ event: "resume_match_limit", limit: "guest_browser" }));
-    return { status: 429, body: guestUsedBody() };
-  }
-
   const { secret, workerUrl } = workerConfig(deps);
   if (!secret || !workerUrl) return unconfigured();
 
+  const run = cleanRunId(input.runId);
   const now = deps.now || new Date();
   const day = torontoDate(now);
   const net = networkHash(input.ip, day, secret);
-  let token: string | null = null;
+  let repeat = false;
   let tookNetwork = false;
 
   try {
-    if (await freeRunTaken(email)) {
-      console.log(JSON.stringify({ event: "resume_match_limit", limit: "guest_email" }));
-      return { status: 429, body: guestUsedBody() };
-    }
-    tookNetwork = await reserveNetwork(net, day, GUEST_NETWORK_DAILY);
-    if (!tookNetwork) {
-      console.log(JSON.stringify({ event: "resume_match_limit", limit: "guest_network" }));
-      return { status: 429, body: { ok: false, code: "network", error: MSG.network, login: "/login/?next=/match/" } };
-    }
-    token = await reserveFreeRun(email, input.consent);
-    if (!token) {
-      await releaseNetwork(net, day);
-      tookNetwork = false;
-      console.log(JSON.stringify({ event: "resume_match_limit", limit: "guest_email" }));
-      return { status: 429, body: guestUsedBody() };
+    // A resent copy of a submit we already counted: same run, no new count, no network slot.
+    if (run.fromClient) repeat = await claimRepeat(email, run.id);
+    if (!repeat) {
+      if (input.browserRuns >= FREE_RUNS_PER_EMAIL) {
+        console.log(JSON.stringify({ event: "resume_match_limit", limit: "guest_browser" }));
+        return { status: 429, body: guestUsedBody() };
+      }
+      if ((await freeRunsUsed(email)) >= FREE_RUNS_PER_EMAIL) {
+        console.log(JSON.stringify({ event: "resume_match_limit", limit: "guest_email" }));
+        return { status: 429, body: guestUsedBody() };
+      }
+      tookNetwork = await reserveNetwork(net, day, GUEST_NETWORK_DAILY);
+      if (!tookNetwork) {
+        console.log(JSON.stringify({ event: "resume_match_limit", limit: "guest_network" }));
+        return { status: 429, body: { ok: false, code: "network", error: MSG.network, login: "/login/?next=/match/" } };
+      }
+      const claimed = await claimFreeRun(email, input.consent, run.id);
+      if (!claimed) {
+        await releaseNetwork(net, day);
+        tookNetwork = false;
+        // Lost a race with a copy of the same submit: treat it as that run.
+        if (run.fromClient) repeat = await claimRepeat(email, run.id);
+        if (!repeat) {
+          console.log(JSON.stringify({ event: "resume_match_limit", limit: "guest_email" }));
+          return { status: 429, body: guestUsedBody() };
+        }
+      }
     }
   } catch (error) {
     // Ledger missing or the database is down: refuse before any AI spend.
@@ -498,17 +572,21 @@ export async function runGuestMatch(input: GuestInput, deps: MatchDeps = {}): Pr
     if (tookNetwork) await releaseNetwork(net, day).catch(quiet("guest_release_network"));
     return { status: 503, body: { ok: false, code: "unavailable", error: MSG.unavailable } };
   }
+  if (repeat) console.log(JSON.stringify({ event: "resume_match_repeat", who: "guest" }));
   if (Math.random() < 0.05) pruneNetworks(day).catch(quiet("guest_prune"));
   if (input.consent && input.beforeWorker) await input.beforeWorker().catch(quiet("guest_before_worker"));
 
   const call = await callWorker({ email, consent: input.consent, resume }, deps, { who: "guest" });
   resume = "";
   if (!call.ok) {
-    await Promise.all([
-      releaseFreeRun(email, token).catch(quiet("guest_release_email")),
-      releaseNetwork(net, day).catch(quiet("guest_release_network")),
-    ]);
+    // A repeat never counted anything, so there is nothing to give back.
+    if (!repeat) {
+      await Promise.all([
+        releaseFreeRun(email, run.id).catch(quiet("guest_release_email")),
+        releaseNetwork(net, day).catch(quiet("guest_release_network")),
+      ]);
+    }
     return { status: call.status, body: call.body };
   }
-  return { status: 200, body: { ...successBody(call.payload, false, input.consent), guest: true } };
+  return { status: 200, body: { ...successBody(call.payload, false, input.consent), guest: true, repeat } };
 }

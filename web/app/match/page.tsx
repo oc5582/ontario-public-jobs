@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { getViewer } from "@/lib/auth";
-import { FREE_COOKIE, FREE_RESULTS } from "@/lib/match";
+import { FREE_COOKIE, FREE_RESULTS, FREE_RUNS_PER_EMAIL, cookieRuns } from "@/lib/match";
 import { alertConsentLabel, alertConsentSender } from "@/lib/legal-copy";
 import { pageMetadata } from "@/lib/seo";
 import { BRAND } from "@/lib/site";
@@ -16,7 +16,7 @@ export const metadata: Metadata = pageMetadata({
 export default async function MatchPage() {
   const viewer = await getViewer();
   const signedIn = Boolean(viewer.email && viewer.profile);
-  const guestUsed = !signedIn && (await cookies()).get(FREE_COOKIE)?.value === "1";
+  const guestUsed = !signedIn && cookieRuns((await cookies()).get(FREE_COOKIE)?.value) >= FREE_RUNS_PER_EMAIL;
 
   const resumeFields = (
     <fieldset>

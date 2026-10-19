@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { MSG, capResults, runMatch, type MatchHit } from "../web/lib/match.ts";
+import { FREE_RUNS_PER_EMAIL, MSG, capResults, runMatch, type MatchHit } from "../web/lib/match.ts";
 import { query } from "../web/lib/db.ts";
 
 const envFile = readFileSync(new URL("../web/.env.local", import.meta.url), "utf8");
@@ -107,15 +107,25 @@ try {
   assert.equal(calls[0].casl_consent, "");
   assert.equal(await count(FREE_ID), 1);
 
-  const second = await runMatch(
+  // Free runs 2-5 on the account are allowed (FREE_RUNS_PER_EMAIL), the 6th is blocked
+  for (let i = 2; i <= FREE_RUNS_PER_EMAIL; i++) {
+    const again = await runMatch(
+      { profileId: FREE_ID, email: "free-match@example.com", isMember: false, resumeText: RESUME, consent: false },
+      deps,
+    );
+    assert.equal(again.status, 200, `free run ${i}`);
+    assert.equal(again.body.shown, 10);
+  }
+  assert.equal(calls.length, FREE_RUNS_PER_EMAIL);
+  const sixth = await runMatch(
     { profileId: FREE_ID, email: "free-match@example.com", isMember: false, resumeText: RESUME, consent: true },
     deps,
   );
-  assert.equal(second.status, 429);
-  assert.equal(second.body.error, MSG.freeUsed);
-  assert.equal(second.body.upgrade, "/pricing/");
-  assert.equal(calls.length, 1);
-  assert.equal(await count(FREE_ID), 1);
+  assert.equal(sixth.status, 429);
+  assert.equal(sixth.body.error, MSG.freeUsed);
+  assert.equal(sixth.body.upgrade, "/pricing/");
+  assert.equal(calls.length, FREE_RUNS_PER_EMAIL);
+  assert.equal(await count(FREE_ID), FREE_RUNS_PER_EMAIL);
 
   mode = "error";
   const errored = await runMatch(

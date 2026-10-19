@@ -81,6 +81,15 @@
     }
   });
   var lastData = null;
+  var inFlight = false;
+  function newRunId() {
+    try {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+    } catch (ignore) {
+      /* fall through */
+    }
+    return "r" + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+  }
   var appliedKeys = null;
   function jobKey(value) {
     var path = String(value || "").trim();
@@ -206,6 +215,8 @@
   }
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
+    // One request at a time, even if the event fires again before the button is disabled.
+    if (inFlight) return;
     var consent = document.getElementById("consent").checked;
     var emailEl = document.getElementById("email");
     var email = emailEl ? emailEl.value.trim() : "";
@@ -219,8 +230,11 @@
       setStatus("Add your resume. Upload a PDF or Word file, or paste the text.", true);
       return;
     }
+    inFlight = true;
     btn.disabled = true;
     btn.textContent = "Checking jobs...";
+    // Same id for any resent copy of this submit, so the server counts it once.
+    var runId = newRunId();
     setStatus("Comparing your resume with current openings. This takes about 30 to 60 seconds. Please keep this page open. Matches are suggestions and can be wrong.", false);
     try {
       var res = await fetch(ENDPOINT, {
@@ -228,6 +242,7 @@
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
           email: email,
+          run_id: runId,
           casl_consent: consent ? "yes" : "",
           resume_text: resume,
           _gotcha: document.getElementById("gotcha").value,
@@ -266,6 +281,7 @@
     } catch (err) {
       setStatus("Something went wrong. Please check your connection and try again.", true);
     } finally {
+      inFlight = false;
       btn.disabled = false;
       btn.textContent = "Find my jobs";
     }

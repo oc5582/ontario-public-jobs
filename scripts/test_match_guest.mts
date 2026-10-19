@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
   FREE_RESULTS,
+  FREE_RUNS_PER_EMAIL,
   GUEST_NETWORK_DAILY,
+  cleanRunId,
+  cookieRuns,
   MSG,
   isValidEmail,
   normalizeEmail,
@@ -56,7 +59,7 @@ const deps = { fetchImpl: fetchImpl as typeof fetch, trustedSecret: SECRET, work
 let ipSeq = 0;
 function guest(over: Partial<GuestInput> = {}): GuestInput {
   ipSeq += 1;
-  return { email: "", resumeText: RESUME, consent: false, usedCookie: false, ip: `198.51.100.${ipSeq}`, ...over };
+  return { email: "", resumeText: RESUME, consent: false, browserRuns: 0, ip: `198.51.100.${ipSeq}`, ...over };
 }
 
 async function ledger(email: string) {
@@ -117,25 +120,44 @@ try {
   assert.equal(row1?.runs, 1);
   assert.equal(row1?.source, "guest");
 
-  // 2. Second run, same email: blocked before the Worker, with membership and sign-in links
+  // 2. Runs 1-5 for one email are allowed (fresh browser each time), run 6 is blocked before the Worker
+  assert.equal(FREE_RUNS_PER_EMAIL, 5);
+  for (let i = 2; i <= FREE_RUNS_PER_EMAIL; i++) {
+    const r = await runGuestMatch(guest({ email: i % 2 ? "guest.one@example.com" : "guest.one+again@example.com" }), deps);
+    assert.equal(r.status, 200, `run ${i}: ${JSON.stringify(r.body)}`);
+    assert.equal(r.body.shown, 10);
+    assert.equal(r.body.locked, 4);
+    assert.equal((await ledger("guest.one@example.com"))?.runs, i);
+  }
   let before = calls.length;
-  const again = await runGuestMatch(guest({ email: "guest.one+again@example.com" }), deps);
-  assert.equal(again.status, 429);
-  assert.equal(again.body.code, "free_used");
-  assert.equal(again.body.error, MSG.guestUsed);
-  assert.equal(again.body.upgrade, "/pricing/");
-  assert.equal(again.body.login, "/login/?next=/match/");
+  const sixth = await runGuestMatch(guest({ email: "guest.one+again@example.com" }), deps);
+  assert.equal(sixth.status, 429);
+  assert.equal(sixth.body.code, "free_used");
+  assert.equal(sixth.body.error, MSG.guestUsed);
+  assert.equal(sixth.body.upgrade, "/pricing/");
+  assert.equal(sixth.body.login, "/login/?next=/match/");
   assert.equal(calls.length, before);
+  assert.equal((await ledger("guest.one@example.com"))?.runs, 5);
 
   // Gmail dots and +tags count as the same person
-  assert.equal((await runGuestMatch(guest({ email: "first.last@gmail.com" }), deps)).status, 200);
+  for (let i = 1; i <= FREE_RUNS_PER_EMAIL; i++) {
+    assert.equal((await runGuestMatch(guest({ email: i % 2 ? "first.last@gmail.com" : "FirstLast+2@googlemail.com" }), deps)).status, 200);
+  }
   before = calls.length;
-  const dotted = await runGuestMatch(guest({ email: "FirstLast+2@googlemail.com" }), deps);
-  assert.equal(dotted.status, 429);
+  assert.equal((await runGuestMatch(guest({ email: "f.i.r.s.t.l.a.s.t@gmail.com" }), deps)).status, 429);
   assert.equal(calls.length, before);
 
-  // 3. Second run, same browser (cookie), new email: blocked, nothing reserved
-  const cookieBlocked = await runGuestMatch(guest({ email: "new-browser@example.com", usedCookie: true }), deps);
+  // 3. Browser counter: runs 2-5 are not blocked by the cookie, the 6th is (even with a new email)
+  assert.equal(cookieRuns(undefined), 0);
+  assert.equal(cookieRuns("1"), 1);
+  assert.equal(cookieRuns("4"), 4);
+  assert.equal(cookieRuns("99"), 5);
+  assert.equal(cookieRuns("junk"), 0);
+  for (let n = 1; n < FREE_RUNS_PER_EMAIL; n++) {
+    assert.equal((await runGuestMatch(guest({ email: `browser-${n}@example.com`, browserRuns: n }), deps)).status, 200);
+  }
+  before = calls.length;
+  const cookieBlocked = await runGuestMatch(guest({ email: "new-browser@example.com", browserRuns: 5 }), deps);
   assert.equal(cookieBlocked.status, 429);
   assert.equal(cookieBlocked.body.code, "free_used");
   assert.equal(calls.length, before);
@@ -154,17 +176,17 @@ try {
   assert.equal(calls.at(-1)?.casl_consent, "yes");
   assert.equal(consentHook, 1);
   assert.equal((await ledger("guest-alerts@example.com"))?.alerts_consent, true);
-  // Unchecked never calls the consent hook
   let uncheckedHook = 0;
   await runGuestMatch(guest({ email: "guest-noalerts@example.com", beforeWorker: async () => { uncheckedHook += 1; } }), deps);
   assert.equal(uncheckedHook, 0);
+  assert.equal(calls.at(-1)?.email, "");
 
   // 5. Worker failure: no run used, network slot handed back, then a retry works
   const failIp = "203.0.113.50";
   for (const failure of ["error", "partial", "throw", "paused"]) {
     mode = failure;
     const netBefore = await networkCount();
-    const failed = await runGuestMatch(guest({ email: "guest-fail@example.com", ip: failIp }), deps);
+    const failed = await runGuestMatch(guest({ email: "guest-fail@example.com", ip: failIp, runId: `fail-${failure}-run` }), deps);
     assert.notEqual(failed.status, 200, failure);
     assert.equal(failed.body.ok, false);
     assert.equal(await ledger("guest-fail@example.com"), null, `${failure} used the free run`);
@@ -172,6 +194,11 @@ try {
   }
   mode = "ok";
   assert.equal((await runGuestMatch(guest({ email: "guest-fail@example.com", ip: failIp }), deps)).status, 200);
+  // A failure on a later run gives back only that run
+  mode = "error";
+  assert.notEqual((await runGuestMatch(guest({ email: "guest-fail@example.com", ip: failIp }), deps)).status, 200);
+  mode = "ok";
+  assert.equal((await ledger("guest-fail@example.com"))?.runs, 1);
 
   // 6. Per-network daily limit
   const sharedIp = "203.0.113.77";
@@ -185,10 +212,8 @@ try {
   assert.equal(netBlocked.body.code, "network");
   assert.equal(calls.length, before);
   assert.equal(await ledger("net-over@example.com"), null);
-  // The next Toronto day is a fresh count
   const tomorrow = await runGuestMatch(guest({ email: "net-over@example.com", ip: sharedIp }), { ...deps, now: new Date(Date.now() + 86_400_000) });
   assert.equal(tomorrow.status, 200);
-  // Raw IPs are never stored
   const stored = await query<{ net_hash: string }>("select net_hash from match_free_networks");
   assert.ok(stored.length > 0);
   for (const row of stored) assert.match(row.net_hash, /^[0-9a-f]{64}$/);
@@ -211,33 +236,36 @@ try {
   assert.equal(offline.status, 503);
   assert.equal(await ledger("offline@example.com"), null);
 
-  // 9. Guest first, then a free account with the same email: the account does not get a second free run
-  assert.equal((await runGuestMatch(guest({ email: "guest-later-account@example.com" }), deps)).status, 200);
-  before = calls.length;
-  const acct = await runMatch(
+  // 9. Guest and free account share the 5 runs per email
+  for (let i = 1; i <= 4; i++) {
+    assert.equal((await runGuestMatch(guest({ email: "guest-later-account@example.com" }), deps)).status, 200);
+  }
+  const acct5 = await runMatch(
     { profileId: FREE_ID, email: "guest-later-account@example.com", isMember: false, resumeText: RESUME, consent: false },
     deps,
   );
-  assert.equal(acct.status, 429);
-  assert.equal(acct.body.error, MSG.freeUsed);
+  assert.equal(acct5.status, 200, JSON.stringify(acct5.body));
+  assert.equal(acct5.body.shown, 10);
+  assert.equal((await ledger("guest-later-account@example.com"))?.runs, 5);
+  before = calls.length;
+  const acct6 = await runMatch(
+    { profileId: FREE_ID, email: "guest-later-account@example.com", isMember: false, resumeText: RESUME, consent: false },
+    deps,
+  );
+  assert.equal(acct6.status, 429);
+  assert.equal(acct6.body.error, MSG.freeUsed);
+  assert.equal((await runGuestMatch(guest({ email: "guest-later-account@example.com" }), deps)).status, 429);
   assert.equal(calls.length, before);
-
-  // Free account first, then the guest form with that email: blocked too
+  // Free-account runs recorded before the ledger existed still count for the guest form
   await query("delete from match_free_runs where email_key = $1", ["guest-later-account@example.com"]);
-  const acctFirst = await runMatch(
-    { profileId: FREE_ID, email: "guest-later-account@example.com", isMember: false, resumeText: RESUME, consent: false },
-    deps,
-  );
-  assert.equal(acctFirst.status, 200);
-  assert.equal(acctFirst.body.shown, 10);
-  assert.equal(acctFirst.body.locked, 4);
-  assert.equal((await ledger("guest-later-account@example.com"))?.source, "account");
-  before = calls.length;
-  const guestAfter = await runGuestMatch(guest({ email: "guest-later-account@example.com" }), deps);
-  assert.equal(guestAfter.status, 429);
-  assert.equal(calls.length, before);
+  await query("delete from resume_match_usage where profile_id = $1", [FREE_ID]);
+  for (let i = 0; i < 5; i++) {
+    await query("insert into resume_match_usage (profile_id, email_hash, used_on) values ($1, 'x', current_date)", [FREE_ID]);
+  }
+  assert.equal((await runGuestMatch(guest({ email: "guest-later-account@example.com" }), deps)).status, 429);
+  await query("delete from resume_match_usage where profile_id = $1", [FREE_ID]);
 
-  // 10. Paid member unaffected, even with a guest record for the same email
+  // 10. Paid member unaffected, even with guest records for the same email
   assert.equal((await runGuestMatch(guest({ email: "guest-member@example.com" }), deps)).status, 200);
   for (let i = 0; i < 3; i++) {
     const member = await runMatch(
@@ -255,7 +283,7 @@ try {
   await query("alter table match_free_runs rename to match_free_runs_hidden");
   try {
     before = calls.length;
-    const noTable = await runGuestMatch(guest({ email: "no-table@example.com" }), deps);
+    const noTable = await runGuestMatch(guest({ email: "no-table@example.com", runId: "no-table-run-1" }), deps);
     assert.equal(noTable.status, 503);
     assert.equal(noTable.body.error, MSG.unavailable);
     assert.equal(calls.length, before);
@@ -264,24 +292,87 @@ try {
       deps,
     );
     assert.equal(member.status, 200);
-    await query("delete from resume_match_usage where profile_id = $1", [FREE_ID]);
     const free = await runMatch(
       { profileId: FREE_ID, email: "guest-later-account@example.com", isMember: false, resumeText: RESUME, consent: false },
       deps,
     );
     assert.equal(free.status, 200);
+    await query("delete from resume_match_usage where profile_id = $1", [FREE_ID]);
   } finally {
     await query("alter table match_free_runs_hidden rename to match_free_runs");
   }
 
-  // 12. Two requests at once for the same email: only one runs
+  // 12. Duplicate submits (same email + run id)
+  assert.equal(cleanRunId("abc").fromClient, false);
+  assert.equal(cleanRunId("2b7f4c1e-8d0a-4a51-9a3e-0f6c2b1d9e77").fromClient, true);
+  assert.equal(cleanRunId("bad id with spaces").fromClient, false);
+  //   a) concurrent copies: both get results, the run and the network slot are counted once
+  let netBefore = await networkCount();
   before = calls.length;
   const [a, b] = await Promise.all([
-    runGuestMatch(guest({ email: "race@example.com" }), deps),
-    runGuestMatch(guest({ email: "race@example.com" }), deps),
+    runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0001", ip: "203.0.113.90" }), deps),
+    runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0001", ip: "203.0.113.90" }), deps),
   ]);
-  assert.deepEqual([a.status, b.status].sort(), [200, 429]);
-  assert.equal(calls.length, before + 1);
+  assert.deepEqual([a.status, b.status], [200, 200], JSON.stringify([a.body, b.body]));
+  assert.deepEqual([a.body.repeat, b.body.repeat].sort(), [false, true]);
+  assert.equal((await ledger("race@example.com"))?.runs, 1);
+  assert.equal(await networkCount(), netBefore + 1);
+  assert.equal(calls.length, before + 2);
+  //   b) a later resend (the browser never saw the first answer) is the same run
+  const resend = await runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0001", browserRuns: 0 }), deps);
+  assert.equal(resend.status, 200);
+  assert.equal(resend.body.repeat, true);
+  assert.equal((await ledger("race@example.com"))?.runs, 1);
+  //   c) repeats of one run id are capped
+  before = calls.length;
+  const capped = await runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0001" }), deps);
+  assert.equal(capped.status, 429);
+  assert.equal(calls.length, before);
+  assert.equal((await ledger("race@example.com"))?.runs, 1);
+  //   d) a new run id is a new run
+  const next = await runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0002" }), deps);
+  assert.equal(next.status, 200);
+  assert.equal(next.body.repeat, false);
+  assert.equal((await ledger("race@example.com"))?.runs, 2);
+  //   e) the same run id after the window is a new run
+  await query("update match_free_runs set run_id_at = now() - interval '6 minutes' where email_key = 'race@example.com'");
+  const late = await runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0002" }), deps);
+  assert.equal(late.status, 200);
+  assert.equal(late.body.repeat, false);
+  assert.equal((await ledger("race@example.com"))?.runs, 3);
+  //   f) the duplicate of the 5th run is not blocked and does not make a 6th
+  await query("update match_free_runs set runs = 4 where email_key = 'race@example.com'");
+  const fifth = await runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0005" }), deps);
+  assert.equal(fifth.status, 200);
+  const fifthAgain = await runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0005", browserRuns: 4 }), deps);
+  assert.equal(fifthAgain.status, 200);
+  assert.equal(fifthAgain.body.repeat, true);
+  assert.equal((await ledger("race@example.com"))?.runs, 5);
+  assert.equal((await runGuestMatch(guest({ email: "race@example.com", runId: "race-run-0006" }), deps)).status, 429);
+  //   g) if the first copy failed, a resend runs as a new counted run
+  mode = "error";
+  assert.notEqual((await runGuestMatch(guest({ email: "flaky@example.com", runId: "flaky-run-001" }), deps)).status, 200);
+  mode = "ok";
+  assert.equal(await ledger("flaky@example.com"), null);
+  const flakyResend = await runGuestMatch(guest({ email: "flaky@example.com", runId: "flaky-run-001" }), deps);
+  assert.equal(flakyResend.status, 200);
+  assert.equal(flakyResend.body.repeat, false);
+  assert.equal((await ledger("flaky@example.com"))?.runs, 1);
+  //   h) a failed repeat gives nothing back (it never counted)
+  mode = "error";
+  assert.notEqual((await runGuestMatch(guest({ email: "flaky@example.com", runId: "flaky-run-001" }), deps)).status, 200);
+  mode = "ok";
+  assert.equal((await ledger("flaky@example.com"))?.runs, 1);
+  //   i) concurrent different run ids at the last run: only one gets it
+  await query("update match_free_runs set runs = 4, run_id = null where email_key = 'flaky@example.com'");
+  netBefore = calls.length;
+  const [x, y] = await Promise.all([
+    runGuestMatch(guest({ email: "flaky@example.com", runId: "flaky-run-00x" }), deps),
+    runGuestMatch(guest({ email: "flaky@example.com", runId: "flaky-run-00y" }), deps),
+  ]);
+  assert.deepEqual([x.status, y.status].sort(), [200, 429]);
+  assert.equal(calls.length, netBefore + 1);
+  assert.equal((await ledger("flaky@example.com"))?.runs, 5);
 
   // 13. Retention: free-match emails deleted 90 days after the last run, network rows after 7 days
   assert.equal(FREE_MATCH_RETENTION_DAYS, 90);

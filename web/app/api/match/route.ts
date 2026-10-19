@@ -2,7 +2,16 @@ import { cookies } from "next/headers";
 import { recordMatchAlertConsent } from "@/lib/alert-consent";
 import { reportEvent } from "@/lib/analytics";
 import { getViewer, requestOrigin } from "@/lib/auth";
-import { FREE_COOKIE, FREE_COOKIE_MAX_AGE, MSG, isValidEmail, runGuestMatch, runMatch } from "@/lib/match";
+import {
+  FREE_COOKIE,
+  FREE_COOKIE_MAX_AGE,
+  FREE_RUNS_PER_EMAIL,
+  MSG,
+  cookieRuns,
+  isValidEmail,
+  runGuestMatch,
+  runMatch,
+} from "@/lib/match";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -20,13 +29,15 @@ function clientIp(request: Request): string {
   return (real || forwarded).trim().slice(0, 64) || "unknown";
 }
 
-function freeCookie(request: Request): string {
+/** Browser counter of free matches, 1 to FREE_RUNS_PER_EMAIL. */
+function freeCookie(request: Request, runs: number): string {
   const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
-  return `${FREE_COOKIE}=1; Path=/; Max-Age=${FREE_COOKIE_MAX_AGE}; HttpOnly; SameSite=Lax${secure}`;
+  const value = Math.max(1, Math.min(FREE_RUNS_PER_EMAIL, Math.floor(runs)));
+  return `${FREE_COOKIE}=${value}; Path=/; Max-Age=${FREE_COOKIE_MAX_AGE}; HttpOnly; SameSite=Lax${secure}`;
 }
 
 export async function POST(request: Request) {
-  let data: { email?: unknown; resume_text?: string; casl_consent?: unknown; _gotcha?: string };
+  let data: { email?: unknown; resume_text?: string; casl_consent?: unknown; _gotcha?: string; run_id?: unknown };
   try {
     data = await request.json();
   } catch {
@@ -42,12 +53,14 @@ export async function POST(request: Request) {
       reportEvent("match_email", { alerts: consent ? "yes" : "no" }, request);
     }
     const store = await cookies();
+    const browserRuns = cookieRuns(store.get(FREE_COOKIE)?.value);
     const result = await runGuestMatch({
       email,
       resumeText: String(data.resume_text || ""),
       consent,
       gotcha,
-      usedCookie: store.get(FREE_COOKIE)?.value === "1",
+      browserRuns,
+      runId: data.run_id,
       ip: clientIp(request),
       // Same as the signed-in path: the consent record is written before the Worker subscribes the address.
       beforeWorker: consent
@@ -59,10 +72,11 @@ export async function POST(request: Request) {
     });
     const headers: Record<string, string> = { ...NO_STORE };
     if (result.status === 200 && result.body.ok && !gotcha.trim()) {
-      headers["Set-Cookie"] = freeCookie(request);
-      reportEvent("match_run", { tier: "guest" }, request);
+      // A resent copy carries the same cookie as the original, so this still counts the run once.
+      headers["Set-Cookie"] = freeCookie(request, browserRuns + 1);
+      if (!result.body.repeat) reportEvent("match_run", { tier: "guest" }, request);
     } else if (result.body.code === "free_used") {
-      headers["Set-Cookie"] = freeCookie(request);
+      headers["Set-Cookie"] = freeCookie(request, FREE_RUNS_PER_EMAIL);
     }
     return Response.json(result.body, { status: result.status, headers });
   }
