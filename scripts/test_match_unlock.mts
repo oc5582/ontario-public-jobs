@@ -38,7 +38,7 @@ function expectCopy(shown: number, remaining: number, total: number, top: number
   assert.equal(copy.heading, `${totalLabel} jobs match your resume. You're seeing the top ${topLabel}.`);
   assert.equal(
     copy.text,
-    `Become a member to see all ${totalLabel}, ranked by how well they fit you, and run a new match anytime (up to 20 a day).`,
+    `Become a member to see all ${totalLabel}, ranked by how well they fit you, and run a new match anytime.`,
   );
   assert.equal(copy.button, `See all ${totalLabel} matches`);
   assert.equal(copy.note, NOTE);
@@ -157,7 +157,7 @@ assert.equal(child(locked.children[0], 0).textContent, "Member-only match");
 assert.equal(child(rendered.unlock, 0).textContent, "47 jobs match your resume. You're seeing the top 10.");
 assert.equal(
   child(rendered.unlock, 1).textContent,
-  "Become a member to see all 47, ranked by how well they fit you, and run a new match anytime (up to 20 a day).",
+  "Become a member to see all 47, ranked by how well they fit you, and run a new match anytime.",
 );
 const actions = child(rendered.unlock, 2);
 assert.equal(actions.className, "unlock-actions");

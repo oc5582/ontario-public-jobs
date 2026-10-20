@@ -20,7 +20,7 @@ function matchUnlockCopy(shown, remaining) {
     text:
       "Become a member to see all " +
       totalLabel +
-      ", ranked by how well they fit you, and run a new match anytime (up to 20 a day).",
+      ", ranked by how well they fit you, and run a new match anytime.",
     button: "See all " + totalLabel + " matches",
     note: "From CA$14.99/month plus GST/HST. Cancel anytime.",
     href: "/pricing/",
