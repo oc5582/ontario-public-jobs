@@ -77,7 +77,10 @@ export async function middleware(request: NextRequest) {
 export const config = {
   // Stripe posts to /api/stripe/webhook/ (trailing slash). That path is not
   // signed in and must not pass through session refresh or any auth redirect.
+  // The IndexNow key file is static text at the site root. Keep it out of
+  // middleware so session refresh and list rewrites cannot intercept it.
+  // Other .txt routes (robots.txt, llms.txt) stay on the matcher.
   matcher: [
-    "/((?!_next/static|_next/image|api/stripe/webhook|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2|css|js)$).*)",
+    "/((?!_next/static|_next/image|api/stripe/webhook|73ae3ce2e86e564e9a35eadf85dcb3d6\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2|css|js)$).*)",
   ],
 };

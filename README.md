@@ -11,6 +11,14 @@ python3 scripts/notify_indexing.py --previous /path/to/previous.json --new /path
 
 `GOOGLE_INDEXING_SA_JSON` is the service-account JSON, or `GOOGLE_INDEXING_SA_FILE` is a path to that file. Add `--dry-run` to print the URLs without calling Google.
 
+Right after that Google notice, tell IndexNow about the same added, changed, and removed job URLs (new paths, paths whose closing date newly passed, and paths that left the feed; jobs with no description are skipped):
+
+```
+python3 scripts/notify_indexnow.py --previous /path/to/previous.json --new /path/to/new.json
+```
+
+It POSTs JSON to `https://api.indexnow.org/indexnow` with host `publicjobs.ca`, the key, `keyLocation`, and `urlList`, in chunks of 10,000. The key file is `web/public/73ae3ce2e86e564e9a35eadf85dcb3d6.txt`, served at `https://publicjobs.ca/73ae3ce2e86e564e9a35eadf85dcb3d6.txt`. Add `--dry-run` to print that JSON and skip the POST. Errors are logged and the script exits 0, so a failed notice does not fail the refresh. Running it again the same day is harmless. Nothing in the repo schedules this; the ops box runs it after the Google notice.
+
 # Ontario Public Jobs — Combined feed
 
 Static GitHub Pages deploy folder containing combined Crown and agency job listings (Workday, Dayforce, SuccessFactors, and other ATS sources), detail pages, and the live site assets. Job descriptions are preserved from the supplied feed and apply links point to the employer sites.

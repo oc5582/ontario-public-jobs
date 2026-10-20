@@ -19,6 +19,9 @@ newest posted_date then fetched_at first.
     python3 scripts/notify_indexing.py --previous previous.json --new new.json
     python3 scripts/notify_indexing.py --previous previous.json --new new.json --dry-run
 
+The weekday refresh runs scripts/notify_indexnow.py next, with the same
+--previous and --new files. This script does not call it.
+
 Auth is the service-account JSON in GOOGLE_INDEXING_SA_JSON, or a file path in
 GOOGLE_INDEXING_SA_FILE. If both are unset, google-auth is missing, or the
 Indexing API returns an error, this prints a warning and exits 0. --dry-run

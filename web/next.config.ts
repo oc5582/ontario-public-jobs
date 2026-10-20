@@ -31,7 +31,14 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders() }];
+    return [
+      { source: "/:path*", headers: securityHeaders() },
+      {
+        // IndexNow verifies this exact URL. File URLs are not given a trailing slash.
+        source: "/73ae3ce2e86e564e9a35eadf85dcb3d6.txt",
+        headers: [{ key: "Content-Type", value: "text/plain; charset=utf-8" }],
+      },
+    ];
   },
 };
 
