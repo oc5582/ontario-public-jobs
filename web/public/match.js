@@ -1,3 +1,94 @@
+var FREE_RESULTS = 10;
+var TEASER_ROWS = 5;
+
+function finiteCount(value) {
+  var n = Number(value);
+  if (!isFinite(n) || n < 0) return 0;
+  return Math.floor(n);
+}
+
+function matchUnlockCopy(shown, remaining) {
+  var shownCount = finiteCount(shown);
+  var remainingCount = finiteCount(remaining);
+  var total = shownCount + remainingCount;
+  var top = shownCount < FREE_RESULTS ? shownCount : FREE_RESULTS;
+  var totalLabel = total.toLocaleString("en-CA");
+  var topLabel = top.toLocaleString("en-CA");
+  return {
+    total: total,
+    heading: totalLabel + " jobs match your resume. You're seeing the top " + topLabel + ".",
+    text:
+      "Become a member to see all " +
+      totalLabel +
+      ", ranked by how well they fit you, and run a new match anytime.",
+    button: "See all " + totalLabel + " matches",
+    note: "From CA$14.99/month plus GST/HST. Cancel anytime.",
+    href: "/pricing/",
+  };
+}
+
+function renderLocked(doc, locked) {
+  // Placeholder rows only. The server sends a count, never the hidden jobs.
+  var list = doc.getElementById("locked-list");
+  if (!list) {
+    list = doc.createElement("ol");
+    list.id = "locked-list";
+    list.className = "results locked-results";
+    list.setAttribute("aria-hidden", "true");
+    var unlockEl = doc.getElementById("unlock");
+    unlockEl.parentNode.insertBefore(list, unlockEl);
+  }
+  list.replaceChildren();
+  for (var i = 0; i < Math.min(locked, TEASER_ROWS); i++) {
+    var li = doc.createElement("li");
+    var title = doc.createElement("span");
+    title.className = "locked-title";
+    title.textContent = "Member-only match";
+    var meta = doc.createElement("p");
+    meta.className = "meta locked-text";
+    meta.textContent = "Public-sector employer · Toronto";
+    var why = doc.createElement("p");
+    why.className = "why locked-text";
+    why.textContent = "Why this job fits your experience, shown with a membership.";
+    li.appendChild(title);
+    li.appendChild(meta);
+    li.appendChild(why);
+    list.appendChild(li);
+  }
+  list.hidden = locked === 0;
+}
+
+function renderMatchUnlock(doc, shown, remaining) {
+  var el = doc.getElementById("unlock");
+  el.replaceChildren();
+  var locked = finiteCount(remaining);
+  renderLocked(doc, locked);
+  if (!locked) {
+    el.hidden = true;
+    return;
+  }
+  var copy = matchUnlockCopy(shown, locked);
+  var heading = doc.createElement("h2");
+  heading.textContent = copy.heading;
+  var text = doc.createElement("p");
+  text.textContent = copy.text;
+  var actions = doc.createElement("p");
+  actions.className = "unlock-actions";
+  var link = doc.createElement("a");
+  link.className = "apply-btn";
+  link.href = copy.href;
+  link.textContent = copy.button;
+  actions.appendChild(link);
+  var note = doc.createElement("p");
+  note.className = "apply-note";
+  note.textContent = copy.note;
+  el.appendChild(heading);
+  el.appendChild(text);
+  el.appendChild(actions);
+  el.appendChild(note);
+  el.hidden = false;
+}
+
 (function () {
   var ENDPOINT = "/api/match/";
   var MAX = 15000;
@@ -157,62 +248,6 @@
   }
   var hideApplied = document.getElementById("hide-applied");
   if (hideApplied) hideApplied.addEventListener("change", renderResults);
-  var FREE_RESULTS = 10;
-  var TEASER_ROWS = 5;
-  function renderLocked(locked) {
-    // Placeholder rows only. The server sends a count, never the hidden jobs.
-    var list = document.getElementById("locked-list");
-    if (!list) {
-      list = document.createElement("ol");
-      list.id = "locked-list";
-      list.className = "results locked-results";
-      list.setAttribute("aria-hidden", "true");
-      var unlockEl = document.getElementById("unlock");
-      unlockEl.parentNode.insertBefore(list, unlockEl);
-    }
-    list.replaceChildren();
-    for (var i = 0; i < Math.min(locked, TEASER_ROWS); i++) {
-      var li = document.createElement("li");
-      var title = document.createElement("span");
-      title.className = "locked-title";
-      title.textContent = "Member-only match";
-      var meta = document.createElement("p");
-      meta.className = "meta locked-text";
-      meta.textContent = "Public-sector employer · Toronto";
-      var why = document.createElement("p");
-      why.className = "why locked-text";
-      why.textContent = "Why this job fits your experience, shown with a membership.";
-      li.appendChild(title);
-      li.appendChild(meta);
-      li.appendChild(why);
-      list.appendChild(li);
-    }
-    list.hidden = locked === 0;
-  }
-  function renderUnlock(locked) {
-    var el = document.getElementById("unlock");
-    el.replaceChildren();
-    renderLocked(locked);
-    if (!locked) {
-      el.hidden = true;
-      return;
-    }
-    var heading = document.createElement("h2");
-    heading.textContent = locked + " more " + (locked === 1 ? "match" : "matches");
-    var copy = document.createElement("p");
-    copy.textContent = "This free match shows the top " + FREE_RESULTS + ". See every match, plus up to 20 matches a day, with a membership. Apply stays free on every job page.";
-    var actions = document.createElement("p");
-    actions.className = "unlock-actions";
-    var link = document.createElement("a");
-    link.className = "apply-btn";
-    link.href = "/pricing/";
-    link.textContent = "See membership";
-    actions.appendChild(link);
-    el.appendChild(heading);
-    el.appendChild(copy);
-    el.appendChild(actions);
-    el.hidden = false;
-  }
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
     // One request at a time, even if the event fires again before the button is disabled.
@@ -266,7 +301,8 @@
         appliedKeys = null;
       }
       renderResults();
-      renderUnlock(data.locked || 0);
+      var shown = typeof data.shown === "number" ? data.shown : (data.strong || []).length + (data.maybe || []).length;
+      renderMatchUnlock(document, shown, data.locked || 0);
       document.getElementById("results").hidden = false;
       if (data.guest) {
         // One free run per browser: hide the button so a second click does not look like it should work.
