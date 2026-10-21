@@ -7,7 +7,8 @@ does not call Google, and is not scheduled in this repo.
 
 The URL set matches notify_indexing.py: new paths, paths whose closing date
 newly passed, and paths removed from the feed. Jobs with no description are
-skipped. The Google Indexing API cap of 180 does not apply. URLs are posted
+skipped. When that set is not empty, https://publicjobs.ca/stats/ is added to
+the URL list. The Google Indexing API cap of 180 does not apply. URLs are posted
 in chunks of 10,000.
 
     python3 scripts/notify_indexnow.py --previous previous.json --new new.json
@@ -37,6 +38,7 @@ import notify_indexing as notify  # noqa: E402
 
 HOST = "publicjobs.ca"
 ORIGIN = "https://publicjobs.ca"
+STATS_URL = f"{ORIGIN}/stats/"
 ENDPOINT = "https://api.indexnow.org/indexnow"
 CHUNK = 10_000
 TIMEOUT = 20
@@ -79,6 +81,13 @@ def diff_urls(
     if over:
         chosen = chosen + over
     return chosen, thin
+
+
+def include_stats_url(urls: list[str]) -> list[str]:
+    """Add the public stats page when this run has URLs to send."""
+    if not urls or STATS_URL in urls:
+        return list(urls)
+    return [*urls, STATS_URL]
 
 
 def chunk_urls(urls: list[str], size: int = CHUNK) -> list[list[str]]:
@@ -132,7 +141,7 @@ def run(argv: list[str] | None = None) -> int:
     for item in thin:
         print(f"skipped no-description {job_url(item['path'])} {item['reason']}", file=sys.stderr)
 
-    urls = [job_url(item["path"]) for item in chosen]
+    urls = include_stats_url([job_url(item["path"]) for item in chosen])
     key = load_key()
     chunks = chunk_urls(urls)
     counts = {"new": 0, "closed": 0, "removed": 0}

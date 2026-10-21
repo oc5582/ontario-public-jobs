@@ -1,4 +1,4 @@
-/* Extra styles for /privacy/, /about/, /faq/, /employers/ and /terms/ only. */
+/* Extra styles for /privacy/, /about/, /faq/, /employers/, /stats/ and /terms/ only. */
 .description a {
   color: var(--civic);
 }
@@ -99,6 +99,60 @@
 }
 
 .description .employer-list a {
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.description.stats-block {
+  max-width: none;
+}
+
+.description.stats-block h2 {
+  margin-top: 1.5rem;
+}
+
+.description.stats-block h2:first-child {
+  margin-top: 0;
+}
+
+.stats-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 0 0 0.35rem;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.stats-table-wide {
+  min-width: 44rem;
+}
+
+.stats-table th,
+.stats-table td {
+  padding: 0.55rem 0.75rem 0.55rem 0;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+}
+
+.stats-table th {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.stats-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.stats-table a {
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 0.15em;

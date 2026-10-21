@@ -96,6 +96,23 @@ def test_chunk_boundaries() -> None:
     }
 
 
+def test_stats_url_included_when_sending() -> None:
+    assert indexnow.STATS_URL == "https://publicjobs.ca/stats/"
+    assert indexnow.include_stats_url([]) == []
+    urls = ["https://publicjobs.ca/jobs/a/"]
+    assert indexnow.include_stats_url(urls) == [
+        "https://publicjobs.ca/jobs/a/",
+        "https://publicjobs.ca/stats/",
+    ]
+    assert urls == ["https://publicjobs.ca/jobs/a/"]
+    twice = indexnow.include_stats_url(indexnow.include_stats_url(urls))
+    assert twice.count(indexnow.STATS_URL) == 1
+    many = [f"https://publicjobs.ca/jobs/{i}/" for i in range(10_000)]
+    chunks = indexnow.chunk_urls(indexnow.include_stats_url(many))
+    assert [len(chunk) for chunk in chunks] == [10_000, 1]
+    assert chunks[1] == ["https://publicjobs.ca/stats/"]
+
+
 def test_key_file_and_middleware_exclusion() -> None:
     path = ROOT / "web" / "public" / f"{KEY}.txt"
     assert path.read_bytes() == KEY.encode("ascii")
@@ -134,8 +151,9 @@ def test_dry_run_prints_payload_and_post_failure_exits_zero() -> None:
         assert payload["host"] == "publicjobs.ca"
         assert payload["key"] == KEY
         assert payload["keyLocation"] == f"https://publicjobs.ca/{KEY}.txt"
-        assert len(payload["urlList"]) == 2
-        assert all(url.startswith("https://publicjobs.ca/jobs/") for url in payload["urlList"])
+        assert len(payload["urlList"]) == 3
+        assert payload["urlList"][-1] == "https://publicjobs.ca/stats/"
+        assert all(url.startswith("https://publicjobs.ca/jobs/") for url in payload["urlList"][:-1])
         assert "added" in dry.stdout
         assert "removed" in dry.stdout
         assert "dry-run" in dry.stdout
@@ -164,6 +182,7 @@ def test_dry_run_prints_payload_and_post_failure_exits_zero() -> None:
 def main() -> None:
     test_diff_matches_indexing_rules()
     test_chunk_boundaries()
+    test_stats_url_included_when_sending()
     test_key_file_and_middleware_exclusion()
     test_dry_run_prints_payload_and_post_failure_exits_zero()
     print("notify indexnow ok")
