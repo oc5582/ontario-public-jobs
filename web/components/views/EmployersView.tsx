@@ -35,6 +35,9 @@ export async function EmployersView() {
           <p>
             <a href="/jobs/">Browse all current openings</a>
           </p>
+          <p>
+            <a href="/stats/">Job stats</a>
+          </p>
           <ul className="employer-list">
             {employers.map((employer) => (
               <li key={employer.slug}>

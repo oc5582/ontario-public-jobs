@@ -21,6 +21,7 @@ export function SiteFooter() {
         <nav className="footer-nav" aria-label="Footer">
           {link("About", "/about/", "/about")}
           {link("Frequently asked questions", "/faq/", "/faq")}
+          {link("Job stats", "/stats/", "/stats")}
           {link("Privacy", "/privacy/", "/privacy")}
           {link("Terms", "/terms/", "/terms")}
           {link("Report a fake or suspicious job", "/report/", "/report")}

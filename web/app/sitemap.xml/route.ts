@@ -15,7 +15,7 @@ function escapeXml(value: string): string {
 
 export async function GET() {
   const [jobs, employers] = await Promise.all([sitemapJobs(), sitemapEmployers()]);
-  const staticPaths = ["/", "/jobs/", "/employers/", "/match/", "/pricing/", "/about/", "/faq/", "/privacy/", "/terms/"];
+  const staticPaths = ["/", "/jobs/", "/employers/", "/match/", "/pricing/", "/about/", "/faq/", "/stats/", "/privacy/", "/terms/"];
   const lines = [
     ...staticPaths.map((path) => urlNode(`${SITE_URL}${path}`, "")),
     ...employers.map((slug) => urlNode(`${SITE_URL}/employers/${slug}/`, "")),

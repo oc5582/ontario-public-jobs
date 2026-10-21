@@ -10,6 +10,7 @@ import {
   parsePaywallTeasers,
   type PaywallPreview,
 } from "./paywall";
+import { EXCLUDED_SOURCE_KEYS, OPEN_JOB_SQL as OPEN } from "./open-job";
 import { FREE_LIST_LIMIT } from "./site";
 import type { Facets, JobDetail, ListJob } from "./types";
 
@@ -23,9 +24,6 @@ function publicCache<T>(key: string[], fn: () => Promise<T>): Promise<T> {
 function listIsShared(filters: JobFilters): boolean {
   return !hasFilters({ ...filters, employer: "" });
 }
-
-const OPEN = `j.removed_at is null
-  and (j.closing_date is null or j.closing_date >= (timezone('America/Toronto', now()))::date)`;
 
 const HAS_DESCRIPTION = `(btrim(j.description) <> '' or (jsonb_typeof(j.paragraphs) = 'array' and jsonb_array_length(j.paragraphs) > 0))`;
 
@@ -535,8 +533,8 @@ async function listingFactsUncached(): Promise<{ sources: string[]; fetched: str
   const names = new Set<string>();
   for (const row of sources) {
     const key = (row.source || "").split(":")[0];
-    // peoplesoft_tps is the paused Toronto Police Service feed. Those jobs close on the next refresh.
-    if (!key || key === "peoplesoft_tps") continue;
+    // Same paused-feed list as the public stats page (Toronto Police Service).
+    if (!key || (EXCLUDED_SOURCE_KEYS as readonly string[]).includes(key)) continue;
     if (key.startsWith("site_")) names.add("employers' own websites");
     else names.add(SOURCE_LABELS[key] || key);
   }
