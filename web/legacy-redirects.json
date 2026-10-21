@@ -108,10 +108,6 @@
     "to": "/jobs/export-development-canada-edc/associ-e-et-associ-e-principale-gestion-de-portefeuille-fr-265/"
   },
   {
-    "from": "/jobs/edc-d-veloppeur-euse-principal-e-servicenow-csm-fr-395.html",
-    "to": "/jobs/export-development-canada-edc/d-veloppeur-euse-principal-e-servicenow-csm-fr-395/"
-  },
-  {
     "from": "/jobs/edc-edc-student-internships-general-stream-starting-winter-2027.html",
     "to": "/jobs/export-development-canada-edc/edc-student-internships-general-stream-starting-winter-2027/"
   },
@@ -256,10 +252,6 @@
     "to": "/jobs/ontario-cannabis-retail-corporation-ontario-cannabis-store/data-governance-specialist/"
   },
   {
-    "from": "/jobs/ocs-financial-analyst-pricing-16-month-fixed-term-contract.html",
-    "to": "/jobs/ontario-cannabis-retail-corporation-ontario-cannabis-store/financial-analyst-pricing-16-month-fixed-term-contract/"
-  },
-  {
     "from": "/jobs/ocs-senior-grc-specialist.html",
     "to": "/jobs/ontario-cannabis-retail-corporation-ontario-cannabis-store/senior-grc-specialist/"
   },
@@ -320,10 +312,6 @@
     "to": "/jobs/toronto-hydro-corporation/hr-business-partner-contract-up-to-14-months-toronto-on-ca/"
   },
   {
-    "from": "/jobs/toronto-hydro-hr-business-partner-toronto-on-ca.html",
-    "to": "/jobs/toronto-hydro-corporation/hr-business-partner-toronto-on-ca/"
-  },
-  {
     "from": "/jobs/toronto-hydro-manager-stations-toronto-on-ca.html",
     "to": "/jobs/toronto-hydro-corporation/manager-stations-toronto-on-ca-605749717/"
   },
@@ -350,6 +338,10 @@
   {
     "from": "/jobs/tssa-risk-advisor.html",
     "to": "/jobs/technical-standards-and-safety-authority-tssa/risk-advisor/"
+  },
+  {
+    "from": "/jobs/tvo-manager-web-and-mobile-delivery-bilingual.html",
+    "to": "/jobs/ontario-educational-communications-authority-tvo/manager-web-mobile-delivery-bilingual/"
   },
   {
     "from": "/jobs/workday-cxs-ai-lead-architect-software-and-platforms-architecture-t-i-telework-hybrid.html",
@@ -472,10 +464,6 @@
     "to": "/jobs/toronto-hydro-corporation/hr-business-partner-contract-up-to-14-months-toronto-on-ca/"
   },
   {
-    "from": "/toronto-hydro-hr-business-partner-toronto-on-ca.html",
-    "to": "/jobs/toronto-hydro-corporation/hr-business-partner-toronto-on-ca/"
-  },
-  {
     "from": "/toronto-hydro-manager-stations-toronto-on-ca.html",
     "to": "/jobs/toronto-hydro-corporation/manager-stations-toronto-on-ca-605749717/"
   },
@@ -518,6 +506,10 @@
   {
     "from": "/tvo-labour-and-employee-relations-manager.html",
     "to": "/jobs/ontario-educational-communications-authority-tvo/labour-and-employee-relations-manager/"
+  },
+  {
+    "from": "/tvo-manager-web-and-mobile-delivery-bilingual.html",
+    "to": "/jobs/ontario-educational-communications-authority-tvo/manager-web-mobile-delivery-bilingual/"
   },
   {
     "from": "/wsib-senior-it-business-analyst.html",
