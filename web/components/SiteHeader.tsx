@@ -10,6 +10,7 @@ function currentKey(pathname: string): string {
   if (path === "/employers" || path.startsWith("/employers/")) return "employers";
   if (path === "/about") return "about";
   if (path === "/faq") return "faq";
+  if (path === "/stats") return "stats";
   if (path === "/privacy") return "privacy";
   if (path === "/terms") return "terms";
   if (path === "/pricing") return "pricing";
@@ -90,6 +91,7 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
             <ul className="nav-more-panel" id="nav-more-panel" hidden={!open}>
               <li>{nav("About", "/about/", "about")}</li>
               <li>{nav("FAQ", "/faq/", "faq")}</li>
+              <li>{nav("Job stats", "/stats/", "stats")}</li>
               <li>{nav("Privacy", "/privacy/", "privacy")}</li>
               <li>{nav("Terms", "/terms/", "terms")}</li>
               <li>{nav("Pricing", "/pricing/", "pricing")}</li>
