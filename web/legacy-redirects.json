@@ -24,10 +24,6 @@
     "to": "/jobs/canada-development-investment-corporation-cdev/compliance-officer-agent-e-de-conformit/"
   },
   {
-    "from": "/jobs/cdev-manager-facilities-and-security-gestionnaire-installations-et-s-curit.html",
-    "to": "/jobs/canada-development-investment-corporation-cdev/manager-facilities-security-gestionnaire-installations-et-s-curit/"
-  },
-  {
     "from": "/jobs/cdev-senior-associate-technology-operations-and-strategy-execution-premier-re-associ-e.html",
     "to": "/jobs/canada-development-investment-corporation-cdev/senior-associate-technology-operations-strategy-execution-premier-re-associ-e-op/"
   },
@@ -180,10 +176,6 @@
     "to": "/jobs/independent-electricity-system-operator-ieso/specialist-solutions-oracle-fusion-specialist/"
   },
   {
-    "from": "/jobs/imco-associate-portfolio-manager-public-credit.html",
-    "to": "/jobs/investment-management-corporation-of-ontario-imco/associate-portfolio-manager-public-credit/"
-  },
-  {
     "from": "/jobs/lso-auditor-spot-audit-remote-toronto.html",
     "to": "/jobs/law-society-of-ontario/auditor-spot-audit-remote-toronto/"
   },
@@ -222,10 +214,6 @@
   {
     "from": "/jobs/metrolinx-rail-traffic-controller-talent-pool.html",
     "to": "/jobs/metrolinx/rail-traffic-controller-talent-pool/"
-  },
-  {
-    "from": "/jobs/mtcc-engineering-manager.html",
-    "to": "/jobs/metropolitan-toronto-convention-centre-corporation/engineering-manager/"
   },
   {
     "from": "/jobs/oci-director-sector-and-regional-development.html",
@@ -272,16 +260,8 @@
     "to": "/jobs/royal-ontario-museum/future-career-opportunities-at-royal-ontario-museum-rom/"
   },
   {
-    "from": "/jobs/rom-research-assistant-japan-gallery-24-month-contract.html",
-    "to": "/jobs/royal-ontario-museum/research-assistant-japan-gallery-24-month-contract/"
-  },
-  {
     "from": "/jobs/rom-security-guard-various-opportunities-part-time-full-time.html",
     "to": "/jobs/royal-ontario-museum/security-guard-various-opportunities-part-time-full-time/"
-  },
-  {
-    "from": "/jobs/rom-senior-conservator-18-month-contract.html",
-    "to": "/jobs/royal-ontario-museum/senior-conservator-18-month-contract/"
   },
   {
     "from": "/jobs/taf-grants-and-programs-committee-member-volunteer.html",
@@ -346,10 +326,6 @@
   {
     "from": "/jobs/workday-cxs-ai-lead-architect-software-and-platforms-architecture-t-i-telework-hybrid.html",
     "to": "/jobs/canadian-broadcasting-corporation-cbc-radio-canada/ai-lead-architect-software-and-platforms-architecture-t-i-telework-hybrid/"
-  },
-  {
-    "from": "/jobs/workday-cxs-associate-portfolio-manager-public-credit.html",
-    "to": "/jobs/investment-management-corporation-of-ontario-imco/associate-portfolio-manager-public-credit/"
   },
   {
     "from": "/jobs/workday-cxs-brand-ambassador-on-call-french-services-on-site.html",
@@ -420,16 +396,8 @@
     "to": "/jobs/royal-ontario-museum/future-career-opportunities-at-royal-ontario-museum-rom/"
   },
   {
-    "from": "/rom-research-assistant-japan-gallery-24-month-contract.html",
-    "to": "/jobs/royal-ontario-museum/research-assistant-japan-gallery-24-month-contract/"
-  },
-  {
     "from": "/rom-security-guard-various-opportunities-part-time-full-time.html",
     "to": "/jobs/royal-ontario-museum/security-guard-various-opportunities-part-time-full-time/"
-  },
-  {
-    "from": "/rom-senior-conservator-18-month-contract.html",
-    "to": "/jobs/royal-ontario-museum/senior-conservator-18-month-contract/"
   },
   {
     "from": "/taf-grants-and-programs-committee-member-volunteer.html",
@@ -456,6 +424,10 @@
     "to": "/jobs/toronto-hydro-corporation/capital-maintenance-program-analyst-12-month-contract-toronto-on-ca/"
   },
   {
+    "from": "/toronto-hydro-capital-and-maintenance-program-analyst-toronto-on-ca.html",
+    "to": "/jobs/toronto-hydro-corporation/capital-maintenance-program-analyst-toronto-on-ca/"
+  },
+  {
     "from": "/toronto-hydro-engineer-toronto-on-ca.html",
     "to": "/jobs/toronto-hydro-corporation/engineer-toronto-on-ca-574239717/"
   },
@@ -478,10 +450,6 @@
   {
     "from": "/tpa-specialist-sales-and-partnerships.html",
     "to": "/jobs/toronto-parking-authority/specialist-sales-and-partnerships/"
-  },
-  {
-    "from": "/trca-education-interpreter-and-site-representative.html",
-    "to": "/jobs/toronto-and-region-conservation-authority/education-interpreter-site-representative/"
   },
   {
     "from": "/trca-law-clerk.html",
