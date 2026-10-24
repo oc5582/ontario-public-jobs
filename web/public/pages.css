@@ -193,3 +193,34 @@
   opacity: 0.6;
   cursor: default;
 }
+
+/* Guides */
+.guide-body h2 {
+  margin-top: 1.75rem;
+}
+
+.guide-body blockquote {
+  margin: 1rem 0 1.25rem;
+  padding: 0.85rem 1rem;
+  border-left: 4px solid var(--civic);
+  background: var(--surface);
+}
+
+.guide-body blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.guide-body ol {
+  margin: 0 0 0.9rem;
+  padding-left: 1.5rem;
+}
+
+.guide-body ol li + li {
+  margin-top: 0.35rem;
+}
+
+.guide-list p {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.9375rem;
+}

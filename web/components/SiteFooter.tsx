@@ -22,6 +22,7 @@ export function SiteFooter() {
           {link("About", "/about/", "/about")}
           {link("Frequently asked questions", "/faq/", "/faq")}
           {link("Job stats", "/stats/", "/stats")}
+          {link("Guides", "/guides/", "/guides")}
           {link("Privacy", "/privacy/", "/privacy")}
           {link("Terms", "/terms/", "/terms")}
           {link("Report a fake or suspicious job", "/report/", "/report")}
