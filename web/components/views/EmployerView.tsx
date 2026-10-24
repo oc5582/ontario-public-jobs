@@ -1,59 +1,75 @@
-import { FilterBar } from "@/components/FilterBar";
 import { JobList } from "@/components/JobList";
 import { JsonLd } from "@/components/JsonLd";
-import { UnlockCard } from "@/components/UnlockCard";
-import type { JobFilters } from "@/lib/filters";
-import { itemListJsonLd } from "@/lib/jsonld";
-import { employerBySlug, getFacets, paywallPreview, searchJobs } from "@/lib/jobs";
-import { paywallFiltering, paywallFocus } from "@/lib/paywall";
+import { SignupForm } from "@/components/SignupForm";
+import { employerHeading } from "@/lib/employer-page";
+import { breadcrumbJsonLd, itemListJsonLd } from "@/lib/jsonld";
+import { employerBySlug, employerOpenJobs } from "@/lib/jobs";
+import { alertConsentLabel, alertConsentSender } from "@/lib/legal-copy";
+import { pageMetadata } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-export async function EmployerView({ filters, member }: { filters: JobFilters; member: boolean }) {
-  const employer = await employerBySlug(filters.employer);
+export async function employerMetadata(slug: string): Promise<Metadata> {
+  const employer = await employerBySlug(slug);
+  if (!employer) return { title: "Page not found" };
+  const jobs = await employerOpenJobs(slug);
+  const heading = employerHeading(employer.name);
+  const noun = jobs.length === 1 ? "opening" : "openings";
+  const description = jobs.length
+    ? `${jobs.length} current ${employer.name} ${noun} listed on PublicJobs.ca. You apply on the employer's own website.`
+    : `No current ${employer.name} openings on PublicJobs.ca. You apply on the employer's own website when a job is posted.`;
+  return pageMetadata({
+    title: heading.title,
+    description,
+    path: `/employers/${slug}/`,
+    index: jobs.length > 0,
+  });
+}
+
+export async function EmployerView({ slug }: { slug: string }) {
+  const employer = await employerBySlug(slug);
   if (!employer) notFound();
-  const employerFilters = { ...filters, employer: employer.slug };
-  const [result, facets] = await Promise.all([searchJobs(employerFilters, member), getFacets()]);
-  const preview =
-    member || result.jobs.length >= result.total
-      ? null
-      : await paywallPreview(employerFilters, result.jobs.length);
-  const noun = result.total === 1 ? "opening" : "openings";
-  const intro = result.total
-    ? `${result.total} current ${noun} at ${employer.name}. PublicJobs.ca lists them in one place. You apply on the employer's own website. We are independent and not affiliated with ${employer.name}.`
+  const jobs = await employerOpenJobs(slug);
+  const heading = employerHeading(employer.name);
+  const noun = jobs.length === 1 ? "opening" : "openings";
+  const intro = jobs.length
+    ? `${jobs.length} current ${noun} at ${employer.name}. PublicJobs.ca lists them in one place. You apply on the employer's own website. We are independent and not affiliated with ${employer.name}.`
     : `No current openings at ${employer.name}. Closed postings stay off this page. You apply on the employer's own website when a job is posted. We are independent and not affiliated with ${employer.name}.`;
-  const memberNote = member ? " You are signed in, so this is the full list." : "";
+  const pageUrl = `${SITE_URL}/employers/${employer.slug}/`;
 
   return (
     <main>
-      <JsonLd data={itemListJsonLd(`${employer.name} jobs`, `${SITE_URL}/employers/${employer.slug}/`, result.jobs)} />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "All openings", url: `${SITE_URL}/` },
+          { name: "Employers", url: `${SITE_URL}/employers/` },
+          { name: employer.name, url: pageUrl },
+        ])}
+      />
+      <JsonLd data={itemListJsonLd(heading.h1, pageUrl, jobs)} />
       <article className="job-page content">
         <p className="crumb">
           <a href="/">All openings</a> / <a href="/employers/">Employers</a>
         </p>
-        <h1>{employer.name} jobs</h1>
+        <h1>{heading.h1}</h1>
         <section className="description">
           <p>
+            {heading.lead ? <>{heading.lead} </> : null}
             {intro}
-            {memberNote}
           </p>
         </section>
-        <FilterBar action={`/employers/${employer.slug}/`} filters={filters} facets={facets} lockEmployer />
-        {result.total === 0 ? (
-          <p className="listings-empty">No openings match that search.</p>
+        <SignupForm
+          consent={alertConsentLabel()}
+          sender={alertConsentSender()}
+          heading={`Email me new ${heading.alertName} jobs every week (free)`}
+          idPrefix="employer-"
+          placement="employer"
+        />
+        {jobs.length === 0 ? (
+          <p className="listings-empty">No current openings.</p>
         ) : (
-          <JobList jobs={result.jobs} />
-        )}
-        {member ? null : (
-          <UnlockCard
-            total={result.total}
-            shown={result.jobs.length}
-            place="employer"
-            employerName={employer.name}
-            filtering={paywallFiltering(employerFilters)}
-            focus={paywallFocus(employerFilters)}
-            preview={preview}
-          />
+          <JobList jobs={jobs} />
         )}
       </article>
     </main>

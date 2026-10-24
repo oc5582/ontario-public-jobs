@@ -890,7 +890,42 @@ def employment_types(raw: str) -> list[str]:
         add("VOLUNTEER")
     if re.search(r"\bper[\s-]?diem\b", value):
         add("PER_DIEM")
+    # Ongoing permanent and regular posts are full-time unless the text says part-time.
+    if (
+        "FULL_TIME" not in found
+        and "PART_TIME" not in found
+        and re.search(r"\b(?:permanent|regular)\b", value)
+    ):
+        add("FULL_TIME")
     return found
+
+
+LABELED_EMPLOYMENT_RE = re.compile(
+    r"(?:position type|vacancy type|job type(?:\s*&\s*duration)?|employment type)\s*:\s*([^\n]{1,120})",
+    re.I,
+)
+LABELED_PAY_RE = re.compile(
+    r"(?:salary\s+range|pay\s+range|hiring\s+rate|(?:pay|wage|salary))\s*[:\-]\s*(.{1,180})",
+    re.I,
+)
+
+
+def labeled_employment(description: str) -> str:
+    match = LABELED_EMPLOYMENT_RE.search(text(description))
+    return match.group(1).strip() if match else ""
+
+
+def employment_types_for(job: dict) -> list[str]:
+    found = employment_types(text(job.get("employment_type")))
+    if found:
+        return found
+    return employment_types(labeled_employment(text(job.get("description"))))
+
+
+def labeled_pay_text(description: str) -> str:
+    flat = re.sub(r"\s+", " ", text(description))
+    match = LABELED_PAY_RE.search(flat)
+    return match.group(1).strip() if match else ""
 
 
 def fully_remote(job: dict) -> bool:
@@ -1123,10 +1158,16 @@ def base_salary(job: dict) -> dict | None:
             if parsed:
                 return parsed
     raw_salary = job.get("salary")
+    parsed = None
     if isinstance(raw_salary, dict):
-        return salary_from_mapping(raw_salary)
-    if isinstance(raw_salary, str):
-        return salary_from_text(raw_salary, context)
+        parsed = salary_from_mapping(raw_salary)
+    elif isinstance(raw_salary, str) and text(raw_salary):
+        parsed = salary_from_text(raw_salary, context)
+    if parsed:
+        return parsed
+    labeled = labeled_pay_text(context)
+    if labeled:
+        return salary_from_text(labeled, context)
     return None
 
 
@@ -1342,7 +1383,7 @@ def job_posting_data(job: dict) -> dict | None:
     if not title or not employer or not description:
         return None
     data = {
-        "@context": "https://schema.org/",
+        "@context": "https://schema.org",
         "@type": "JobPosting",
         "title": title,
         "description": description,
@@ -1360,7 +1401,7 @@ def job_posting_data(job: dict) -> dict | None:
     closes = closing_date(job)
     if closes:
         data["validThrough"] = closes
-    types = employment_types(text(job.get("employment_type")))
+    types = employment_types_for(job)
     if len(types) == 1:
         data["employmentType"] = types[0]
     elif types:
@@ -1369,6 +1410,7 @@ def job_posting_data(job: dict) -> dict | None:
     same_as = employer_same_as(job)
     if same_as:
         organization["sameAs"] = same_as
+        organization["url"] = same_as
     data["hiringOrganization"] = organization
     places = job_locations(text(job.get("location")))
     if len(places) == 1:

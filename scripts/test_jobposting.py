@@ -88,6 +88,37 @@ def posting(**overrides) -> dict:
     return bp.job_posting_data(job)
 
 
+def test_employment_salary_and_context() -> None:
+    assert bp.employment_types("Permanent") == ["FULL_TIME"]
+    assert bp.employment_types("Regular (Hybrid)") == ["FULL_TIME"]
+    assert bp.employment_types("Permanent Part Time") == ["PART_TIME"]
+    assert bp.employment_types("Full Time (FT), Regular (R)") == ["FULL_TIME"]
+    assert bp.employment_types("Full-time, Permanent Vacancy") == ["FULL_TIME"]
+    labeled = {
+        "title": "Advisor",
+        "employer": "Ontario Energy Board",
+        "location": "Toronto",
+        "description": "Position Type: Non-Union Permanent\nDo the work.",
+        "apply_url": "https://example.com/jobs/1",
+        "employment_type": "",
+    }
+    data = bp.job_posting_data(labeled)
+    assert data["@context"] == "https://schema.org"
+    assert data["employmentType"] == "FULL_TIME"
+    assert "validThrough" not in data
+    incidental = dict(labeled, description="Benefits depend on employment type (e.g., full-time permanent or contracts).")
+    assert "employmentType" not in bp.job_posting_data(incidental)
+    paid = bp.base_salary({"salary": "", "description": "Pay:\n$74,671.00 - $130,424\nAbout the role"})
+    assert paid["currency"] == "CAD"
+    assert paid["value"]["minValue"] == 74671
+    assert paid["value"]["maxValue"] == 130424
+    assert paid["value"]["unitText"] == "YEAR"
+    # No period and not a clear hourly or yearly amount: still omitted.
+    assert bp.base_salary({"salary": "$1,664.34 - $2,622.59", "description": "Salary Range: $1,664.34 - $2,622.59"}) is None
+    org = data["hiringOrganization"]
+    assert "logo" not in org
+
+
 def test_remote_jobs() -> None:
     data = posting()
     assert data["jobLocationType"] == "TELECOMMUTE"
@@ -107,6 +138,7 @@ def main() -> None:
     test_pay_periods()
     test_pay_text_cleanup()
     test_titles()
+    test_employment_salary_and_context()
     test_remote_jobs()
     print("jobposting ok")
 

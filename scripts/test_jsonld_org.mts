@@ -1,11 +1,20 @@
 import assert from "node:assert/strict";
-import { jobPostingJsonLd } from "../web/lib/jsonld.ts";
+import { homeJsonLd, jobPostingJsonLd } from "../web/lib/jsonld.ts";
 const base: any = { closed: false, posted: "2026-10-01", first_seen: "", closing: "2026-10-22", description: "", website: "https://trca.ca/", logo_url: "https://example.org/logo.png",
   jobposting: { "@context": "https://schema.org/", "@type": "JobPosting", title: "Custodian", description: "<p>x</p>", hiringOrganization: { "@type": "Organization", name: "TRCA", logo: "stale" } } };
 const a: any = jobPostingJsonLd(base);
+assert.equal(a["@context"], "https://schema.org");
+assert.equal(a.directApply, false);
 assert.equal(a.hiringOrganization.sameAs, "https://trca.ca/");
+assert.equal(a.hiringOrganization.url, "https://trca.ca/");
 assert.equal(a.hiringOrganization.logo, "https://example.org/logo.png");
 assert.equal(a.validThrough, "2026-10-22T23:59:59-04:00");
-const b: any = jobPostingJsonLd({ ...base, logo_url: "" });
+const b: any = jobPostingJsonLd({ ...base, logo_url: "", closing: "", jobposting: { ...base.jobposting, validThrough: "2030-01-01", baseSalary: { "@type": "MonetaryAmount", currency: "CAD", value: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitText: "YEAR" } } } });
 assert.equal("logo" in b.hiringOrganization, false);
+assert.equal("validThrough" in b, false);
+assert.equal("baseSalary" in b, false);
+const home = homeJsonLd() as { "@graph": Array<Record<string, unknown>> };
+const org = home["@graph"][0];
+assert.equal(String((org.logo as { url: string }).url).endsWith("/icon-512.png"), true);
+assert.equal("sameAs" in org, false);
 console.log("jsonld.ts logo/sameAs ok");

@@ -1,6 +1,13 @@
 import { formatDescription } from "./description";
 import { validThrough } from "./format";
 import { LEGAL } from "./legal-config";
+import {
+  baseSalaryFromJob,
+  employmentTypesFor,
+  httpUrl,
+  missingEmploymentType,
+  usableBaseSalary,
+} from "./schema-fill";
 import { SITE_URL } from "./site";
 import type { JobDetail, ListJob } from "./types";
 
@@ -18,6 +25,10 @@ export function homeJsonLd(): unknown {
         "@id": orgId,
         name: "PublicJobs.ca",
         url: `${SITE_URL}/`,
+        logo: {
+          "@type": "ImageObject",
+          url: `${SITE_URL}/icon-512.png`,
+        },
         email: LEGAL.supportEmail,
         telephone: LEGAL.phoneTel.replace(/^tel:/, ""),
         address: {
@@ -72,20 +83,39 @@ export function itemListJsonLd(name: string, url: string, jobs: ListJob[]): unkn
 export function jobPostingJsonLd(job: JobDetail): unknown | null {
   if (job.closed || !job.jobposting) return null;
   const data: Record<string, unknown> = { ...job.jobposting, directApply: false };
+  data["@context"] = "https://schema.org";
   const posted = job.posted || job.first_seen;
   if (posted) data.datePosted = posted;
   else delete data.datePosted;
+  // Closing date only. A missing date stays missing. Do not invent validThrough.
   const through = validThrough(job.closing);
   if (through) data.validThrough = through;
   else delete data.validThrough;
   const description = formatDescription(job.description);
   if (description) data.description = description;
+  if (missingEmploymentType(data.employmentType)) {
+    const types = employmentTypesFor(job.employment_type || "", job.description || "");
+    if (types.length === 1) data.employmentType = types[0];
+    else if (types.length > 1) data.employmentType = types;
+    else delete data.employmentType;
+  }
+  const salary = usableBaseSalary(data.baseSalary) || baseSalaryFromJob(job.salary || "", job.description || "");
+  if (salary) data.baseSalary = salary;
+  else delete data.baseSalary;
   const org = data.hiringOrganization;
   if (org && typeof org === "object") {
     const organization = { ...(org as Record<string, unknown>) };
-    if (job.website) organization.sameAs = job.website;
+    const website = httpUrl(job.website);
+    if (website) {
+      organization.sameAs = website;
+      organization.url = website;
+    } else {
+      if (!httpUrl(typeof organization.url === "string" ? organization.url : "")) delete organization.url;
+      if (!httpUrl(typeof organization.sameAs === "string" ? organization.sameAs : "")) delete organization.sameAs;
+    }
     // Only the employer's own official logo URL (employers.logo_url); never a guessed one.
-    if (job.logo_url) organization.logo = job.logo_url;
+    const logo = httpUrl(job.logo_url);
+    if (logo) organization.logo = logo;
     else delete organization.logo;
     data.hiringOrganization = organization;
   }

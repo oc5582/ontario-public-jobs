@@ -14,7 +14,20 @@ function isEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-export function SignupForm({ consent, sender }: { consent: string; sender: string }) {
+export function SignupForm({
+  consent,
+  sender,
+  heading,
+  idPrefix = "",
+  placement = "home",
+}: {
+  consent: string;
+  sender: string;
+  /** Replaces the homepage heading. The CASL checkbox stays the weekly-alert wording. */
+  heading?: string;
+  idPrefix?: string;
+  placement?: "home" | "employer";
+}) {
   const [status, setStatus] = useState<{ message: string; ok: boolean } | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -58,7 +71,7 @@ export function SignupForm({ consent, sender }: { consent: string; sender: strin
       if (!response.ok) throw new Error(body.error || "fail");
       if (body.ok === true) trackMeta("track", "Lead");
       setStatus({ message: SUCCESS, ok: true });
-      const label = form.querySelector("#casl-label");
+      const label = form.querySelector(`#${idPrefix}casl-label`);
       const consentText = label?.textContent || "";
       fetch("/api/alerts/consent/", {
         method: "POST",
@@ -80,20 +93,29 @@ export function SignupForm({ consent, sender }: { consent: string; sender: strin
   }
 
   return (
-    <section className="signup signup-compact" aria-labelledby="signup-heading">
-      <form id="signup-form" method="post" action={SIGNUP_ENDPOINT} noValidate onSubmit={onSubmit}>
+    <section
+      className={placement === "employer" ? "signup signup-compact signup-employer" : "signup signup-compact"}
+      aria-labelledby={`${idPrefix}signup-heading`}
+    >
+      <form id={`${idPrefix}signup-form`} method="post" action={SIGNUP_ENDPOINT} noValidate onSubmit={onSubmit}>
         <div className="signup-compact-row">
-          <h2 id="signup-heading" className="signup-compact-heading">
-            <span className="b2-desktop">Or get new openings by email</span>
-            <span className="b2-phone">New openings by email</span>
+          <h2 id={`${idPrefix}signup-heading`} className="signup-compact-heading">
+            {heading ? (
+              heading
+            ) : (
+              <>
+                <span className="b2-desktop">Or get new openings by email</span>
+                <span className="b2-phone">New openings by email</span>
+              </>
+            )}
           </h2>
           <div className="signup-compact-fields">
-            <label id="email-label" htmlFor="email" className="visually-hidden">
+            <label id={`${idPrefix}email-label`} htmlFor={`${idPrefix}email`} className="visually-hidden">
               Email
             </label>
             <input
               type="email"
-              id="email"
+              id={`${idPrefix}email`}
               name="email"
               required
               autoComplete="email"
@@ -101,15 +123,15 @@ export function SignupForm({ consent, sender }: { consent: string; sender: strin
               maxLength={254}
               placeholder="you@example.com"
             />
-            <button type="submit" id="submit-btn" disabled={pending}>
+            <button type="submit" id={`${idPrefix}submit-btn`} disabled={pending}>
               <span className="b2-desktop">Email me new openings</span>
               <span className="b2-phone">Sign up</span>
             </button>
           </div>
         </div>
-        <label className="checkbox signup-compact-consent" htmlFor="consent">
-          <input type="checkbox" id="consent" name="casl_consent" value="yes" required />
-          <span id="casl-label">
+        <label className="checkbox signup-compact-consent" htmlFor={`${idPrefix}consent`}>
+          <input type="checkbox" id={`${idPrefix}consent`} name="casl_consent" value="yes" required />
+          <span className="casl-label" id={`${idPrefix}casl-label`}>
             {consent}
             <span className="consent-sender">{sender}</span>
           </span>
@@ -122,11 +144,11 @@ export function SignupForm({ consent, sender }: { consent: string; sender: strin
           </span>
         </label>
         <div className="hp" aria-hidden="true">
-          <label htmlFor="gotcha">Leave this field blank</label>
-          <input type="text" id="gotcha" name="_gotcha" tabIndex={-1} autoComplete="off" />
+          <label htmlFor={`${idPrefix}gotcha`}>Leave this field blank</label>
+          <input type="text" id={`${idPrefix}gotcha`} name="_gotcha" tabIndex={-1} autoComplete="off" />
         </div>
         <div
-          id="signup-status"
+          id={`${idPrefix}signup-status`}
           className={status ? `status ${status.ok ? "ok" : "err"}` : "status"}
           role="status"
           aria-live="polite"
