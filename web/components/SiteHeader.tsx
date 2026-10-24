@@ -10,6 +10,7 @@ function currentKey(pathname: string): string {
   if (path === "/employers" || path.startsWith("/employers/")) return "employers";
   if (path === "/about") return "about";
   if (path === "/faq") return "faq";
+  if (path === "/guides" || path.startsWith("/guides/")) return "guides";
   if (path === "/stats") return "stats";
   if (path === "/privacy") return "privacy";
   if (path === "/terms") return "terms";
@@ -92,6 +93,7 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
               <li>{nav("About", "/about/", "about")}</li>
               <li>{nav("FAQ", "/faq/", "faq")}</li>
               <li>{nav("Job stats", "/stats/", "stats")}</li>
+              <li>{nav("Guides", "/guides/", "guides")}</li>
               <li>{nav("Privacy", "/privacy/", "privacy")}</li>
               <li>{nav("Terms", "/terms/", "terms")}</li>
               <li>{nav("Pricing", "/pricing/", "pricing")}</li>
