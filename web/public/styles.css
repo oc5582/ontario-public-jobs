@@ -1453,6 +1453,15 @@ button[type="submit"]:disabled {
   background: var(--surface);
 }
 
+.signup.signup-compact.signup-employer {
+  margin: 1.25rem 0 0;
+  border-top: 1px solid var(--rule);
+}
+
+.signup.signup-compact.signup-employer .signup-compact-heading {
+  flex: 1 1 100%;
+}
+
 .signup-compact-row {
   display: flex;
   align-items: center;
@@ -1501,7 +1510,7 @@ button[type="submit"]:disabled {
   margin: 0.15rem 0 0;
 }
 
-.signup-compact-consent span#casl-label {
+.signup-compact-consent span.casl-label {
   flex: 1;
   min-width: 12rem;
 }
@@ -1667,7 +1676,7 @@ button[type="submit"]:disabled {
     line-height: 1.4;
   }
 
-  .signup-compact-consent span#casl-label {
+  .signup-compact-consent span.casl-label {
     display: none;
   }
 
@@ -1874,6 +1883,17 @@ a.apply-btn.secondary:visited,
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.35;
+}
+
+.similar-jobs .openings-note {
+  margin: 0.35rem 0 0;
+}
+
+.similar-jobs .openings-note a {
+  color: var(--civic);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 
 .plan-list {

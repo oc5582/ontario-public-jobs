@@ -5,11 +5,12 @@ import type { ReactNode } from "react";
 import { formatDescription } from "@/lib/description";
 import { displayLocation } from "@/lib/display-location";
 import { formatLongDate } from "@/lib/format";
-import { jobPostingJsonLd } from "@/lib/jsonld";
+import { breadcrumbJsonLd, jobPostingJsonLd } from "@/lib/jsonld";
 import { hasDescription } from "@/lib/has-description";
 import { isFrench } from "@/lib/language";
-import { elsewhereJobs, getJob, neighbourJobs, similarOpenJobs } from "@/lib/jobs";
+import { elsewhereJobs, employerOpenJobs, getJob, neighbourJobs } from "@/lib/jobs";
 import { pageMetadata } from "@/lib/seo";
+import { SITE_URL } from "@/lib/site";
 import type { JobDetail } from "@/lib/types";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -55,22 +56,38 @@ export async function JobView({
 }) {
   const job = await getJob(employer, slug);
   if (!job) notFound();
-  const [neighbours, toggle] = await Promise.all([
+  const [neighbours, toggle, openings] = await Promise.all([
     job.closed ? Promise.resolve([]) : neighbourJobs(job),
     Promise.resolve(applyToggle ?? null),
+    job.closed ? employerOpenJobs(job.employer_slug) : Promise.resolve([]),
   ]);
   const elsewhere = job.closed ? [] : await elsewhereJobs(job, [job.path, ...neighbours.map((item) => item.path)]);
-  const similar = job.closed ? await similarOpenJobs(job) : [];
   const rows = metaRows(job);
   const posting = jobPostingJsonLd(job);
   const descriptionHtml = formatDescription(job.description.trim() ? job.description : job.paragraphs.join("\n"));
+  const employerHref = `/employers/${job.employer_slug}/`;
+  const crumbs = [
+    { name: "All openings", url: `${SITE_URL}/` },
+    { name: "Employers", url: `${SITE_URL}/employers/` },
+    { name: job.employer || "Employer", url: `${SITE_URL}${employerHref}` },
+    { name: job.title, url: `${SITE_URL}${job.href}` },
+  ];
 
   return (
     <main>
       {posting ? <JsonLd data={posting} /> : null}
+      <JsonLd data={breadcrumbJsonLd(crumbs)} />
       <article className="job-page content" {...(isFrench(job) ? { lang: "fr" } : {})}>
         <p className="crumb">
           <a href="/">All openings</a>
+          {" / "}
+          <a href="/employers/">Employers</a>
+          {job.employer ? (
+            <>
+              {" / "}
+              <a href={employerHref}>{job.employer}</a>
+            </>
+          ) : null}
         </p>
         {job.closed ? (
           <p className="closed-banner" role="status">
@@ -103,10 +120,14 @@ export async function JobView({
           employer. The employer can ask us to correct or remove a listing.{" "}
           <a href={`/report/?job=${encodeURIComponent(job.path)}`}>Report a fake or suspicious job</a>
         </p>
-        {job.closed && similar.length ? (
-          <section className="similar-jobs" aria-labelledby="similar-heading">
-            <h2 id="similar-heading">Similar jobs</h2>
-            <JobList jobs={similar} />
+        {job.closed ? (
+          <section className="similar-jobs" aria-labelledby="openings-heading">
+            <h2 id="openings-heading">Current openings at {job.employer || "this employer"}</h2>
+            <p className="openings-note">
+              This job is no longer available.{" "}
+              <a href={employerHref}>See current {job.employer || "employer"} openings</a>.
+            </p>
+            {openings.length ? <JobList jobs={openings} /> : <p className="listings-empty">No current openings.</p>}
           </section>
         ) : null}
         {!job.closed && (neighbours.length || elsewhere.length) ? (

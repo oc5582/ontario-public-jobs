@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { query } from "./db";
-import { hasFilters, type JobFilters } from "./filters";
+import { emptyFilters, hasFilters, type JobFilters } from "./filters";
 import { neighbourRanks } from "./neighbour-jobs";
 import { selectSimilarJobs, type SimilarJobCandidate } from "./similar-jobs";
 import {
@@ -116,10 +116,11 @@ function toListJob(row: ListRow): ListJob {
 async function searchJobsUncached(
   filters: JobFilters,
   member: boolean,
+  uncapped = false,
 ): Promise<{ jobs: ListJob[]; total: number }> {
   const params: unknown[] = [];
   const where = whereFor(filters, params);
-  const limit = member ? "" : `limit ${FREE_LIST_LIMIT}`;
+  const limit = member || uncapped ? "" : `limit ${FREE_LIST_LIMIT}`;
   const rows = await query<ListRow>(
     `select j.title, e.name as employer_name, j.location, j.location_places, j.closing_date::text as closing,
             j.employment_type, j.path, count(*) over() as total_count
@@ -142,6 +143,13 @@ export function searchJobs(
   return publicCache(
     ["search-jobs", JSON.stringify(filters), member ? "member" : "public"],
     () => searchJobsUncached(filters, member),
+  );
+}
+
+/** Every open job at one employer. Employer pages are not capped at the free list of 10. */
+export function employerOpenJobs(slug: string): Promise<ListJob[]> {
+  return publicCache(["employer-open-jobs", slug], () =>
+    searchJobsUncached({ ...emptyFilters(), employer: slug }, false, true).then((result) => result.jobs),
   );
 }
 
@@ -568,10 +576,27 @@ function formatFetched(iso: string): string {
   return `${months[month - 1]} ${day}, ${year}`;
 }
 
+/**
+ * Later of the edit time, the refresh time, and the posted date.
+ * A close counts too: removed_at, or the closing date once that day has passed.
+ * max() ignores nulls, so a blank close date does not wipe the other dates.
+ */
+const JOB_FRESHNESS = `(select max(d) from (values
+  ((j.updated_at at time zone 'America/Toronto')::date),
+  ((j.fetched_at at time zone 'America/Toronto')::date),
+  ((j.removed_at at time zone 'America/Toronto')::date),
+  (case
+     when j.closing_date is not null
+      and j.closing_date < (timezone('America/Toronto', now()))::date
+     then j.closing_date
+   end),
+  (${EFFECTIVE_POSTED})
+) as freshness(d))`;
+
 function sitemapJobsUncached(): Promise<{ path: string; lastmod: string }[]> {
   return query<{ path: string; lastmod: string }>(
     `select j.path,
-            coalesce(${EFFECTIVE_POSTED}::text, '') as lastmod
+            coalesce(${JOB_FRESHNESS}::text, '') as lastmod
      from jobs j
      where ${OPEN}
        and ${HAS_DESCRIPTION}
@@ -583,13 +608,47 @@ export function sitemapJobs(): Promise<{ path: string; lastmod: string }[]> {
   return publicCache(["sitemap-jobs"], () => sitemapJobsUncached());
 }
 
-async function sitemapEmployersUncached(): Promise<string[]> {
-  const rows = await query<{ slug: string }>(
-    `select slug from employers order by slug`,
+export type SitemapEmployer = { slug: string; lastmod: string };
+
+async function sitemapEmployersUncached(): Promise<SitemapEmployer[]> {
+  const rows = await query<SitemapEmployer>(
+    `select slug,
+            coalesce((select max(d) from unnest(array[updated_on, fetched_on, removed_on, closed_on, posted_on, employer_on]) as d)::text, '') as lastmod
+     from (
+       select e.slug,
+              max((j.updated_at at time zone 'America/Toronto')::date) as updated_on,
+              max((j.fetched_at at time zone 'America/Toronto')::date) as fetched_on,
+              max((j.removed_at at time zone 'America/Toronto')::date) as removed_on,
+              max(case
+                    when j.closing_date is not null
+                     and j.closing_date < (timezone('America/Toronto', now()))::date
+                    then j.closing_date
+                  end) as closed_on,
+              max(${EFFECTIVE_POSTED}) as posted_on,
+              max((e.updated_at at time zone 'America/Toronto')::date) as employer_on
+       from employers e
+       join jobs j on j.employer_id = e.id
+       group by e.id
+       having bool_or(${OPEN})
+     ) employer_dates
+     order by slug`,
   );
-  return rows.map((row) => row.slug);
+  return rows.map((row) => ({ slug: row.slug, lastmod: (row.lastmod || "").slice(0, 10) }));
 }
 
-export function sitemapEmployers(): Promise<string[]> {
+/** Employers with at least one open job. Zero-open pages stay out of the sitemap. */
+export function sitemapEmployers(): Promise<SitemapEmployer[]> {
   return publicCache(["sitemap-employers"], () => sitemapEmployersUncached());
+}
+
+async function listingLastmodUncached(): Promise<string> {
+  const rows = await query<{ lastmod: string }>(
+    `select coalesce(max(${JOB_FRESHNESS})::text, '') as lastmod from jobs j`,
+  );
+  return (rows[0]?.lastmod || "").slice(0, 10);
+}
+
+/** Latest job edit, refresh, post, or close. Used as lastmod on listing pages. */
+export function listingLastmod(): Promise<string> {
+  return publicCache(["sitemap-listing-lastmod"], () => listingLastmodUncached());
 }
