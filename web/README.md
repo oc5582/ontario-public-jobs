@@ -199,6 +199,18 @@ The server calls `MATCH_WORKER_URL` with header `X-PublicJobs-Trusted: $MATCH_TR
 
 The Worker source to deploy later is `workers/resume-match/`. Do not deploy it as part of shipping this app. See that folder's README for the secret and the deploy command. Direct calls (the current publicjobs.ca `/match/` page) keep working if that source is deployed first: 3 lifetime matches per email, 10 per network per day, separate messages, signup only after the checks, and no charge when matching fails.
 
+### Weekly member matches
+
+Paid members can save one resume on `/account/` (PDF, Word, or paste; the file stays on the device and the text is stored on the profile). The checkbox “Email me my weekly matches” is off until they turn it on, and it stays disabled until a resume is saved. Free and signed-out visitors do not see the controls and get 401/403 from `POST /api/account/resume/` and `POST /api/account/weekly-email/`.
+
+Saturday crons `GET /api/cron/weekly-matches/` (`CRON_SECRET`, 13:00–16:00 UTC, which is Saturday morning in Toronto) run a tighter match than `/match/`: Worker `match_mode: "tight"` when that source is deployed, then the app keeps only `strong` hits whose reason is at least 8 words, capped at 15. `maybe` fits are dropped. Zero strong matches do not send email. The email is a short note plus a link to `/account/#weekly-matches`, with an unsubscribe link that turns the checkbox off. `?dry_run=1` plans the run and returns the email text without calling the Worker or sending mail.
+
+The job does not write `resume_match_usage`, so it does not use the 20-a-day member allowance. Calls are one at a time. The Worker’s $10 monthly cap and daily cap still apply. This job also stops for the rest of that Saturday once its own estimated spend for the UTC month reaches $4, and it logs `{ "event": "weekly_match_skip" }`. Apply `supabase/migrations/20261024120000_weekly_resume_matches.sql` before the first run. Deleting an account deletes the saved resume and the weekly list.
+
+```bash
+node --import ./scripts/register-ts.mjs --experimental-strip-types scripts/test_weekly_match.mts
+```
+
 ```bash
 node --import ./scripts/register-ts.mjs --experimental-strip-types scripts/test_match_limits.mts
 node --import ./scripts/register-ts.mjs --experimental-strip-types scripts/test_match_guest.mts

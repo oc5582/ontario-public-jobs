@@ -6,6 +6,7 @@ export type OutboundEmail = {
   html: string;
   text: string;
   idempotencyKey: string;
+  headers?: Record<string, string>;
 };
 
 export function transactionalFrom(): string {
@@ -24,6 +25,7 @@ export async function sendTransactional(message: OutboundEmail): Promise<{ id: s
       subject: message.subject,
       html: message.html,
       text: message.text,
+      headers: message.headers,
       replyTo: isPlaceholder(LEGAL.supportEmail) ? undefined : LEGAL.supportEmail,
     },
     { idempotencyKey: message.idempotencyKey },

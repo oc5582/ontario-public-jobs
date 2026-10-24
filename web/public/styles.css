@@ -2251,6 +2251,75 @@ a.apply-btn.secondary:visited,
   margin: 0.75rem 0;
 }
 
+.account-weekly {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+
+.account-weekly h2 {
+  font-weight: 600;
+}
+
+.account-weekly label {
+  display: block;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.account-weekly textarea {
+  width: 100%;
+  max-width: 40rem;
+  min-height: 9rem;
+  resize: vertical;
+  font: inherit;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #6b7680;
+  border-radius: 4px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.account-weekly input[type="file"] {
+  font: inherit;
+  max-width: 100%;
+}
+
+.account-weekly .or {
+  margin: 1rem 0 0.5rem;
+  color: var(--muted);
+}
+
+.account-weekly .checkbox {
+  margin-top: 1.25rem;
+}
+
+.account-weekly ol.results {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+}
+
+.account-weekly ol.results li {
+  border-top: 1px solid var(--rule);
+  padding: 0.85rem 0;
+}
+
+.account-weekly ol.results a {
+  font-weight: 600;
+  color: var(--civic);
+}
+
+.account-weekly .meta {
+  color: var(--muted);
+  font-size: 0.9375rem;
+  margin: 0.15rem 0;
+}
+
+.account-weekly .why {
+  margin: 0.25rem 0 0;
+}
+
 .source-note {
   margin: 1rem 0 0;
   color: var(--muted);

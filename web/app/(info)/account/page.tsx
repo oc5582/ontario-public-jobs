@@ -1,11 +1,14 @@
 import { redirect } from "next/navigation";
 import { PurchasePixel } from "@/components/PurchasePixel";
+import { WeeklyMatchPanel } from "@/components/WeeklyMatchPanel";
 import { getViewer } from "@/lib/auth";
 import { claimPurchasePixel } from "@/lib/meta-purchase";
 import { refundSentence } from "@/lib/legal-copy";
 import { membershipPeriodLabel } from "@/lib/membership";
 import { pageMetadata } from "@/lib/seo";
 import { PLANS } from "@/lib/site";
+import { showWeeklyMatchTools } from "@/lib/weekly-match";
+import { loadWeeklyAccount } from "@/lib/weekly-match-data";
 import { signOut } from "../../account/actions";
 import { deleteMyAccount } from "../../account/delete-action";
 import { openPortal } from "../../billing/actions";
@@ -40,6 +43,7 @@ export default async function AccountPage({
   const sessionId = typeof params.session_id === "string" ? params.session_id : "";
   const purchase = sessionId ? await claimPurchasePixel(sessionId, profile.id) : null;
   const period = membershipPeriodLabel(profile);
+  const weekly = showWeeklyMatchTools(viewer.isMember) ? await loadWeeklyAccount(profile.id) : null;
 
   return (
     <main>
@@ -103,6 +107,14 @@ export default async function AccountPage({
               Sign out
             </button>
           </form>
+          {weekly ? (
+            <WeeklyMatchPanel
+              saved={weekly.saved}
+              optedIn={weekly.optedIn}
+              results={weekly.results}
+              ready={weekly.ready}
+            />
+          ) : null}
           {notice === "delete" ? (
             <p className="status err" role="alert">
               Check the box to confirm you want the account deleted.
@@ -116,7 +128,7 @@ export default async function AccountPage({
           <form action={deleteMyAccount} className="account-delete">
             <h2>Delete account</h2>
             <p>
-              This removes your profile, match history, and the jobs you marked as applied. Billing records the law requires, such as payment records,
+              This removes your profile, match history, any resume you saved for weekly matches, the weekly match list, and the jobs you marked as applied. Billing records the law requires, such as payment records,
               are kept. If a membership is still renewing, we cancel it first. If that cancellation cannot be completed,
               deletion waits until you cancel from Manage billing.
             </p>

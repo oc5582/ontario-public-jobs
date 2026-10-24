@@ -11,7 +11,7 @@ function Mail({ email }: { email: string }) {
 export function PrivacyDocument() {
   return (
     <section className="description">
-      <p>Last updated: October 15, 2026</p>
+      <p>Last updated: October 24, 2026</p>
       <p>
         PublicJobs.ca is an independent job board. It is not affiliated with any government or with any employer listed
         on the site. This page explains what personal information we collect, why, and how you can control it.
@@ -40,7 +40,8 @@ export function PrivacyDocument() {
         Our database stores a profile for that account: your email address, when the profile was created, your
         membership status, your plan if you have one, the Stripe customer id and subscription id, when the current paid
         period ends, and when a cancellation takes effect. After you pay, we also store the name collected at checkout.
-        We do not store a resume on the account.
+        We do not store a resume on the account unless you have a membership and choose to save one for weekly matches.
+        That save is described under Resume matching.
       </p>
       <p>
         If you have a membership, you can mark a job as applied. We store your account id, the job id while that
@@ -106,16 +107,30 @@ export function PrivacyDocument() {
         sign you up.
       </p>
       <p>
-        Only the text (up to 15,000 characters) is sent to our servers and then to Cloudflare Workers AI, which may
-        process it outside Canada, to find matching jobs. We do not keep the file or the text. The text stays in memory
-        while the match runs, then we discard it. We do not save it to our database, and we do not write it to our
-        match logs. If matching fails, the log is a short error message, not your resume. Remove anything you do not
-        want to share, such as your home address or immigration details, before matching.
+        On the Match page, only the text (up to 15,000 characters) is sent to our servers and then to Cloudflare
+        Workers AI, which may process it outside Canada, to find matching jobs. We do not keep that file or that text.
+        The text stays in memory while the match runs, then we discard it. We do not save a Match-page resume to our
+        database, and we do not write it to our match logs. If matching fails, the log is a short error message, not
+        your resume. Remove anything you do not want to share, such as your home address or immigration details, before
+        matching.
       </p>
       <p>
-        We send the matches back to your browser. We do not store the matches or the list of jobs we showed you. To
-        count matches, we store a row on your account with the date of each match that finished, plus a scrambled form
-        of your email used only for that count.
+        We send the matches back to your browser. We do not store the matches from the Match page, or the list of jobs
+        we showed you there. To count matches, we store a row on your account with the date of each match that
+        finished, plus a scrambled form of your email used only for that count.
+      </p>
+      <p>
+        A membership can save one resume on the account for a Saturday check. That save is optional and separate from
+        the Match page. We keep the text you save (up to 15,000 characters), not the file. The file still stays on your
+        device. Only you can see that text. We delete it when you remove it or delete the account. We do not send it
+        to employers.
+      </p>
+      <p>
+        If you also turn on “Email me my weekly matches”, we run that saved text on Saturday and keep the latest list
+        of strong matches on your account, with the date we ran it. We replace that list each week. The email only says
+        the list is ready. It does not include the jobs. You can turn the email off on your account page or from the
+        unsubscribe link in the email. If there is no strong match that week, we do not send the email. The Saturday
+        check is part of a membership. It stops when the membership is not active.
       </p>
       <p>
         The matching service also keeps site-wide counters: how many matches ran that day, and an estimate of that
@@ -136,7 +151,8 @@ export function PrivacyDocument() {
         </li>
         <li>
           <strong>Supabase</strong> (database and sign-in; data stored in Canada, Montreal region) – accounts,
-          memberships, agreement and alert-consent records, match counts, and the jobs a member has marked as applied.
+          memberships, agreement and alert-consent records, match counts, a resume a member saved for weekly matches,
+          that member&apos;s latest weekly match list, and the jobs a member has marked as applied.
         </li>
         <li>
           <strong>Stripe</strong> (payments; may process data in the United States and elsewhere) – your name, billing
@@ -147,8 +163,10 @@ export function PrivacyDocument() {
           through Workers AI; may process data outside Canada).
         </li>
         <li>
-          <strong>Resend</strong> (sending email; United States) – weekly job alerts, the membership agreement email,
-          and renewal reminders. For alerts it holds your email address, consent record, and unsubscribe status.
+          <strong>Resend</strong> (sending email; United States) – weekly job alerts, the short Saturday note that
+          weekly matches are ready, the membership agreement email, and renewal reminders. For alerts it holds your
+          email address, consent record, and unsubscribe status. The Saturday note is sent only to members who turned
+          that email on.
         </li>
         <li>
           <strong>Google</strong> (sign-in, if you choose Continue with Google) – the account you use to sign in, under
@@ -234,8 +252,12 @@ export function PrivacyDocument() {
             <td>Kept as running counts. The software does not delete them on a schedule.</td>
           </tr>
           <tr>
-            <td>Resume text</td>
+            <td>Resume text from the Match page</td>
             <td>Not kept; discarded after the match.</td>
+          </tr>
+          <tr>
+            <td>Resume saved for weekly matches</td>
+            <td>Kept until you remove it or delete the account. The weekly match list is replaced each Saturday and deleted with the account.</td>
           </tr>
           <tr>
             <td>Fraud reports</td>
@@ -247,7 +269,8 @@ export function PrivacyDocument() {
       <p>
         You can delete your account on the Account page. If a membership is still renewing, we cancel the Stripe
         subscription first. If we cannot, we stop and ask you to cancel it from Manage billing. We then delete the
-        profile, the sign-in account, the match counts, and the jobs you marked as applied. We keep the billing and agreement records described above,
+        profile, the sign-in account, the match counts, any resume you saved for weekly matches, the weekly match list,
+        and the jobs you marked as applied. We keep the billing and agreement records described above,
         including the email and name on those records. Stripe also keeps its own customer and payment record. Alert
         signup records are not removed by deleting the account. You can unsubscribe from alerts using the link in any
         email. You can turn off ad tracking at any time with the &quot;Turn off ad tracking&quot; button in the site
@@ -255,7 +278,8 @@ export function PrivacyDocument() {
       </p>
       <h2>Unsubscribing</h2>
       <p>
-        Every alert email includes a one-click unsubscribe link. You can also email{" "}
+        Every alert email includes a one-click unsubscribe link. The Saturday match email has its own unsubscribe link,
+        which turns off that email and does not cancel a membership. You can also email{" "}
         <Mail email={LEGAL.supportEmail} /> and we will remove you.
       </p>
       <h2>Breaches</h2>

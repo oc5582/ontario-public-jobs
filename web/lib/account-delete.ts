@@ -1,5 +1,6 @@
 import { getStripe } from "./billing";
 import { query } from "./db";
+import { isMissingRelation } from "./weekly-match";
 
 export class AccountDeleteBlocked extends Error {
   constructor(message: string) {
@@ -15,6 +16,14 @@ export function shouldRetainBillingRecord(profile: {
 }): boolean {
   if (profile.stripe_subscription_id) return true;
   return profile.membership_status !== "none";
+}
+
+async function deleteIfPresent(sql: string, profileId: string): Promise<void> {
+  try {
+    await query(sql, [profileId]);
+  } catch (error) {
+    if (!isMissingRelation(error)) throw error;
+  }
 }
 
 export async function deleteAccount(profileId: string): Promise<void> {
@@ -63,6 +72,10 @@ export async function deleteAccount(profileId: string): Promise<void> {
       ],
     );
   }
+  await deleteIfPresent(`delete from weekly_match_log where profile_id = $1`, profileId);
+  await deleteIfPresent(`delete from weekly_match_results where profile_id = $1`, profileId);
+  await deleteIfPresent(`delete from weekly_match_prefs where profile_id = $1`, profileId);
+  await deleteIfPresent(`delete from saved_resumes where profile_id = $1`, profileId);
   await query(`delete from resume_match_usage where profile_id = $1`, [profileId]);
   await query(`delete from profiles where id = $1`, [profileId]);
   await query(`select app_private.delete_auth_user($1)`, [profileId]);
