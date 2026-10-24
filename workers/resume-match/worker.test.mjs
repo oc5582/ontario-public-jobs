@@ -19,6 +19,7 @@ const rows = new Map();
 let mode = "ok";
 let runCalls = 0;
 let signupOk = true;
+let lastSystem = "";
 const signups = [];
 
 function createDb() {
@@ -73,11 +74,19 @@ function env(extra = {}) {
   return {
     MATCH_TRUSTED_SECRET: SECRET,
     AI: {
-      async run() {
+      async run(_model, input) {
         runCalls += 1;
+        const system = input && input.messages && input.messages[0] ? input.messages[0].content : "";
+        lastSystem = system;
         if (mode === "fail-all" || (mode === "fail-second" && runCalls === 2)) throw new Error("batch failed");
+        const matches = system.includes("Be strict")
+          ? [
+              { id: 1, fit: "strong", reason: "Your counter work fits this clerk role at the city." },
+              { id: 2, fit: "maybe", reason: "Your skills might transfer to this different kind of job." },
+            ]
+          : [{ id: 1, fit: "strong", reason: "Your counter work fits this clerk role at the city." }];
         return {
-          response: { matches: [{ id: 1, fit: "strong", reason: "Your counter work fits this clerk role at the city." }] },
+          response: { matches },
           usage: { prompt_tokens: 100, completion_tokens: 50 },
         };
       },
@@ -268,6 +277,33 @@ const ipMsg = "Resume matching from this network is busy today. Please try again
 {
   const denied = await call({ resume_text: resume }, { trusted: true, secret: "nope", origin: "https://evil.example" });
   assert.equal(denied.status, 403);
+}
+
+// Trusted Saturday calls can ask for the strict prompt. Maybe fits are dropped.
+{
+  const before = signups.length;
+  const result = await call(
+    { resume_text: resume, match_mode: "tight" },
+    { trusted: true, ip: "198.51.100.40" },
+  );
+  assert.equal(result.status, 200, JSON.stringify(result.json));
+  assert.match(lastSystem, /Be strict/);
+  assert.equal(result.json.strong.length, 1);
+  assert.equal(result.json.maybe.length, 0);
+  assert.equal(signups.length, before);
+}
+
+// A direct caller cannot switch on the strict prompt.
+{
+  const result = await direct("tight-direct@publicjobs.test", "203.0.113.90");
+  assert.equal(result.status, 200);
+  assert.match(lastSystem, /Be generous/);
+  const spoofed = await call(
+    { email: "tight-spoof@publicjobs.test", casl_consent: "yes", resume_text: resume, match_mode: "tight" },
+    { ip: "203.0.113.91" },
+  );
+  assert.equal(spoofed.status, 200);
+  assert.equal(lastSystem.includes("Be strict"), false);
 }
 
 // The job index comes from the Next.js site and is fetched with the Worker's secret.

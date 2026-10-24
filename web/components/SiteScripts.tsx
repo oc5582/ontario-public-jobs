@@ -9,6 +9,7 @@ export function SiteScripts() {
   return (
     <>
       {path === "/match" ? <script src="/match.js" /> : null}
+      {path === "/account" || path === "/account/weekly-sample" ? <script src="/account-resume.js" /> : null}
       {pixel ? (
         <script
           dangerouslySetInnerHTML={{

@@ -7,6 +7,22 @@
     {
       "path": "/api/cron/applied-cleanup/",
       "schedule": "30 8 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-matches/",
+      "schedule": "0 13 * * 6"
+    },
+    {
+      "path": "/api/cron/weekly-matches/",
+      "schedule": "0 14 * * 6"
+    },
+    {
+      "path": "/api/cron/weekly-matches/",
+      "schedule": "0 15 * * 6"
+    },
+    {
+      "path": "/api/cron/weekly-matches/",
+      "schedule": "0 16 * * 6"
     }
   ]
 }

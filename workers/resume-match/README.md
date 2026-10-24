@@ -22,6 +22,8 @@ Trusted callers (the Next.js server) send header `X-PublicJobs-Trusted` with the
 
 The response shape is unchanged: `{ ok, error, strong, maybe, jobs_checked, remaining }`. `remaining` is null for trusted callers. `partial` is false on success. A partial AI failure is an error, not a partial result.
 
+Trusted callers may send `match_mode: "tight"` for the Saturday member list. That uses a stricter prompt (strong fits only; leave a job out when unsure) and drops any `maybe` the model still returns. Direct callers cannot turn that mode on. The Next.js app also filters the response, so the weekly list stays tighter even before this Worker source is deployed. Do not deploy this Worker as part of shipping the weekly feature.
+
 ## Job index
 
 The Worker reads open jobs from the Supabase function `public.match_index` (migration `supabase/migrations/20261011180000_match_index.sql`) through the REST API (`/rest/v1/rpc/match_index`) with the public publishable key, sending its own `MATCH_TRUSTED_SECRET` as `p_secret`. The function refuses any other value (it stores only the SHA-256 of the secret), so the full list stays behind the paywall. If the secret is rotated, update the hash in that function too. The old static `/data/listings.json` is gone since the switch to Next.js. Job links use the `path` stored in the database. The index is cached in the Worker for an hour.
