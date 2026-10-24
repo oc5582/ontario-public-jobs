@@ -1,5 +1,6 @@
 import { sitemapEmployers, sitemapJobs } from "@/lib/jobs";
 import { SITE_URL } from "@/lib/site";
+import { GUIDES, guidePath } from "@/lib/guides";
 
 export const revalidate = 900;
 
@@ -23,6 +24,8 @@ export async function GET() {
       const path = job.path.endsWith("/") ? job.path : `${job.path}/`;
       return urlNode(`${SITE_URL}/${path.replace(/^\//, "")}`, (job.lastmod || "").slice(0, 10));
     }),
+    urlNode(`${SITE_URL}/guides/`, GUIDES[0]?.published || ""),
+    ...GUIDES.map((guide) => urlNode(`${SITE_URL}${guidePath(guide.slug)}`, guide.updated)),
   ];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${lines.join("\n")}\n</urlset>\n`;
   return new Response(xml, {

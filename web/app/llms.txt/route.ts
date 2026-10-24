@@ -26,6 +26,7 @@ Listings are refreshed every weekday. ${facts.fetched} Contact: ${LEGAL.supportE
 - [All openings](${SITE_URL}/jobs/): Current openings. Visitors see the newest 10. Members see the full filtered list.
 - [Employers](${SITE_URL}/employers/): Public employers, each with a page of its current openings.
 - [Job stats](${SITE_URL}/stats/): Counts of open public-sector jobs in the GTA by employer, city, and salary band. No job titles. The same counts are at ${SITE_URL}/stats.json and ${SITE_URL}/stats.csv (CC BY 4.0).
+- [Guides](${SITE_URL}/guides/): Plain guides to applying for GTA public-sector jobs, with sources and the date facts were checked. First guide: [How to become a GO bus driver](${SITE_URL}/guides/how-to-become-a-go-bus-driver/).
 - [Match your resume](${SITE_URL}/match/): Compare a resume with current openings. The resume is not stored. One free match with an email address, no account needed. It shows the top 10 jobs. Members can match up to 20 times a day.
 - [Membership](${SITE_URL}/pricing/): Prices plus applicable GST/HST, and the cancel and 5-day refund terms.
 - [About](${SITE_URL}/about/): Who runs the site, what it covers, how listings are collected, and how often they are updated.
