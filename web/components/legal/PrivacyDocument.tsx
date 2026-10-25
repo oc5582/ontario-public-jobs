@@ -126,7 +126,7 @@ export function PrivacyDocument() {
         to employers.
       </p>
       <p>
-        If you also turn on “Email me my weekly matches”, we run that saved text on Saturday and keep the latest list
+        If you also turn on “Email me my matches every Saturday”, we run that saved text on Saturday and keep the latest list
         of strong matches on your account, with the date we ran it. We replace that list each week. The email only says
         the list is ready. It does not include the jobs. You can turn the email off on your account page or from the
         unsubscribe link in the email. If there is no strong match that week, we do not send the email. The Saturday

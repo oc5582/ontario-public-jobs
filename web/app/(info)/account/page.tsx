@@ -3,7 +3,7 @@ import { PurchasePixel } from "@/components/PurchasePixel";
 import { WeeklyMatchPanel } from "@/components/WeeklyMatchPanel";
 import { getViewer } from "@/lib/auth";
 import { claimPurchasePixel } from "@/lib/meta-purchase";
-import { refundSentence } from "@/lib/legal-copy";
+import { AccountDeleteCopy, AccountRefundCopy } from "@/components/AccountSections";
 import { membershipPeriodLabel } from "@/lib/membership";
 import { pageMetadata } from "@/lib/seo";
 import { PLANS } from "@/lib/site";
@@ -96,17 +96,6 @@ export default async function AccountPage({
               </a>
             ) : null}
           </p>
-          <p>{refundSentence()}</p>
-          <form action={openPortal}>
-            <button className="apply-btn secondary" type="submit">
-              Manage billing
-            </button>
-          </form>
-          <form action={signOut}>
-            <button className="apply-btn secondary" type="submit">
-              Sign out
-            </button>
-          </form>
           {weekly ? (
             <WeeklyMatchPanel
               saved={weekly.saved}
@@ -127,11 +116,7 @@ export default async function AccountPage({
           ) : null}
           <form action={deleteMyAccount} className="account-delete">
             <h2>Delete account</h2>
-            <p>
-              This removes your profile, match history, any resume you saved for weekly matches, the weekly match list, and the jobs you marked as applied. Billing records the law requires, such as payment records,
-              are kept. If a membership is still renewing, we cancel it first. If that cancellation cannot be completed,
-              deletion waits until you cancel from Manage billing.
-            </p>
+            <AccountDeleteCopy />
             <label className="checkbox">
               <input type="checkbox" name="confirm" value="yes" required />
               <span>I understand this deletes my account.</span>
@@ -140,6 +125,19 @@ export default async function AccountPage({
               Delete account
             </button>
           </form>
+          <div className="account-foot">
+            <AccountRefundCopy />
+            <form action={openPortal}>
+              <button className="apply-btn secondary" type="submit">
+                Manage billing
+              </button>
+            </form>
+            <form action={signOut}>
+              <button className="apply-btn secondary" type="submit">
+                Sign out
+              </button>
+            </form>
+          </div>
         </section>
       </article>
     </main>

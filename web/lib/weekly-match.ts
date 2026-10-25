@@ -198,7 +198,7 @@ export function resumeSourceLabel(source: string): string {
 }
 
 export function weeklyEmailConsentLabel(): string {
-  return "Email me my weekly matches. Unsubscribe anytime.";
+  return "Email me my matches every Saturday";
 }
 
 export function weeklyConsentText(): string {

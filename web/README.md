@@ -201,7 +201,7 @@ The Worker source to deploy later is `workers/resume-match/`. Do not deploy it a
 
 ### Weekly member matches
 
-Paid members can save one resume on `/account/` (PDF, Word, or paste; the file stays on the device and the text is stored on the profile). The checkbox “Email me my weekly matches” is off until they turn it on, and it stays disabled until a resume is saved. Free and signed-out visitors do not see the controls and get 401/403 from `POST /api/account/resume/` and `POST /api/account/weekly-email/`.
+Paid members can save one resume on `/account/` (PDF, Word, or paste; the file stays on the device and the text is stored on the profile). The checkbox “Email me my matches every Saturday” saves as soon as it is ticked or unticked, and it stays disabled until a resume is saved. Free and signed-out visitors do not see the controls and get 401/403 from `POST /api/account/resume/` and `POST /api/account/weekly-email/`.
 
 Saturday crons `GET /api/cron/weekly-matches/` (`CRON_SECRET`, 13:00–16:00 UTC, which is Saturday morning in Toronto) run a tighter match than `/match/`: Worker `match_mode: "tight"` when that source is deployed, then the app keeps only `strong` hits whose reason is at least 8 words, capped at 15. `maybe` fits are dropped. Zero strong matches do not send email. The email is a short note plus a link to `/account/#weekly-matches`, with an unsubscribe link that turns the checkbox off. `?dry_run=1` plans the run and returns the email text without calling the Worker or sending mail.
 

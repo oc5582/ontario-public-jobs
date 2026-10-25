@@ -2242,35 +2242,68 @@ a.apply-btn.secondary:visited,
 }
 
 .account-delete {
-  margin-top: 2rem;
-  padding-top: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 0.85rem;
   border-top: 1px solid var(--rule);
 }
 
 .account-delete .checkbox {
-  margin: 0.75rem 0;
+  margin: 0.55rem 0 0.65rem;
+}
+
+.description p.account-disclaimer {
+  margin: 0 0 0.4rem;
+  color: #8d969f;
+  font-size: 7px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.account-foot {
+  margin-top: 1.5rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--rule);
+}
+
+.account-foot form {
+  margin: 0 0 0.55rem;
+}
+
+.account-foot form:last-child {
+  margin-bottom: 0;
 }
 
 .account-weekly {
-  margin-top: 2rem;
-  padding-top: 1rem;
+  margin-top: 1.15rem;
+  padding-top: 0.7rem;
   border-top: 1px solid var(--rule);
 }
 
 .account-weekly h2 {
+  margin: 0 0 0.3rem;
   font-weight: 600;
+}
+
+.account-weekly h3 {
+  margin: 0.45rem 0 0.15rem;
+  font-size: 1.05rem;
+}
+
+.account-weekly p {
+  margin: 0 0 0.35rem;
 }
 
 .account-weekly label {
   display: block;
   font-weight: 600;
-  margin: 0 0 0.25rem;
+  margin: 0 0 0.2rem;
 }
 
 .account-weekly textarea {
   width: 100%;
   max-width: 40rem;
-  min-height: 9rem;
+  min-height: 7.5rem;
+  margin: 0.25rem 0 0.5rem;
   resize: vertical;
   font: inherit;
   padding: 0.65rem 0.75rem;
@@ -2281,42 +2314,104 @@ a.apply-btn.secondary:visited,
 }
 
 .account-weekly input[type="file"] {
+  display: block;
+  margin: 0.15rem 0 0.35rem;
   font: inherit;
   max-width: 100%;
 }
 
-.account-weekly .or {
-  margin: 1rem 0 0.5rem;
+.account-weekly .hint {
+  margin: 0.1rem 0 0.3rem;
   color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.4;
 }
 
-.account-weekly .checkbox {
-  margin-top: 1.25rem;
+.account-weekly label.checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin: 0.5rem 0 0.15rem;
+  font-weight: 400;
+  cursor: pointer;
 }
 
-.account-weekly ol.results {
+.account-weekly .login-actions {
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.weekly-list-link {
+  margin: 0 0 0.35rem;
+  font-size: 0.8125rem;
+}
+
+.weekly-list-link a {
+  color: var(--civic);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.weekly-saved-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.8rem;
+  margin: 0;
+}
+
+.weekly-text-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--civic);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+
+.weekly-flash {
+  color: #0d5c32;
+  font-weight: 600;
+}
+
+.checkbox .weekly-flash {
+  margin-left: 0.4rem;
+}
+
+.description .account-weekly p.account-weekly-note {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.weekly-results ol.results {
   list-style: none;
   padding: 0;
-  margin: 0.5rem 0 0;
+  margin: 0.35rem 0 0;
 }
 
-.account-weekly ol.results li {
+.weekly-results ol.results li {
   border-top: 1px solid var(--rule);
-  padding: 0.85rem 0;
+  padding: 0.7rem 0;
 }
 
-.account-weekly ol.results a {
+.weekly-results ol.results a {
   font-weight: 600;
   color: var(--civic);
 }
 
-.account-weekly .meta {
+.weekly-results .meta {
   color: var(--muted);
   font-size: 0.9375rem;
   margin: 0.15rem 0;
 }
 
-.account-weekly .why {
+.weekly-results .why {
   margin: 0.25rem 0 0;
 }
 

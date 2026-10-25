@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { AccountDeleteCopy, AccountRefundCopy } from "@/components/AccountSections";
 import { WeeklyMatchPanel } from "@/components/WeeklyMatchPanel";
 import { pageMetadata } from "@/lib/seo";
 import type { SavedResumeRow, WeeklyResultRow } from "@/lib/weekly-match-data";
@@ -64,7 +65,49 @@ export default function WeeklySamplePage() {
           <p className="status" role="note">
             Sample preview for a paid membership. This is not a real account, and no resume is stored on this page.
           </p>
-          <WeeklyMatchPanel saved={saved} optedIn results={results} sample ready />
+          <p className="login-actions">
+            <a className="apply-btn" href="/pricing/">
+              See membership plans
+            </a>
+            <a className="apply-btn" href="/match/">
+              Resume Match
+            </a>
+            <a className="apply-btn" href="/account/applied/">
+              Jobs I applied to
+            </a>
+          </p>
+          <WeeklyMatchPanel
+            saved={saved}
+            optedIn
+            results={results}
+            sample
+            ready
+            matchesHref="/account/weekly-sample/matches/"
+          />
+          <div className="account-delete">
+            <h2>Delete account</h2>
+            <AccountDeleteCopy />
+            <label className="checkbox">
+              <input type="checkbox" />
+              <span>I understand this deletes my account.</span>
+            </label>
+            <button className="apply-btn secondary" type="button">
+              Delete account
+            </button>
+          </div>
+          <div className="account-foot">
+            <AccountRefundCopy />
+            <form>
+              <button className="apply-btn secondary" type="button">
+                Manage billing
+              </button>
+            </form>
+            <form>
+              <button className="apply-btn secondary" type="button">
+                Sign out
+              </button>
+            </form>
+          </div>
         </section>
       </article>
     </main>
