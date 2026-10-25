@@ -115,7 +115,7 @@ export function WeeklyMatchPanel({
 
         <div id="weekly-status" className="status" role="status" aria-live="polite" hidden />
 
-        <p className="account-disclaimer">
+        <p className="account-weekly-note">
           We only email you when there’s a strong match. We save your resume’s text, not the file, and delete it if you
           close your account. The Match page never saves your resume.
         </p>
