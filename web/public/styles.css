@@ -2259,11 +2259,11 @@ a.apply-btn.secondary:visited,
   line-height: 1.45;
 }
 
-/* Smaller and lighter than pricing fine print (0.75rem / --muted). */
+/* Half of the 13px disclaimer (0.8125rem), and lighter than --muted. */
 .description p.account-fine-print {
-  margin: 0 0 0.45rem;
+  margin: 0 0 0.4rem;
   color: #8d969f;
-  font-size: 0.625rem;
+  font-size: 7px;
   font-weight: 400;
   line-height: 1.35;
 }
