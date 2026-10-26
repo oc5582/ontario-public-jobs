@@ -76,10 +76,6 @@
     "to": "/jobs/canada-pension-plan-investment-board-cppib/managing-director-technology-architecture-governance/"
   },
   {
-    "from": "/jobs/cppib-portfolio-manager-dynamic-portfolio-management.html",
-    "to": "/jobs/canada-pension-plan-investment-board-cppib/portfolio-manager-dynamic-portfolio-management/"
-  },
-  {
     "from": "/jobs/cppib-senior-analyst-tfm-risk-and-total-fund-management-technology.html",
     "to": "/jobs/canada-pension-plan-investment-board-cppib/senior-business-analyst-tfm-risk-total-fund-management-technology/"
   },
@@ -158,10 +154,6 @@
   {
     "from": "/jobs/edc-postes-pour-tudiants-et-nouveaux-dipl-m-s-volet-multiples-hiver-2027.html",
     "to": "/jobs/export-development-canada-edc/postes-pour-tudiants-et-nouveaux-dipl-m-s-volet-multiples-hiver-2027/"
-  },
-  {
-    "from": "/jobs/fcc-student-fcc-capital.html",
-    "to": "/jobs/farm-credit-canada/student-fcc-capital/"
   },
   {
     "from": "/jobs/fcc-student-legal.html",
@@ -304,10 +296,6 @@
     "to": "/jobs/toronto-parking-authority/specialist-sales-and-partnerships/"
   },
   {
-    "from": "/jobs/tssa-engineer-bpv.html",
-    "to": "/jobs/technical-standards-and-safety-authority-tssa/engineer-bpv/"
-  },
-  {
     "from": "/jobs/tssa-engineer-fuels.html",
     "to": "/jobs/technical-standards-and-safety-authority-tssa/engineer-fuels/"
   },
@@ -318,10 +306,6 @@
   {
     "from": "/jobs/tssa-risk-advisor.html",
     "to": "/jobs/technical-standards-and-safety-authority-tssa/risk-advisor/"
-  },
-  {
-    "from": "/jobs/tvo-manager-web-and-mobile-delivery-bilingual.html",
-    "to": "/jobs/ontario-educational-communications-authority-tvo/manager-web-mobile-delivery-bilingual/"
   },
   {
     "from": "/jobs/workday-cxs-ai-lead-architect-software-and-platforms-architecture-t-i-telework-hybrid.html",
@@ -368,10 +352,6 @@
     "to": "/jobs/public-health-ontario-ontario-agency-for-health-protection-and-promotion/medical-laboratory-technologist-1/"
   },
   {
-    "from": "/jobs/workday-cxs-portfolio-manager-dynamic-portfolio-management.html",
-    "to": "/jobs/canada-pension-plan-investment-board-cppib/portfolio-manager-dynamic-portfolio-management/"
-  },
-  {
     "from": "/jobs/workday-cxs-senior-analyst-tfm-risk-total-fund-management-technology.html",
     "to": "/jobs/canada-pension-plan-investment-board-cppib/senior-business-analyst-tfm-risk-total-fund-management-technology/"
   },
@@ -382,10 +362,6 @@
   {
     "from": "/jobs/workday-cxs-senior-quality-engineer-real-assets-alternative-investment-technology.html",
     "to": "/jobs/canada-pension-plan-investment-board-cppib/senior-quality-engineer-real-assets-alternative-investment-technology/"
-  },
-  {
-    "from": "/jobs/workday-cxs-student-fcc-capital.html",
-    "to": "/jobs/farm-credit-canada/student-fcc-capital/"
   },
   {
     "from": "/jobs/workday-cxs-student-legal.html",
@@ -444,6 +420,18 @@
     "to": "/jobs/toronto-hydro-corporation/two-2-engineer-toronto-on-ca/"
   },
   {
+    "from": "/toronto-zoo-field-conservation-project-lead.html",
+    "to": "/jobs/toronto-zoo-board-of-management/field-conservation-project-lead/"
+  },
+  {
+    "from": "/toronto-zoo-painter-grade-1.html",
+    "to": "/jobs/toronto-zoo-board-of-management/painter-grade-1/"
+  },
+  {
+    "from": "/toronto-zoo-postdoctoral-fellow.html",
+    "to": "/jobs/toronto-zoo-board-of-management/postdoctoral-fellow/"
+  },
+  {
     "from": "/tpa-maintenance-grade-2-nights.html",
     "to": "/jobs/toronto-parking-authority/maintenance-grade-2-nights/"
   },
@@ -454,10 +442,6 @@
   {
     "from": "/trca-law-clerk.html",
     "to": "/jobs/toronto-and-region-conservation-authority/law-clerk/"
-  },
-  {
-    "from": "/tssa-engineer-bpv.html",
-    "to": "/jobs/technical-standards-and-safety-authority-tssa/engineer-bpv/"
   },
   {
     "from": "/tssa-engineer-fuels.html",
@@ -472,12 +456,8 @@
     "to": "/jobs/technical-standards-and-safety-authority-tssa/risk-advisor/"
   },
   {
-    "from": "/tvo-labour-and-employee-relations-manager.html",
-    "to": "/jobs/ontario-educational-communications-authority-tvo/labour-and-employee-relations-manager/"
-  },
-  {
-    "from": "/tvo-manager-web-and-mobile-delivery-bilingual.html",
-    "to": "/jobs/ontario-educational-communications-authority-tvo/manager-web-mobile-delivery-bilingual/"
+    "from": "/ttc-formwork-carpenter.html",
+    "to": "/jobs/toronto-transit-commission/formwork-carpenter/"
   },
   {
     "from": "/wsib-senior-it-business-analyst.html",
