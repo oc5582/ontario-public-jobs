@@ -2455,3 +2455,513 @@ a.apply-btn.secondary:visited,
   text-underline-offset: 0.15em;
   cursor: pointer;
 }
+
+/* Pricing v2 */
+.content.pricing-v2 {
+  --civic-dark: #173b5c;
+  --ok: #0d5c32;
+  --pricing-focus: #8fb3d6;
+  max-width: 760px;
+  padding-top: 0;
+  padding-bottom: 48px;
+  font-size: 17px;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+.pricing-v2 a {
+  color: var(--civic);
+}
+
+.pricing-v2 section {
+  margin-top: 40px;
+}
+
+.pricing-v2 h1 {
+  max-width: none;
+  margin: 6px 0 12px;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+.pricing-v2 h2 {
+  margin: 0 0 14px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+.pricing-eyebrow {
+  margin: 24px 0 0;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.pricing-eyebrow strong {
+  color: var(--ink);
+}
+
+.pricing-lede {
+  margin: 0;
+  font-size: 18px;
+}
+
+.pricing-proof {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 22px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+
+.pricing-proof div {
+  min-width: 0;
+  background: var(--surface);
+  padding: 12px 14px;
+}
+
+.pricing-proof b {
+  display: block;
+  color: var(--civic);
+  font-size: 22px;
+  overflow-wrap: anywhere;
+}
+
+.pricing-proof span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.pricing-plans {
+  display: grid;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.pricing-plan {
+  position: relative;
+  display: block;
+  margin: 0;
+  cursor: pointer;
+}
+
+.pricing-plan input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+}
+
+.pricing-plan input:focus {
+  outline: none;
+}
+
+.pricing-plan-card {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  align-items: start;
+  background: var(--surface);
+  border: 2px solid var(--rule);
+  padding: 16px;
+}
+
+.pricing-plan input:checked + .pricing-plan-card {
+  border-color: var(--civic);
+  box-shadow: 0 0 0 1px var(--civic);
+}
+
+.pricing-plan input:focus-visible + .pricing-plan-card {
+  outline: 3px solid var(--pricing-focus);
+  outline-offset: 2px;
+}
+
+.pricing-radio {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 3px;
+  border: 2px solid var(--muted);
+  border-radius: 50%;
+}
+
+.pricing-plan input:checked + .pricing-plan-card .pricing-radio {
+  border-color: var(--civic);
+}
+
+.pricing-plan input:checked + .pricing-plan-card .pricing-radio::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--civic);
+}
+
+.pricing-plan-name {
+  min-width: 0;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.pricing-plan-billed {
+  grid-column: 2 / 4;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.pricing-plan-price {
+  font-weight: 700;
+  font-size: 22px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pricing-plan-price small {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.pricing-badge {
+  display: inline-block;
+  max-width: 100%;
+  margin-left: 6px;
+  padding: 2px 8px;
+  background: var(--civic);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  vertical-align: 2px;
+  white-space: normal;
+}
+
+.pricing-badge.is-alt {
+  background: var(--pill);
+  color: var(--ink);
+}
+
+.pricing-save {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.pricing-tax,
+.pricing-cta-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.pricing-tax {
+  margin-top: 10px;
+}
+
+.pricing-current {
+  margin: 0 0 12px;
+}
+
+.pricing-province {
+  display: block;
+  margin: 14px 0 0;
+  font-weight: 600;
+}
+
+.pricing-province select {
+  display: block;
+  width: 100%;
+  max-width: none;
+  margin: 6px 0 0;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 400;
+}
+
+.pricing-v2 .terms-ack {
+  margin: 14px 0 0;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.pricing-v2 .terms-ack span {
+  min-width: 0;
+}
+
+.pricing-v2 .terms-ack label {
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.pricing-v2 .terms-ack a {
+  color: var(--civic);
+  font-weight: 600;
+}
+
+a.pricing-cta,
+a.pricing-cta:hover,
+a.pricing-cta:visited,
+button.pricing-cta {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 16px;
+  border: 0;
+  border-radius: 0;
+  background: var(--civic);
+  color: #fff;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a.pricing-cta:hover,
+button.pricing-cta:hover {
+  background: var(--civic-dark);
+}
+
+.pricing-cta-note {
+  text-align: center;
+}
+
+.pricing-trust {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+}
+
+.pricing-trust li::before {
+  content: "\2713";
+  margin-right: 8px;
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.pricing-benefits {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+
+.pricing-benefits li {
+  background: var(--surface);
+  padding: 14px 16px;
+}
+
+.pricing-benefits b {
+  display: block;
+}
+
+.pricing-benefits span {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.pricing-benefits li.is-lead {
+  border-left: 4px solid var(--civic);
+}
+
+.pricing-compare {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  font-size: 15px;
+  table-layout: fixed;
+}
+
+.pricing-compare th,
+.pricing-compare td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.pricing-compare th {
+  background: var(--hover);
+  font-size: 14px;
+}
+
+.pricing-compare td.c,
+.pricing-compare th.c {
+  width: 4.75rem;
+  padding-left: 4px;
+  padding-right: 4px;
+  text-align: center;
+}
+
+.pricing-yes {
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.pricing-no {
+  color: var(--muted);
+}
+
+.pricing-quotes {
+  display: grid;
+  gap: 12px;
+}
+
+.pricing-v2 blockquote {
+  margin: 0;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--civic);
+  padding: 14px 16px;
+}
+
+.pricing-v2 blockquote p {
+  margin: 0 0 6px;
+}
+
+.pricing-v2 blockquote cite {
+  font-style: normal;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.pricing-note {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 18px 16px;
+}
+
+.pricing-note p {
+  margin: 0 0 10px;
+}
+
+.pricing-sig {
+  margin: 0;
+  font-weight: 700;
+}
+
+.pricing-sig span {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.pricing-faq details,
+.pricing-legal {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+}
+
+.pricing-faq details {
+  border-top: 0;
+}
+
+.pricing-faq details:first-of-type {
+  border-top: 1px solid var(--rule);
+}
+
+.pricing-v2 summary {
+  position: relative;
+  padding: 14px 40px 14px 16px;
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+
+.pricing-v2 summary::-webkit-details-marker {
+  display: none;
+}
+
+.pricing-v2 summary::marker {
+  content: "";
+}
+
+.pricing-v2 summary::after {
+  content: "+";
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  color: var(--civic);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.pricing-v2 details[open] summary::after {
+  content: "-";
+}
+
+.pricing-faq-body {
+  padding: 0 16px 14px;
+  font-size: 16px;
+}
+
+.pricing-faq-body p,
+.pricing-legal-body p {
+  margin: 0 0 10px;
+}
+
+.pricing-legal-heading {
+  font-size: 18px;
+}
+
+.pricing-legal-body {
+  padding: 0 16px 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.pricing-legal-body a {
+  color: var(--civic);
+}
+
+.pricing-final {
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 24px 16px;
+}
+
+.pricing-final h2 {
+  margin-bottom: 6px;
+}
+
+.pricing-final > .pricing-cta-note:first-of-type {
+  margin-top: 0;
+}
+
+#plans {
+  scroll-margin-top: 5rem;
+}
+
+@media (min-width: 640px) {
+  .pricing-v2 h1 {
+    font-size: 38px;
+  }
+
+  .pricing-proof {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .pricing-trust {
+    grid-template-columns: 1fr 1fr;
+  }
+}
