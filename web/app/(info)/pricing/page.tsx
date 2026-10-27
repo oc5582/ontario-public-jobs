@@ -1,7 +1,8 @@
 import { PricingView } from "@/components/AnalyticsEvents";
 import { CheckoutForm } from "@/components/CheckoutForm";
-import { PricingRenewal, PricingSignIn, PricingTrust } from "@/components/PricingPlans";
+import { PricingRenewal, PricingTrust } from "@/components/PricingPlans";
 import { getViewer } from "@/lib/auth";
+import { isCheckoutEmail, normalizeCheckoutEmail, profileIsSubscribed } from "@/lib/guest-checkout";
 import { CA_TAX_JURISDICTIONS } from "@/lib/ca-tax";
 import { emptyFilters } from "@/lib/filters";
 import { searchJobs } from "@/lib/jobs";
@@ -13,7 +14,7 @@ import { FREE_LIST_LIMIT, PLANS, planPriceLine, pricingPlanFromQuery } from "@/l
 import { formatCount } from "@/lib/stats";
 import { publicJobStats } from "@/lib/stats-data";
 import type { Profile } from "@/lib/types";
-import { openPortal, startCheckout } from "../../billing/actions";
+import { openPortal, startCheckout, startGuestCheckout } from "../../billing/actions";
 
 export const metadata = pageMetadata({
   title: "Membership | PublicJobs.ca",
@@ -47,14 +48,11 @@ export default async function PricingPage({
   const notice = typeof params.notice === "string" ? params.notice : "";
   const requestedPlan = typeof params.plan === "string" ? params.plan : "";
   const initialPlan = pricingPlanFromQuery(requestedPlan);
+  const typedEmail = typeof params.email === "string" ? normalizeCheckoutEmail(params.email) : "";
+  const echoEmail = isCheckoutEmail(typedEmail) ? typedEmail : "";
   const profile = viewer.profile;
-  const subscribedProfile =
-    profile &&
-    profile.stripe_subscription_id &&
-    (profile.membership_status === "active" || profile.membership_status === "past_due")
-      ? profile
-      : null;
-  const checkout = Boolean(viewer.email) && !subscribedProfile;
+  const subscribedProfile = profile && profileIsSubscribed(profile) ? profile : null;
+  const guest = !viewer.email;
   const total = list.total;
   const remaining = Math.max(0, total - FREE_LIST_LIMIT);
   const employers = stats.employerCount;
@@ -105,17 +103,17 @@ export default async function PricingPage({
           <Notices notice={notice} />
           {subscribedProfile ? (
             <MemberBilling profile={subscribedProfile} />
-          ) : checkout ? (
+          ) : (
             <CheckoutForm
-              action={startCheckout}
+              action={guest ? startGuestCheckout : startCheckout}
+              collectEmail={guest}
+              defaultEmail={echoEmail}
               initialPlan={initialPlan}
               provinces={CA_TAX_JURISDICTIONS.map((item) => ({
                 code: item.code,
                 label: `${item.name} (${item.displayName} ${item.percentage}%${item.code === "QC" ? ", GST only" : ""})`,
               }))}
             />
-          ) : (
-            <PricingSignIn initialPlan={initialPlan} />
           )}
         </section>
 
@@ -316,7 +314,7 @@ export default async function PricingPage({
           <details className="pricing-legal">
             <summary>Seller, taxes, renewals and refunds</summary>
             <div className="pricing-legal-body">
-              <Disclosure checkout={checkout} />
+              <Disclosure guest={guest} paying={!subscribedProfile} />
             </div>
           </details>
         </section>
@@ -354,6 +352,28 @@ function Notices({ notice }: { notice: string }) {
       </p>
     );
   }
+  if (notice === "email") {
+    return (
+      <p className="status err" role="alert">
+        Enter a valid email address.
+      </p>
+    );
+  }
+  if (notice === "send") {
+    return (
+      <p className="status err" role="alert">
+        We could not start checkout for that email. Try again in a minute.
+      </p>
+    );
+  }
+  if (notice === "subscribed") {
+    return (
+      <p className="status" role="status">
+        This email already has a membership. Sign in to manage billing. You have not been charged again.{" "}
+        <a href="/login/?next=/account/">Sign in</a>
+      </p>
+    );
+  }
   return null;
 }
 
@@ -380,7 +400,7 @@ function MemberBilling({ profile }: { profile: Profile }) {
   );
 }
 
-function Disclosure({ checkout }: { checkout: boolean }) {
+function Disclosure({ guest, paying }: { guest: boolean; paying: boolean }) {
   return (
     <>
       <p>
@@ -393,7 +413,8 @@ function Disclosure({ checkout }: { checkout: boolean }) {
         Each plan renews automatically at the same price, plus applicable GST/HST, until you cancel. We email a
         reminder at least {LEGAL.yearlyReminderDays} days before a yearly renewal and at least {LEGAL.quarterReminderDays}{" "}
         days before a 3-month renewal. There is no free trial that turns into a charge, and there are no countdown
-        timers. You create an account before you pay.
+        timers. If you are not signed in, enter your email on this page, then pay on Stripe. We email you a sign-in
+        link so you can open your account.
       </p>
       <p>
         You can cancel yourself on your Account page, by email or by phone. After you cancel, access continues until
@@ -408,11 +429,13 @@ function Disclosure({ checkout }: { checkout: boolean }) {
         Terms version {LEGAL.termsVersion}. The full terms are on the <a href="/terms/">terms page</a>.
       </p>
       <p>PublicJobs.ca is independent and is not affiliated with any government or employer.</p>
-      {checkout ? (
+      {paying ? (
         <p>
-          Check the plan and your Canadian billing province above. You can change them on this page before you
-          continue. Your name is collected on the payment page. To decline, leave this page without paying.{" "}
-          <a href="/">No thanks</a>
+          {guest
+            ? "Check the email, the plan, and your Canadian billing province above."
+            : "Check the plan and your Canadian billing province above."}{" "}
+          You can change them on this page before you continue. Your name is collected on the payment page. To decline,
+          leave this page without paying. <a href="/">No thanks</a>
         </p>
       ) : null}
     </>

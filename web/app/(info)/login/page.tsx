@@ -7,7 +7,7 @@ import { signInWithEmail, signInWithGoogle } from "../../login/actions";
 
 export const metadata = pageMetadata({
   title: "Sign in | PublicJobs.ca",
-  description: "Sign in to PublicJobs.ca. The account is created before you pay for a membership.",
+  description: "Sign in to PublicJobs.ca with an email link. There is no password.",
   path: "/login/",
   index: false,
 });
@@ -44,8 +44,9 @@ export default async function LoginPage({
         <h1>Sign in</h1>
         <section className="description">
           <p>
-            Create the account first. You can choose a membership after you are signed in. Applying for a job stays
-            free, on the employer&apos;s site.
+            Sign in with your email. To buy a membership, you can enter that email on the{" "}
+            <a href="/pricing/#plans">membership page</a> and pay on Stripe without stopping here first. Applying for a
+            job stays free, on the employer&apos;s site.
           </p>
           {localOnly ? (
             <p>On this computer, sign-in uses a local test account. No email is sent.</p>

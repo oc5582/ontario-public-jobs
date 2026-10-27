@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import { reportEvent } from "./analytics";
 import { isProvinceCode, provinceByCode, taxRateIdForProvince, type ProvinceCode } from "./ca-tax";
 import { query } from "./db";
+import { profileIsSubscribed, subscriptionBlocksNewCheckout } from "./guest-checkout";
 import { disclosureText, stripeSubmitMessage, stripeTermsMessage } from "./legal-copy";
 import { LEGAL } from "./legal-config";
 import { planPriceLine, type PlanId } from "./site";
@@ -27,6 +28,10 @@ export type CheckoutInput = {
   origin: string;
   province: ProvinceCode;
   agreementId?: string;
+  /** Guest checkout returns to /checkout/return/ instead of the signed-in account page. */
+  guestCheckout?: boolean;
+  /** True when a magic link was already emailed while creating the account. */
+  guestSignInSent?: boolean;
 };
 
 export type PortalInput = {
@@ -94,6 +99,14 @@ export function checkoutSessionCreateParams(
     tax_rate_id: taxRateId,
   };
   if (input.agreementId) metadata.agreement_id = input.agreementId;
+  if (input.guestCheckout) {
+    metadata.guest_checkout = "1";
+    metadata.signin_origin = input.origin;
+    metadata.signin_link_sent = input.guestSignInSent ? "1" : "0";
+  }
+  const successPath = input.guestCheckout
+    ? "/checkout/return/?session_id={CHECKOUT_SESSION_ID}"
+    : "/account/?checkout=success&session_id={CHECKOUT_SESSION_ID}";
   // Stripe dynamic_tax_rates does not support Canada. One exclusive tax rate,
   // chosen from the province, is attached to the subscription item. Stripe Tax
   // (automatic_tax) is not used.
@@ -102,7 +115,7 @@ export function checkoutSessionCreateParams(
     customer: customerId,
     client_reference_id: input.profileId,
     line_items: [{ price: priceId, quantity: 1, tax_rates: [taxRateId] }],
-    success_url: `${input.origin}/account/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${input.origin}${successPath}`,
     cancel_url: `${input.origin}/pricing/`,
     allow_promotion_codes: false,
     payment_method_collection: "always",
@@ -132,6 +145,36 @@ export function portalSessionCreateParams(input: PortalInput): Stripe.BillingPor
     customer: input.stripeCustomerId,
     return_url: `${input.origin}/account/`,
   };
+}
+
+function subscriptionListDenied(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const type = "type" in error ? String(error.type) : "";
+  const code = "code" in error ? String(error.code) : "";
+  const message = error instanceof Error ? error.message : "";
+  return type === "StripePermissionError" || code === "more_permissions_required" || /permission/i.test(message);
+}
+
+/** Profile status is the main gate. This catches a paid Stripe subscription the webhook has not written yet. */
+async function assertCustomerCanSubscribe(stripe: Stripe, customerId: string): Promise<void> {
+  try {
+    const existing = await stripe.subscriptions.list({ customer: customerId, limit: 10 });
+    if (existing.data.some((sub) => subscriptionBlocksNewCheckout(sub.status))) {
+      throw new AlreadySubscribedError();
+    }
+  } catch (error) {
+    if (error instanceof AlreadySubscribedError) throw error;
+    if (subscriptionListDenied(error)) {
+      console.error(
+        JSON.stringify({
+          event: "stripe_subscription_lookup_skipped",
+          message: error instanceof Error ? error.message.slice(0, 160) : "permission",
+        }),
+      );
+      return;
+    }
+    throw error;
+  }
 }
 
 function missingCustomer(error: unknown): boolean {
@@ -170,12 +213,7 @@ export async function createCheckoutSession(input: CheckoutInput, stripe = getSt
   );
   const profile = rows[0];
   if (!profile) throw new Error("Profile not found.");
-  if (
-    profile.stripe_subscription_id &&
-    (profile.membership_status === "active" || profile.membership_status === "past_due")
-  ) {
-    throw new AlreadySubscribedError();
-  }
+  if (profileIsSubscribed(profile)) throw new AlreadySubscribedError();
   if (!isProvinceCode(input.province)) throw new BillingNotConfiguredError("Choose a Canadian billing province.");
   const province = provinceByCode(input.province);
   const taxRateId = await taxRateIdForProvince(stripe, input.province);
@@ -185,6 +223,7 @@ export async function createCheckoutSession(input: CheckoutInput, stripe = getSt
     );
   }
   const customerId = await ensureCustomer(stripe, input, profile.stripe_customer_id);
+  await assertCustomerCanSubscribe(stripe, customerId);
   // Name is collected on Checkout and written from customer_details after payment.
   await stripe.customers.update(customerId, {
     address: { country: "CA", state: input.province },

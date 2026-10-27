@@ -61,8 +61,9 @@ export function PrivacyDocument() {
       </p>
       <h2>Payments</h2>
       <p>
-        Stripe processes the payment. On our pricing page you choose a plan and your Canadian billing province. We send
-        that province to Stripe as a tax rate, and Stripe adds that GST or HST on top of the price. Quebec is charged
+        Stripe processes the payment. On our pricing page you choose a plan and your Canadian billing province. If you
+        are not already signed in, you also enter the email for your account. We send that province to Stripe as a tax
+        rate, and Stripe adds that GST or HST on top of the price. Quebec is charged
         GST only, because we are not registered for Quebec sales tax. We do not use Stripe&apos;s automatic tax
         product. Stripe&apos;s payment page then collects your name, billing address, and card details. The tax added
         is the rate for the province you chose on our page.

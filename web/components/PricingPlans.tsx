@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { LEGAL } from "@/lib/legal-config";
 import {
   pricingBilled,
@@ -8,10 +7,6 @@ import {
   pricingRenewalNote,
   type PlanId,
 } from "@/lib/site";
-
-export function loginHrefForPlan(plan: PlanId): string {
-  return `/login/?next=${encodeURIComponent(`/pricing/?plan=${plan}#plans`)}`;
-}
 
 function choosePlan(value: string): PlanId | null {
   if (value === "month" || value === "quarter" || value === "year") return value;
@@ -85,20 +80,4 @@ export function PricingTrust() {
 
 export function PricingRenewal({ plan }: { plan: PlanId }) {
   return <p className="pricing-cta-note">{pricingRenewalNote(plan)}</p>;
-}
-
-export function PricingSignIn({ initialPlan }: { initialPlan: PlanId }) {
-  const [plan, setPlan] = useState<PlanId>(initialPlan);
-  return (
-    <>
-      <PlanCards plan={plan} onChange={setPlan} />
-      <PricingTax />
-      <a className="pricing-cta" href={loginHrefForPlan(plan)}>
-        Start my weekly matches
-      </a>
-      <PricingRenewal plan={plan} />
-      <p className="pricing-cta-note">You&apos;ll sign in with your email first, then pay on Stripe.</p>
-      <PricingTrust />
-    </>
-  );
 }
