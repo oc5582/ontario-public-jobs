@@ -19,6 +19,15 @@ export type Guide = {
 /** Newest first. Each body lives in content/guides/{slug}.html, without the H1. */
 export const GUIDES: Guide[] = [
   {
+    slug: "ttc-hiring-process",
+    title: "TTC Hiring Process: Steps, Tests, Interviews and Timing",
+    seoTitle: "TTC Hiring Process: Steps, Tests and Interviews",
+    description:
+      "How TTC hiring works: steps for most jobs, the 8-step Transit Operator process, driver's abstract rules, panel interviews and what the TTC says on timing.",
+    published: "2026-10-27",
+    updated: "2026-10-27",
+  },
+  {
     slug: "how-to-become-a-go-bus-driver",
     title: "How to Become a GO Bus Driver: Requirements, Hiring Steps and Training",
     seoTitle: "How to Become a GO Bus Driver: Requirements and Training",
