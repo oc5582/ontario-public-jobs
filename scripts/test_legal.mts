@@ -54,6 +54,8 @@ const mail = agreementEmail({
 });
 assert.match(mail.subject, /agreement/);
 assert.match(mail.text, /Pat Example/);
+assert.match(mail.text, /Sign in at https:\/\/publicjobs\.ca\/login\/ with pat@example.com/);
+assert.match(mail.html, /Sign in at https:\/\/publicjobs\.ca\/login\/ with pat@example.com/);
 assert.match(mail.text, /CA\$29\.99 every 3 months/);
 assert.match(mail.text, /5 days/);
 assert.match(mail.text, /712442870RT0001/);
@@ -103,6 +105,7 @@ assert.equal(reminderKind("quarter", new Date(now.getTime() + 30 * 86_400_000), 
 assert.equal(pixelBlockedPath("/match/"), true);
 assert.equal(pixelBlockedPath("/account/"), true);
 assert.equal(pixelBlockedPath("/pricing/"), true);
+assert.equal(pixelBlockedPath("/checkout/return/"), true);
 assert.equal(pixelBlockedPath("/login/"), true);
 assert.equal(pixelBlockedPath("/report/"), true);
 assert.equal(pixelBlockedPath("/jobs/"), false);

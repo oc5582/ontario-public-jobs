@@ -2674,7 +2674,8 @@ a.apply-btn.secondary:visited,
   font-weight: 600;
 }
 
-.pricing-province select {
+.pricing-province select,
+.pricing-province input {
   display: block;
   width: 100%;
   max-width: none;

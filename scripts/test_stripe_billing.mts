@@ -579,6 +579,9 @@ assert.equal(unmatched.status, 200);
 let creates = 0;
 process.env.STRIPE_TAX_RATE_ON = "txr_on";
 const fake = {
+  subscriptions: {
+    list: async () => ({ data: [] }),
+  },
   customers: {
     retrieve: async () => ({ id: "cus_existing", object: "customer" }),
     create: async (body: { email?: string; metadata?: { profile_id?: string } }) => {

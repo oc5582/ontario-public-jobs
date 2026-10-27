@@ -19,10 +19,14 @@ export function CheckoutForm({
   action,
   provinces,
   initialPlan,
+  collectEmail = false,
+  defaultEmail = "",
 }: {
   action: (formData: FormData) => void | Promise<void>;
   provinces: ProvinceOption[];
   initialPlan: PlanId;
+  collectEmail?: boolean;
+  defaultEmail?: string;
 }) {
   const [plan, setPlan] = useState<PlanId>(initialPlan);
   const agreeRef = useRef<HTMLInputElement>(null);
@@ -52,6 +56,23 @@ export function CheckoutForm({
     >
       <PlanCards plan={plan} onChange={choose} />
       <PricingTax />
+      {collectEmail ? (
+        <label className="pricing-province" htmlFor="checkout-email">
+          Email
+          <input
+            id="checkout-email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            inputMode="email"
+            maxLength={254}
+            placeholder="you@example.com"
+            spellCheck={false}
+            defaultValue={defaultEmail}
+          />
+        </label>
+      ) : null}
       <label className="pricing-province" htmlFor="checkout-province">
         Billing province
         <select id="checkout-province" name="province" required defaultValue="">
@@ -77,6 +98,9 @@ export function CheckoutForm({
         Start my weekly matches
       </button>
       <PricingRenewal plan={plan} />
+      {collectEmail ? (
+        <p className="pricing-cta-note">Enter your email on this page, then pay on Stripe.</p>
+      ) : null}
       <PricingTrust />
     </form>
   );
