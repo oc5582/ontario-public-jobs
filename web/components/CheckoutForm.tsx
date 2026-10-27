@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { PlanCards, PricingRenewal, PricingTax, PricingTrust } from "@/components/PricingPlans";
 import { checkoutCheckboxText } from "@/lib/legal-copy";
 import { trackMeta } from "@/lib/meta-pixel";
-import { PLANS, planPixel, type PlanId } from "@/lib/site";
+import { planPixel, type PlanId } from "@/lib/site";
 
 function consentParts(plan: PlanId): { before: string; after: string } {
   const text = checkoutCheckboxText(plan);
@@ -12,21 +13,18 @@ function consentParts(plan: PlanId): { before: string; after: string } {
   return { before: text.slice(0, at), after: text.slice(at + "Terms".length) };
 }
 
-function cardNote(id: PlanId, detail: string): string | null {
-  if (id === "month") return null;
-  return detail;
-}
-
 type ProvinceOption = { code: string; label: string };
 
 export function CheckoutForm({
   action,
   provinces,
+  initialPlan,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   provinces: ProvinceOption[];
+  initialPlan: PlanId;
 }) {
-  const [plan, setPlan] = useState<PlanId>("month");
+  const [plan, setPlan] = useState<PlanId>(initialPlan);
   const agreeRef = useRef<HTMLInputElement>(null);
   const consent = consentParts(plan);
 
@@ -37,7 +35,7 @@ export function CheckoutForm({
 
   return (
     <form
-      className="checkout-form"
+      className="pricing-checkout"
       action={action}
       onSubmit={(event) => {
         const selectedPlan = new FormData(event.currentTarget).get("plan");
@@ -52,50 +50,21 @@ export function CheckoutForm({
         });
       }}
     >
-      <div className="checkout-fields">
-        <label className="checkout-name" htmlFor="checkout-province">
-          Billing province
-          <select id="checkout-province" name="province" required defaultValue="">
-            <option value="" disabled>
-              Select a province or territory
+      <PlanCards plan={plan} onChange={choose} />
+      <PricingTax />
+      <label className="pricing-province" htmlFor="checkout-province">
+        Billing province
+        <select id="checkout-province" name="province" required defaultValue="">
+          <option value="" disabled>
+            Select a province or territory
+          </option>
+          {provinces.map((item) => (
+            <option key={item.code} value={item.code}>
+              {item.label}
             </option>
-            {provinces.map((item) => (
-              <option key={item.code} value={item.code}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <fieldset>
-        <legend>Select a plan</legend>
-        <div className="plan-cards">
-          {PLANS.map((item) => {
-            const note = cardNote(item.id, item.detail);
-            return (
-              <label key={item.id} className="plan-card">
-                <input
-                  type="radio"
-                  name="plan"
-                  value={item.id}
-                  checked={plan === item.id}
-                  onChange={() => choose(item.id)}
-                />
-                <span className="plan-card-copy">
-                  <span className="plan-card-name">{item.name}</span>
-                  <span className="plan-card-price">
-                    {item.price}
-                    {item.id === "month" ? <span className="plan-card-unit">/month</span> : null}
-                  </span>
-                  {note ? <span className="plan-card-note">{note}</span> : null}
-                  <span className="plan-card-tax">plus applicable GST/HST</span>
-                  <span className="plan-card-tax">{plan === item.id ? "Selected" : "Choose plan"}</span>
-                </span>
-              </label>
-            );
-          })}
-        </div>
-      </fieldset>
+          ))}
+        </select>
+      </label>
       <div className="checkbox terms-ack">
         <input ref={agreeRef} id="checkout-agree" type="checkbox" name="agree" value={plan} required />
         <span>
@@ -104,9 +73,11 @@ export function CheckoutForm({
           <label htmlFor="checkout-agree">{consent.after}</label>
         </span>
       </div>
-      <button className="apply-btn" type="submit">
-        Continue to secure payment
+      <button className="pricing-cta" type="submit">
+        Start my weekly matches
       </button>
+      <PricingRenewal plan={plan} />
+      <PricingTrust />
     </form>
   );
 }
