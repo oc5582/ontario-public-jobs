@@ -156,10 +156,6 @@
     "to": "/jobs/export-development-canada-edc/postes-pour-tudiants-et-nouveaux-dipl-m-s-volet-multiples-hiver-2027/"
   },
   {
-    "from": "/jobs/fcc-student-legal.html",
-    "to": "/jobs/farm-credit-canada/student-legal/"
-  },
-  {
     "from": "/jobs/ieso-specialist-information-security.html",
     "to": "/jobs/independent-electricity-system-operator-ieso/specialist-information-security/"
   },
@@ -174,10 +170,6 @@
   {
     "from": "/jobs/lso-coordinator-examination-accommodation-and-delivery.html",
     "to": "/jobs/law-society-of-ontario/coordinator-examination-accommodation-and-delivery/"
-  },
-  {
-    "from": "/jobs/lso-counsel-licensing-equity-initiatives-licensing-and-accreditation.html",
-    "to": "/jobs/law-society-of-ontario/counsel-licensing-equity-initiatives-licensing-and-accreditation-hybrid-toronto/"
   },
   {
     "from": "/jobs/lso-director-enterprise-planning-and-performance-permanent.html",
@@ -308,6 +300,10 @@
     "to": "/jobs/technical-standards-and-safety-authority-tssa/risk-advisor/"
   },
   {
+    "from": "/jobs/tvo-manager-web-and-mobile-delivery-bilingual.html",
+    "to": "/jobs/ontario-educational-communications-authority-tvo/manager-web-mobile-delivery-bilingual/"
+  },
+  {
     "from": "/jobs/workday-cxs-ai-lead-architect-software-and-platforms-architecture-t-i-telework-hybrid.html",
     "to": "/jobs/canadian-broadcasting-corporation-cbc-radio-canada/ai-lead-architect-software-and-platforms-architecture-t-i-telework-hybrid/"
   },
@@ -364,10 +360,6 @@
     "to": "/jobs/canada-pension-plan-investment-board-cppib/senior-quality-engineer-real-assets-alternative-investment-technology/"
   },
   {
-    "from": "/jobs/workday-cxs-student-legal.html",
-    "to": "/jobs/farm-credit-canada/student-legal/"
-  },
-  {
     "from": "/rom-future-career-opportunities-at-royal-ontario-museum-rom.html",
     "to": "/jobs/royal-ontario-museum/future-career-opportunities-at-royal-ontario-museum-rom/"
   },
@@ -420,28 +412,12 @@
     "to": "/jobs/toronto-hydro-corporation/two-2-engineer-toronto-on-ca/"
   },
   {
-    "from": "/toronto-zoo-field-conservation-project-lead.html",
-    "to": "/jobs/toronto-zoo-board-of-management/field-conservation-project-lead/"
-  },
-  {
-    "from": "/toronto-zoo-painter-grade-1.html",
-    "to": "/jobs/toronto-zoo-board-of-management/painter-grade-1/"
-  },
-  {
-    "from": "/toronto-zoo-postdoctoral-fellow.html",
-    "to": "/jobs/toronto-zoo-board-of-management/postdoctoral-fellow/"
-  },
-  {
     "from": "/tpa-maintenance-grade-2-nights.html",
     "to": "/jobs/toronto-parking-authority/maintenance-grade-2-nights/"
   },
   {
     "from": "/tpa-specialist-sales-and-partnerships.html",
     "to": "/jobs/toronto-parking-authority/specialist-sales-and-partnerships/"
-  },
-  {
-    "from": "/trca-law-clerk.html",
-    "to": "/jobs/toronto-and-region-conservation-authority/law-clerk/"
   },
   {
     "from": "/tssa-engineer-fuels.html",
@@ -458,6 +434,14 @@
   {
     "from": "/ttc-formwork-carpenter.html",
     "to": "/jobs/toronto-transit-commission/formwork-carpenter/"
+  },
+  {
+    "from": "/tvo-labour-and-employee-relations-manager.html",
+    "to": "/jobs/ontario-educational-communications-authority-tvo/labour-and-employee-relations-manager/"
+  },
+  {
+    "from": "/tvo-manager-web-and-mobile-delivery-bilingual.html",
+    "to": "/jobs/ontario-educational-communications-authority-tvo/manager-web-mobile-delivery-bilingual/"
   },
   {
     "from": "/wsib-senior-it-business-analyst.html",
