@@ -37,7 +37,7 @@ export const PLANS = [
     period: "every 3 months",
     detail: "about CA$10 a month",
     badge: "Best for a job search",
-    perMonth: "$10",
+    perMonth: "$9.99",
     savings: "save 33%",
   },
   {
