@@ -31,13 +31,11 @@ export function PlanCards({ plan, onChange }: { plan: PlanId; onChange: (next: P
               }}
             />
             <span className="pricing-plan-card">
+              {item.badge ? (
+                <span className={item.id === "year" ? "pricing-badge is-alt" : "pricing-badge"}>{item.badge}</span>
+              ) : null}
               <span className="pricing-radio" aria-hidden="true" />
-              <span className="pricing-plan-name">
-                {item.name}
-                {item.badge ? (
-                  <span className={item.id === "year" ? "pricing-badge is-alt" : "pricing-badge"}>{item.badge}</span>
-                ) : null}
-              </span>
+              <span className="pricing-plan-name">{item.name}</span>
               <span className="pricing-plan-price">
                 {item.perMonth}
                 <small>/mo</small>

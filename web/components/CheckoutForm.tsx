@@ -69,6 +69,7 @@ export function CheckoutForm({
             maxLength={254}
             placeholder="you@example.com"
             spellCheck={false}
+            data-clarity-mask=""
             defaultValue={defaultEmail}
           />
         </label>

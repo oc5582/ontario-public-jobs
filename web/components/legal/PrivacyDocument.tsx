@@ -11,7 +11,7 @@ function Mail({ email }: { email: string }) {
 export function PrivacyDocument() {
   return (
     <section className="description">
-      <p>Last updated: October 24, 2026</p>
+      <p>Last updated: October 29, 2026</p>
       <p>
         PublicJobs.ca is an independent job board. It is not affiliated with any government or with any employer listed
         on the site. This page explains what personal information we collect, why, and how you can control it.
@@ -178,6 +178,10 @@ export function PrivacyDocument() {
           Pixel id 4654096711502773.
         </li>
         <li>
+          <strong>Microsoft</strong> (Clarity heatmaps and session replay, only after you choose Allow, and only when a
+          project id is configured) – see Site analytics. May process data in the United States and elsewhere.
+        </li>
+        <li>
           <strong>jsDelivr</strong> (script delivery) – your browser loads the PDF and Word readers from jsDelivr. The
           resume file is not sent to jsDelivr.
         </li>
@@ -194,7 +198,7 @@ export function PrivacyDocument() {
         Facebook and Instagram ads. Meta may use cookies and may link this to your Meta account under Meta&apos;s own
         policies (<a href="https://facebook.com/privacy/policy">facebook.com/privacy/policy</a>). We do not send Meta
         your name, email address, postal address, or resume. To turn it off, use Turn off ad tracking in the footer.
-        That choice is saved in your browser.
+        That choice is saved in your browser. The same choice also turns Microsoft Clarity off.
       </p>
       <h2>Site analytics and fonts</h2>
       <p>
@@ -209,6 +213,14 @@ export function PrivacyDocument() {
         match, and whether the alert box was checked), match_run (no account, free account or membership), and
         mark_applied (whether a member marked a job applied or undid it). Those events do not include your name, email
         address, resume, card, or which job you marked.
+      </p>
+      <p>
+        Microsoft Clarity stays off until you choose Allow on the same notice as the Meta Pixel, and it is not loaded
+        at all unless a Clarity project id is configured. After you allow it, Clarity records how pages are used,
+        including clicks, scrolling, and a replay of the visit, so we can see where the site is hard to use. It can set
+        cookies. Text typed into form fields, including the email on the pricing page, is masked in those replays. We
+        do not send Clarity your resume or card. To turn it off, use Turn off ad tracking in the footer. Microsoft&apos;s
+        policy is at <a href="https://privacy.microsoft.com/privacystatement">privacy.microsoft.com/privacystatement</a>.
       </p>
       <p>Our fonts are hosted on PublicJobs.ca itself, so loading them does not send your information to a font service.</p>
       <h2>How long we keep it</h2>
@@ -274,8 +286,8 @@ export function PrivacyDocument() {
         and the jobs you marked as applied. We keep the billing and agreement records described above,
         including the email and name on those records. Stripe also keeps its own customer and payment record. Alert
         signup records are not removed by deleting the account. You can unsubscribe from alerts using the link in any
-        email. You can turn off ad tracking at any time with the &quot;Turn off ad tracking&quot; button in the site
-        footer.
+        email. You can turn off ad tracking, and Microsoft Clarity, at any time with the &quot;Turn off ad
+        tracking&quot; button in the site footer.
       </p>
       <h2>Unsubscribing</h2>
       <p>
