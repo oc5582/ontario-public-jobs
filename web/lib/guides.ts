@@ -19,6 +19,15 @@ export type Guide = {
 /** Newest first. Each body lives in content/guides/{slug}.html, without the H1. */
 export const GUIDES: Guide[] = [
   {
+    slug: "how-city-of-toronto-hiring-works",
+    title: "How City of Toronto Hiring Works, Step by Step",
+    seoTitle: "How City of Toronto Hiring Works: Steps and Tips",
+    description:
+      "The City of Toronto's 5 hiring steps, how to read a City posting, what City panel interviews are like, checks before an offer, and what the City says on timing.",
+    published: "2026-10-30",
+    updated: "2026-10-30",
+  },
+  {
     slug: "ttc-hiring-process",
     title: "TTC Hiring Process: Steps, Tests, Interviews and Timing",
     seoTitle: "TTC Hiring Process: Steps, Tests and Interviews",
