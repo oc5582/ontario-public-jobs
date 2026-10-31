@@ -1,5 +1,6 @@
 "use client";
 
+import { loadClarity } from "@/lib/clarity";
 import { pixelBlockedPath } from "@/lib/legal-copy";
 import { AD_TRACKING_KEY, loadMetaPixel } from "@/lib/meta-pixel";
 import { usePathname } from "next/navigation";
@@ -13,7 +14,33 @@ function readChoice(): string | null {
   }
 }
 
-export function AdNotice({ pixelId }: { pixelId: string }) {
+function NoticeCopy({ pixelId, clarityId }: { pixelId: string; clarityId: string }) {
+  const privacy = <a href="/privacy/">Privacy</a>;
+  if (pixelId && clarityId) {
+    return (
+      <p>
+        PublicJobs.ca can use a Meta Pixel to measure ads, and Microsoft Clarity for heatmaps and session replay. Both
+        stay off until you allow them. Cloudflare Web Analytics stays on and does not use cookies. {privacy}
+      </p>
+    );
+  }
+  if (clarityId) {
+    return (
+      <p>
+        PublicJobs.ca can use Microsoft Clarity for heatmaps and session replay. It stays off until you allow it.
+        Cloudflare Web Analytics stays on and does not use cookies. {privacy}
+      </p>
+    );
+  }
+  return (
+    <p>
+      PublicJobs.ca can use a Meta Pixel to measure ads. It stays off until you allow it. Cloudflare Web Analytics
+      stays on and does not use cookies. {privacy}
+    </p>
+  );
+}
+
+export function AdNotice({ pixelId, clarityId = "" }: { pixelId: string; clarityId?: string }) {
   const path = usePathname() || "/";
   const blocked = pixelBlockedPath(path);
   const [choice, setChoice] = useState<string | null>("pending");
@@ -27,7 +54,12 @@ export function AdNotice({ pixelId }: { pixelId: string }) {
     loadMetaPixel(pixelId);
   }, [choice, blocked, pixelId]);
 
-  if (!pixelId || blocked || choice !== null) return null;
+  useEffect(() => {
+    if (choice !== "on" || !clarityId) return;
+    loadClarity(clarityId);
+  }, [choice, clarityId]);
+
+  if ((!pixelId && !clarityId) || blocked || choice !== null) return null;
 
   function choose(next: "on" | "off") {
     try {
@@ -39,12 +71,8 @@ export function AdNotice({ pixelId }: { pixelId: string }) {
   }
 
   return (
-    <div className="ad-notice" role="dialog" aria-label="Ad tracking">
-      <p>
-        PublicJobs.ca can use a Meta Pixel to measure ads. It stays off until you allow it. Cloudflare Web Analytics
-        stays on and does not use cookies.{" "}
-        <a href="/privacy/">Privacy</a>
-      </p>
+    <div className="ad-notice" role="dialog" aria-label={clarityId ? "Tracking" : "Ad tracking"}>
+      <NoticeCopy pixelId={pixelId} clarityId={clarityId} />
       <p className="ad-notice-actions">
         <button type="button" className="apply-btn" onClick={() => choose("on")}>
           Allow

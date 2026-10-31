@@ -67,6 +67,7 @@ Every variable is listed in `.env.example`. Never commit `.env.local` or real se
 | `MATCH_TRUSTED_SECRET` | Server only. Shared with the Worker secret of the same name. Empty means `/match/` will not call the Worker. Never commit the value. |
 | `NEXT_PUBLIC_META_PIXEL_ID` | Optional. Same public id as the current site. Blank omits the pixel. |
 | `NEXT_PUBLIC_CF_ANALYTICS_TOKEN` | Optional. Blank omits Cloudflare Web Analytics. |
+| `NEXT_PUBLIC_CLARITY_PROJECT_ID` | Optional. Microsoft Clarity project id. Blank loads nothing. The tag stays off until the visitor chooses Allow on the same notice as the Meta Pixel. |
 | `STRIPE_SECRET_KEY` | Server only. Stripe secret key. Use the test key until you switch the site live. Never `NEXT_PUBLIC_`. |
 | `STRIPE_WEBHOOK_SECRET` | Server only. Signing secret for `POST /api/stripe/webhook/`. |
 | `STRIPE_PRICE_MONTHLY` | Server only. Price id for CA$14.99 per month. |
