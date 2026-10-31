@@ -4,6 +4,7 @@ import { AdNotice } from "@/components/AdNotice";
 import { MetaEvents } from "@/components/MetaEvents";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteScripts } from "@/components/SiteScripts";
+import { clarityProjectId } from "@/lib/clarity";
 import { BRAND, META_DESCRIPTION, PAGE_TITLE, SITE_URL } from "@/lib/site";
 
 const OG_ALT = "PublicJobs.ca: government jobs in Toronto and the GTA";
@@ -63,7 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <SiteFooter />
-        <AdNotice pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID || ""} />
+        <AdNotice pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID || ""} clarityId={clarityProjectId()} />
         <MetaEvents />
         <SiteScripts />
         <Analytics />
