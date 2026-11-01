@@ -142,66 +142,6 @@ export default async function PricingPage({
           </ul>
         </section>
 
-        <section aria-labelledby="cmp-h">
-          <h2 id="cmp-h">Free vs member</h2>
-          <table className="pricing-compare">
-            <thead>
-              <tr>
-                <th scope="col">
-                  <span className="visually-hidden">Feature</span>
-                </th>
-                <th className="c" scope="col">
-                  Free
-                </th>
-                <th className="c" scope="col">
-                  Member
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Every job page and Apply link</td>
-                <td className="c pricing-yes">Yes</td>
-                <td className="c pricing-yes">Yes</td>
-              </tr>
-              <tr>
-                <td>Newest {FREE_LIST_LIMIT} jobs on each list</td>
-                <td className="c pricing-yes">Yes</td>
-                <td className="c pricing-yes">Yes</td>
-              </tr>
-              <tr>
-                <td>Weekly email of new openings</td>
-                <td className="c pricing-yes">Yes</td>
-                <td className="c pricing-yes">Yes</td>
-              </tr>
-              <tr>
-                <td>Resume matches</td>
-                <td className="c">1</td>
-                <td className="c pricing-yes">20 a day</td>
-              </tr>
-              <tr>
-                <td>
-                  <b>Weekly jobs matched to your resume</b>
-                </td>
-                <td className="c pricing-no">No</td>
-                <td className="c pricing-yes">Yes</td>
-              </tr>
-              <tr>
-                <td>
-                  Full list with filters ({totalLabel} {noun(total, "opening", "openings")})
-                </td>
-                <td className="c pricing-no">No</td>
-                <td className="c pricing-yes">Yes</td>
-              </tr>
-              <tr>
-                <td>&quot;Jobs I applied to&quot; list</td>
-                <td className="c pricing-no">No</td>
-                <td className="c pricing-yes">Yes</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-
         <section aria-labelledby="quotes-h">
           <h2 id="quotes-h">What people say about it</h2>
           <div className="pricing-quotes">
