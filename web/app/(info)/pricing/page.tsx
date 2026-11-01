@@ -1,4 +1,5 @@
 import { PricingView } from "@/components/AnalyticsEvents";
+import { MembershipCompare } from "@/components/MembershipCompare";
 import { CheckoutForm } from "@/components/CheckoutForm";
 import { PricingRenewal, PricingTrust } from "@/components/PricingPlans";
 import { getViewer } from "@/lib/auth";
@@ -216,26 +217,8 @@ export default async function PricingPage({
           <p className="pricing-tax">Names changed for privacy. Feedback shortened.</p>
         </section>
 
-        <section aria-labelledby="why-h">
-          <h2 id="why-h">Why does this cost money?</h2>
-          <div className="pricing-note">
-            <p>I&apos;m Osama, and I run PublicJobs.ca on my own in Toronto.</p>
-            <p>
-              Every weekday, the site reads the careers pages of {employerLabel} public {employerWord} across 17
-              different hiring systems, so you don&apos;t have to check them one by one. Your membership pays for that
-              work.
-            </p>
-            <p>
-              Employers never pay to be listed, so no job is pushed to the top. Apply always goes straight to the
-              employer&apos;s own posting.
-            </p>
-            <p className="pricing-sig">
-              Osama Chaudhary{" "}
-              <span>
-                | <a href={`mailto:${LEGAL.supportEmail}`}>{LEGAL.supportEmail}</a>
-              </span>
-            </p>
-          </div>
+        <section className="pricing-compare-block" aria-labelledby="why-h">
+          <MembershipCompare employers={employers} headingId="why-h" />
         </section>
 
         <section aria-labelledby="faq-h">

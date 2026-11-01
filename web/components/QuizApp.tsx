@@ -22,7 +22,8 @@ import {
 } from "@/lib/quiz-logic";
 import { PLANS, SIGNUP_ENDPOINT, pricingBilled, type PlanId } from "@/lib/site";
 import { weeklyAlertPayload } from "@/lib/weekly-alert";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MembershipCompare } from "@/components/MembershipCompare";
 
 const SCREENS = [
   "start",
@@ -1106,49 +1107,7 @@ function Matches({
 }
 
 function Why({ stats }: { stats: QuizStats }) {
-  const employers = stats.employers.toLocaleString("en-CA");
-  const rows: { own: string; member: ReactNode }[] = [
-    {
-      own: `Check ${employers} employer career sites, one by one`,
-      member: `All ${employers} in one list, refreshed every weekday`,
-    },
-    {
-      own: "Scroll everything to find your fit",
-      member: "Filter by type, area, level; sort by salary",
-    },
-    {
-      own: "Re-check sites to spot new jobs",
-      member: "Weekly match email (Sat)",
-    },
-    {
-      own: "Guess which jobs fit your resume",
-      member: "Unlimited resume matches, every day",
-    },
-  ];
-  return (
-    <>
-      <h2>Your search, without us and with us</h2>
-      <p className="quiz-lead">Same jobs. A lot less of your time.</p>
-      <div className="quiz-cmp" role="table" aria-label="On your own compared with a membership">
-        <div className="quiz-cmp-h quiz-cmp-l" role="columnheader">
-          On your own
-        </div>
-        <div className="quiz-cmp-h quiz-cmp-r" role="columnheader">
-          With membership
-        </div>
-        {rows.map((row) => (
-          <div className="quiz-cmp-row" key={row.own}>
-            <div className="quiz-cmp-cell quiz-cmp-l" role="cell">
-              {row.own}
-            </div>
-            <div className="quiz-cmp-cell quiz-cmp-r" role="cell">
-              {row.member}
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
-  );
+  return <MembershipCompare employers={stats.employers} />;
 }
 
 function Plans({

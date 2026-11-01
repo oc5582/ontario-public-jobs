@@ -72,8 +72,8 @@ export function planPriceLine(id: PlanId): string {
   return `${plan.price} a month`;
 }
 
-/** Pricing page order: 3 months, then monthly, then year. */
-const PRICING_PLAN_ORDER = ["quarter", "month", "year"] as const satisfies readonly PlanId[];
+/** Pricing page order: monthly, then 3 months, then year. 3 months stays the default selection. */
+const PRICING_PLAN_ORDER = ["month", "quarter", "year"] as const satisfies readonly PlanId[];
 
 export function pricingPlans() {
   return PRICING_PLAN_ORDER.map((id) => {
@@ -97,7 +97,7 @@ export function pricingBilled(id: PlanId): { text: string; savings: string | nul
   if (plan.id === "quarter") {
     return { text: `${plan.price} every 3 months`, savings: plan.savings };
   }
-  return { text: `${plan.price} once a year`, savings: plan.savings };
+  return { text: `${plan.price} renews yearly`, savings: plan.savings };
 }
 
 /** Renewal sentence under the main button. */
