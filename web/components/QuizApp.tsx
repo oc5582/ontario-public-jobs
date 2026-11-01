@@ -21,7 +21,7 @@ import {
   type QuizStats,
 } from "@/lib/quiz-logic";
 import { PLANS, pricingBilled, type PlanId } from "@/lib/site";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 const SCREENS = [
   "start",
@@ -1097,21 +1097,50 @@ function Matches({
 }
 
 function Why({ stats }: { stats: QuizStats }) {
+  const employers = stats.employers.toLocaleString("en-CA");
+  const rows: { own: string; member: ReactNode }[] = [
+    {
+      own: `Check ${employers} employer career sites, one by one`,
+      member: `All ${employers} in one list, refreshed every weekday`,
+    },
+    {
+      own: "Scroll everything to find your fit",
+      member: "Filter by type, area, level; sort by salary",
+    },
+    {
+      own: "Re-check sites to spot new jobs",
+      member: (
+        <>
+          Weekly match email (Sat). Daily <span className="quiz-soon">Coming soon</span>
+        </>
+      ),
+    },
+    {
+      own: "Guess which jobs fit your resume",
+      member: "Unlimited resume matches, every day",
+    },
+  ];
   return (
     <>
-      <h2>One thing before you see the rest</h2>
-      <div className="quiz-callout">
-        <p style={{ margin: 0 }}>I&apos;m Osama, and I run PublicJobs.ca on my own in Toronto.</p>
-        <p style={{ margin: 0 }}>
-          Every weekday the site reads the careers pages of {stats.employers} public employers across {stats.systems}{" "}
-          hiring systems, so you don&apos;t have to check them one by one. Members pay for that work.
-        </p>
-        <p style={{ margin: 0 }}>
-          Employers never pay to be listed, so no job is pushed to the top. Every job page and Apply link stays free.
-        </p>
-        <p className="quiz-small" style={{ margin: 0 }}>
-          {LEGAL.legalName} · {LEGAL.supportEmail}
-        </p>
+      <h2>Your search, without us and with us</h2>
+      <p className="quiz-lead">Same jobs. A lot less of your time.</p>
+      <div className="quiz-cmp" role="table" aria-label="On your own compared with a membership">
+        <div className="quiz-cmp-h quiz-cmp-l" role="columnheader">
+          On your own
+        </div>
+        <div className="quiz-cmp-h quiz-cmp-r" role="columnheader">
+          With membership
+        </div>
+        {rows.map((row) => (
+          <div className="quiz-cmp-row" key={row.own}>
+            <div className="quiz-cmp-cell quiz-cmp-l" role="cell">
+              {row.own}
+            </div>
+            <div className="quiz-cmp-cell quiz-cmp-r" role="cell">
+              {row.member}
+            </div>
+          </div>
+        ))}
       </div>
     </>
   );
@@ -1366,7 +1395,18 @@ function Cta({
   }
   if (screen === "reveal") return <button className="quiz-btn" type="button" onClick={onNext}>See my jobs</button>;
   if (screen === "matches") return <button className="quiz-btn" type="button" onClick={onNext}>Continue</button>;
-  if (screen === "why") return <button className="quiz-btn" type="button" onClick={onNext}>Makes sense</button>;
+  if (screen === "why") {
+    return (
+      <>
+        <button className="quiz-btn" type="button" onClick={onNext}>
+          Makes sense
+        </button>
+        <p className="quiz-cmp-fine">
+          Apply links always free · Cancel anytime · Full refund within {LEGAL.refundWindowDays} days · Prices plus HST
+        </p>
+      </>
+    );
+  }
   if (screen === "fix") return <button className="quiz-btn" type="button" onClick={onNext}>Show me jobs that fit</button>;
   return <button className="quiz-btn" type="button" onClick={onNext}>Next</button>;
 }
