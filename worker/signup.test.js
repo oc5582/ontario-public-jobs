@@ -11,6 +11,7 @@ import {
   WELCOME_TEMPLATE_ID,
   handleSignup,
   originAllowed,
+  quizProperties,
 } from "./signup.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -172,6 +173,64 @@ test("blocks other websites", async () => {
   );
   assert.equal(response.status, 403);
   assert.equal(called, false);
+});
+
+test("quiz answers are stored on the contact when Resend accepts them", async () => {
+  const seen = [];
+  globalThis.fetch = async (url, options) => {
+    seen.push({ url: String(url), options });
+    return new Response(JSON.stringify({ id: "contact_1" }), { status: 200 });
+  };
+  const response = await handleSignup(
+    post({
+      email: "reader@example.com",
+      casl_consent: "yes",
+      quiz_kind: "resume_reminder",
+      quiz_work: "it,policy",
+      quiz_areas: "toronto",
+      quiz_salary: "80",
+      quiz_level: "mid",
+    }),
+    { RESEND_API_KEY: "test-key" },
+    { now: () => new Date("2026-11-01T15:00:00.000Z") }
+  );
+  assert.equal(response.status, 200);
+  const payload = JSON.parse(seen[0].options.body);
+  assert.equal(payload.properties.quiz_kind, "resume_reminder");
+  assert.equal(payload.properties.quiz_work, "it,policy");
+  assert.equal(payload.properties.quiz_areas, "toronto");
+  assert.equal(payload.properties.quiz_salary, "80");
+  assert.equal(payload.properties.quiz_level, "mid");
+  assert.equal(payload.properties.casl_consent, "express");
+  assert.deepEqual(quizProperties({ quiz_kind: "nope", quiz_work: " it " }), { quiz_work: "it" });
+});
+
+test("a rejected quiz property still saves the weekly contact", async () => {
+  let calls = 0;
+  globalThis.fetch = async (url, options) => {
+    calls += 1;
+    if (String(url) === "https://api.resend.com/contacts" && calls === 1) {
+      return new Response(JSON.stringify({ message: "Unknown property" }), { status: 422 });
+    }
+    if (String(url) === "https://api.resend.com/contacts") {
+      const payload = JSON.parse(options.body);
+      assert.equal(payload.properties.quiz_work, undefined);
+      assert.equal(payload.properties.casl_consent, "express");
+      return new Response(JSON.stringify({ id: "contact_2" }), { status: 200 });
+    }
+    return new Response(JSON.stringify({ id: "email_1" }), { status: 200 });
+  };
+  const response = await handleSignup(
+    post({
+      email: "reader@example.com",
+      casl_consent: "yes",
+      quiz_kind: "results",
+      quiz_work: "it",
+    }),
+    { RESEND_API_KEY: "test-key" }
+  );
+  assert.equal(response.status, 200);
+  assert.equal(calls, 3);
 });
 
 test("homepage form is email plus consent and listings stay in the HTML", () => {

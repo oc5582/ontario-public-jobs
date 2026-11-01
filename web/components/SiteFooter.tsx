@@ -6,6 +6,7 @@ import { FOOTER } from "@/lib/site";
 
 export function SiteFooter() {
   const path = (usePathname() || "/").replace(/\/$/, "") || "/";
+  if (path === "/start") return null;
   function link(label: string, href: string, key: string) {
     const current = path === key ? "page" : undefined;
     return (

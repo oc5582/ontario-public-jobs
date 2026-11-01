@@ -146,6 +146,18 @@ function contactProperties(softPay, nowIso) {
   return properties;
 }
 
+/** Optional quiz answers from /start. Values stay short strings for Resend properties. */
+export function quizProperties(data) {
+  const props = {};
+  const kind = String((data && data.quiz_kind) || "").trim();
+  if (kind === "results" || kind === "resume_reminder") props.quiz_kind = kind;
+  for (const key of ["quiz_work", "quiz_areas", "quiz_salary", "quiz_level"]) {
+    const value = String((data && data[key]) || "").trim().slice(0, 500);
+    if (value) props[key] = value;
+  }
+  return props;
+}
+
 async function readError(response) {
   try {
     return await response.json();
@@ -285,11 +297,18 @@ export async function handleSignup(request, env, deps = {}) {
   }
 
   const now = (deps.now || (() => new Date()))();
-  const properties = contactProperties(
+  const baseProperties = contactProperties(
     String(data.soft_pay || "").trim(),
     now.toISOString()
   );
-  const saved = await saveContact(email, properties, env);
+  const quiz = quizProperties(data);
+  const properties = { ...baseProperties, ...quiz };
+  let saved = await saveContact(email, properties, env);
+  // Resend rejects contact properties that were not created in the dashboard.
+  // The weekly list still has to accept the address, so retry without the quiz fields.
+  if (!saved.ok && Object.keys(quiz).length) {
+    saved = await saveContact(email, baseProperties, env);
+  }
   if (!saved.ok) {
     console.error("Resend contact save failed", saved.status || "");
     return respond(request, origin, 502, "Something went wrong. Please try again.");

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { PlanCards, PricingRenewal, PricingTax, PricingTrust } from "@/components/PricingPlans";
 import { checkoutCheckboxText } from "@/lib/legal-copy";
 import { trackMeta } from "@/lib/meta-pixel";
+import { CHECKOUT_UTM_KEYS, type CheckoutUtm } from "@/lib/checkout-utm";
 import { planPixel, type PlanId } from "@/lib/site";
 
 function consentParts(plan: PlanId): { before: string; after: string } {
@@ -21,12 +22,24 @@ export function CheckoutForm({
   initialPlan,
   collectEmail = false,
   defaultEmail = "",
+  submitLabel = "Start my weekly matches",
+  billedFor,
+  checkoutFrom,
+  utm,
+  onPlanChange,
+  planOrder,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   provinces: ProvinceOption[];
   initialPlan: PlanId;
   collectEmail?: boolean;
   defaultEmail?: string;
+  submitLabel?: string;
+  billedFor?: (id: PlanId) => { text: string; savings: string | null };
+  checkoutFrom?: string;
+  utm?: CheckoutUtm;
+  onPlanChange?: (plan: PlanId) => void;
+  planOrder?: readonly PlanId[];
 }) {
   const [plan, setPlan] = useState<PlanId>(initialPlan);
   const agreeRef = useRef<HTMLInputElement>(null);
@@ -34,6 +47,7 @@ export function CheckoutForm({
 
   function choose(next: PlanId) {
     setPlan(next);
+    onPlanChange?.(next);
     if (agreeRef.current) agreeRef.current.checked = false;
   }
 
@@ -54,7 +68,7 @@ export function CheckoutForm({
         });
       }}
     >
-      <PlanCards plan={plan} onChange={choose} />
+      <PlanCards plan={plan} onChange={choose} billedFor={billedFor} order={planOrder} />
       <PricingTax />
       {collectEmail ? (
         <label className="pricing-province" htmlFor="checkout-email">
@@ -94,8 +108,13 @@ export function CheckoutForm({
           <label htmlFor="checkout-agree">{consent.after}</label>
         </span>
       </div>
+      {checkoutFrom ? <input type="hidden" name="checkout_from" value={checkoutFrom} /> : null}
+      {CHECKOUT_UTM_KEYS.map((key) => {
+        const value = utm?.[key];
+        return value ? <input key={key} type="hidden" name={key} value={value} /> : null;
+      })}
       <button className="pricing-cta" type="submit">
-        Start my weekly matches
+        {submitLabel}
       </button>
       <PricingRenewal plan={plan} />
       {collectEmail ? (
