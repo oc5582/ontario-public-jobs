@@ -1,5 +1,8 @@
 -- Quiz answers saved with a /start email signup. No resume text.
 -- publicjobs_app owns the table so RLS does not reject the Next.js role.
+-- CREATE on the schema is granted only long enough to transfer ownership.
+
+grant usage, create on schema public to publicjobs_app;
 
 create table if not exists public.quiz_signups (
   id uuid primary key default gen_random_uuid(),
@@ -35,3 +38,5 @@ begin
   end if;
 end
 $$;
+
+revoke create on schema public from publicjobs_app;

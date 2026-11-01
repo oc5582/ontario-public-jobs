@@ -1109,11 +1109,7 @@ function Why({ stats }: { stats: QuizStats }) {
     },
     {
       own: "Re-check sites to spot new jobs",
-      member: (
-        <>
-          Weekly match email (Sat). Daily <span className="quiz-soon">Coming soon</span>
-        </>
-      ),
+      member: "Weekly match email (Sat)",
     },
     {
       own: "Guess which jobs fit your resume",

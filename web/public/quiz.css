@@ -410,17 +410,6 @@
 .quiz-cmp-cell.quiz-cmp-l::before { content: "✕ "; color: #b4442f; font-weight: 700; }
 .quiz-cmp-cell.quiz-cmp-r::before { content: "✓ "; color: #1f7a3a; font-weight: 700; }
 .quiz-cmp-row:last-child > .quiz-cmp-cell { border-bottom: 0; }
-.quiz-soon {
-  display: inline-block;
-  font-size: 10.5px;
-  font-weight: 600;
-  background: #fff4d6;
-  color: #7a5a00;
-  padding: 1px 6px;
-  margin-left: 4px;
-  white-space: nowrap;
-  vertical-align: 1px;
-}
 .quiz-cmp-fine {
   margin: 0;
   font-size: 12px;
