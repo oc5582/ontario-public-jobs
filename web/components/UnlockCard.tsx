@@ -33,6 +33,8 @@ export function UnlockCard({
       })
     : `This list shows the newest ${shown} of ${total.toLocaleString("en-CA")}. The rest of the filtered list is part of a membership.`;
   const teasers = (preview?.teasers || []).slice(0, Math.min(5, remaining));
+  const membershipHref = place === "home" ? "/start/" : "/pricing/";
+  const membershipLabel = place === "home" ? "Continue" : "See membership";
 
   return (
     <>
@@ -80,8 +82,8 @@ export function UnlockCard({
           {detail} Apply stays free on every job page.
         </p>
         <p className="unlock-actions">
-          <a className="apply-btn" href="/pricing/">
-            See membership
+          <a className="apply-btn" href={membershipHref}>
+            {membershipLabel}
           </a>
           <a href="/login/">Sign in</a>
         </p>
