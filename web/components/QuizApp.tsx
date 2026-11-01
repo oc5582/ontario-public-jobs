@@ -1212,6 +1212,7 @@ function Plans({
           action={startGuestCheckout}
           provinces={provinces}
           initialPlan="quarter"
+          planOrder={["month", "quarter", "year"]}
           collectEmail={!signedIn}
           defaultEmail={email}
           submitLabel="Continue to secure payment"

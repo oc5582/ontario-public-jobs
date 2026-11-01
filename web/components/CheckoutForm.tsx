@@ -27,6 +27,7 @@ export function CheckoutForm({
   checkoutFrom,
   utm,
   onPlanChange,
+  planOrder,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   provinces: ProvinceOption[];
@@ -38,6 +39,7 @@ export function CheckoutForm({
   checkoutFrom?: string;
   utm?: CheckoutUtm;
   onPlanChange?: (plan: PlanId) => void;
+  planOrder?: readonly PlanId[];
 }) {
   const [plan, setPlan] = useState<PlanId>(initialPlan);
   const agreeRef = useRef<HTMLInputElement>(null);
@@ -66,7 +68,7 @@ export function CheckoutForm({
         });
       }}
     >
-      <PlanCards plan={plan} onChange={choose} billedFor={billedFor} />
+      <PlanCards plan={plan} onChange={choose} billedFor={billedFor} order={planOrder} />
       <PricingTax />
       {collectEmail ? (
         <label className="pricing-province" htmlFor="checkout-email">

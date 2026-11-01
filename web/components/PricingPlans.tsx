@@ -2,6 +2,7 @@
 
 import { LEGAL } from "@/lib/legal-config";
 import {
+  PLANS,
   pricingBilled,
   pricingPlans,
   pricingRenewalNote,
@@ -13,19 +14,31 @@ function choosePlan(value: string): PlanId | null {
   return null;
 }
 
+function plansInOrder(order?: readonly PlanId[]) {
+  if (!order) return pricingPlans();
+  return order.map((id) => {
+    const plan = PLANS.find((item) => item.id === id);
+    if (!plan) throw new Error(`Missing plan ${id}`);
+    return plan;
+  });
+}
+
 export function PlanCards({
   plan,
   onChange,
   billedFor = pricingBilled,
+  order,
 }: {
   plan: PlanId;
   onChange: (next: PlanId) => void;
   /** Defaults to the pricing-page line. /start passes yearly wording that says it renews yearly. */
   billedFor?: (id: PlanId) => { text: string; savings: string | null };
+  /** Defaults to the pricing-page order. /start lists monthly, then 3 months, then year. */
+  order?: readonly PlanId[];
 }) {
   return (
     <div className="pricing-plans" role="radiogroup" aria-labelledby="plans-h">
-      {pricingPlans().map((item) => {
+      {plansInOrder(order).map((item) => {
         const billed = billedFor(item.id);
         return (
           <label key={item.id} className="pricing-plan">
