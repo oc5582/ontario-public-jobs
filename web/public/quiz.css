@@ -410,6 +410,21 @@
 .quiz-cmp-cell.quiz-cmp-l::before { content: "✕ "; color: #b4442f; font-weight: 700; }
 .quiz-cmp-cell.quiz-cmp-r::before { content: "✓ "; color: #1f7a3a; font-weight: 700; }
 .quiz-cmp-row:last-child > .quiz-cmp-cell { border-bottom: 0; }
+.quiz-consent {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13.5px;
+  color: var(--quiz-muted);
+}
+.quiz-consent input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex: none;
+  accent-color: var(--quiz-brand);
+}
+.quiz-consent .quiz-small { display: block; margin-top: 4px; }
 .quiz-cmp-fine {
   margin: 0;
   font-size: 12px;

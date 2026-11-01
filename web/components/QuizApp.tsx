@@ -6,7 +6,7 @@ import { trackEvent } from "@/components/AnalyticsEvents";
 import type { CheckoutUtm } from "@/lib/checkout-utm";
 import { isCheckoutEmail } from "@/lib/guest-checkout";
 import { LEGAL } from "@/lib/legal-config";
-import { alertConsentSender, disclosureText, refundSentence } from "@/lib/legal-copy";
+import { alertConsentLabel, alertConsentSender, disclosureText, refundSentence } from "@/lib/legal-copy";
 import { trackMeta } from "@/lib/meta-pixel";
 import {
   buildQuizStats,
@@ -20,7 +20,8 @@ import {
   type QuizResults,
   type QuizStats,
 } from "@/lib/quiz-logic";
-import { PLANS, pricingBilled, type PlanId } from "@/lib/site";
+import { PLANS, SIGNUP_ENDPOINT, pricingBilled, type PlanId } from "@/lib/site";
+import { weeklyAlertPayload } from "@/lib/weekly-alert";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 const SCREENS = [
@@ -402,24 +403,34 @@ export function QuizApp({
     }
   }
 
-  async function subscribe(kind: "results" | "resume_reminder", address: string): Promise<string> {
-    const response = await fetch("/api/start/signup/", {
-      method: "POST",
-      headers: { Accept: "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: address,
-        quiz_kind: kind,
-        quiz_work: work.join(","),
-        quiz_areas: where.join(","),
-        quiz_salary: sal || "",
-        quiz_level: level.join(","),
-        _gotcha: "",
-      }),
-    });
-    const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string };
-    if (!response.ok || body.ok !== true) return body.error || "Something went wrong. Please try again.";
-    if (kind === "results") trackMeta("track", "Lead");
-    return "";
+  async function subscribe(address: string): Promise<string> {
+    const endpoint = SIGNUP_ENDPOINT.trim();
+    if (!endpoint) return "Email alerts are not turned on yet. Please try again later.";
+    const payload = weeklyAlertPayload(address);
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        mode: "cors",
+        credentials: "omit",
+      });
+      const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!response.ok || body.ok === false) return body.error || "Something went wrong. Please try again.";
+      trackMeta("track", "Lead");
+      fetch("/api/alerts/consent/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          email: payload.email,
+          page_url: window.location.href,
+        }),
+      }).catch(() => {});
+      return "";
+    } catch {
+      return "Something went wrong. Please try again.";
+    }
   }
 
   async function sendResume(address: string) {
@@ -433,7 +444,7 @@ export function QuizApp({
         body: JSON.stringify({
           email: address,
           run_id: crypto.randomUUID(),
-          casl_consent: "yes",
+          casl_consent: "",
           resume_text: text,
           _gotcha: "",
         }),
@@ -457,15 +468,15 @@ export function QuizApp({
     }
   }
 
-  async function submitEmail(kind: "results" | "resume_reminder", address: string) {
+  async function submitEmail(kind: "results" | "resume_reminder", address: string, agreed: boolean) {
     const value = address.trim();
-    if (!isCheckoutEmail(value)) {
-      setModalError("Enter a valid email address to see your jobs.");
+    if (!isCheckoutEmail(value) || !agreed) {
+      setModalError("Enter your email and check the box to agree to job alert emails.");
       return;
     }
     setPending(true);
     setModalError("");
-    const error = await subscribe(kind, value);
+    const error = await subscribe(value);
     if (error) {
       setPending(false);
       setModalError(error);
@@ -669,11 +680,10 @@ export function QuizApp({
                 eyebrow="Your results"
                 heading={`We found ${broad.n}+ active jobs for you`}
                 button={pending ? "Saving..." : "Show me my jobs"}
-                note="Free. One email a week. Unsubscribe anytime."
                 email={email}
                 error={modalError}
                 pending={pending}
-                onSubmit={(value) => void submitEmail("results", value)}
+                onSubmit={(value, agreed) => void submitEmail("results", value, agreed)}
               />
             ) : (
               <>
@@ -683,11 +693,10 @@ export function QuizApp({
                   heading="Want to add your resume later?"
                   lead="We can email you a link to finish your matches when you have your resume handy."
                   button={pending ? "Saving..." : "Email me a link"}
-                  note="Free. Unsubscribe anytime."
                   email={email}
                   error={modalError}
                   pending={pending}
-                  onSubmit={(value) => void submitEmail("resume_reminder", value)}
+                  onSubmit={(value, agreed) => void submitEmail("resume_reminder", value, agreed)}
                 />
                 <button
                   className="quiz-link"
@@ -1414,7 +1423,6 @@ function EmailAsk({
   heading,
   lead,
   button,
-  note,
   email,
   error,
   pending,
@@ -1425,18 +1433,17 @@ function EmailAsk({
   heading: string;
   lead?: string;
   button: string;
-  note: string;
   email: string;
   error: string;
   pending: boolean;
-  onSubmit: (email: string) => void;
+  onSubmit: (email: string, agreed: boolean) => void;
 }) {
   return (
     <form
       onSubmit={(event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        onSubmit(String(data.get("email") || ""));
+        onSubmit(String(data.get("email") || ""), data.get("casl_consent") === "yes");
       }}
     >
       <p className="quiz-eyebrow">{eyebrow}</p>
@@ -1446,10 +1453,15 @@ function EmailAsk({
         <label htmlFor={`${titleId}-email`}>Email</label>
         <input id={`${titleId}-email`} name="email" type="email" autoComplete="email" required defaultValue={email} placeholder="you@example.com" />
       </div>
+      <label className="quiz-consent" htmlFor={`${titleId}-consent`}>
+        <input id={`${titleId}-consent`} name="casl_consent" type="checkbox" value="yes" />
+        <span>
+          {alertConsentLabel()}
+          <span className="quiz-small">{alertConsentSender()}</span>
+        </span>
+      </label>
       {error ? <p className="quiz-err">{error}</p> : null}
       <button className="quiz-btn" type="submit" disabled={pending}>{button}</button>
-      <p className="quiz-small">{note}</p>
-      <p className="quiz-small">{alertConsentSender()}</p>
     </form>
   );
 }
