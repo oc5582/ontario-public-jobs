@@ -13,11 +13,20 @@ function choosePlan(value: string): PlanId | null {
   return null;
 }
 
-export function PlanCards({ plan, onChange }: { plan: PlanId; onChange: (next: PlanId) => void }) {
+export function PlanCards({
+  plan,
+  onChange,
+  billedFor = pricingBilled,
+}: {
+  plan: PlanId;
+  onChange: (next: PlanId) => void;
+  /** Defaults to the pricing-page line. /start passes yearly wording that says it renews yearly. */
+  billedFor?: (id: PlanId) => { text: string; savings: string | null };
+}) {
   return (
     <div className="pricing-plans" role="radiogroup" aria-labelledby="plans-h">
       {pricingPlans().map((item) => {
-        const billed = pricingBilled(item.id);
+        const billed = billedFor(item.id);
         return (
           <label key={item.id} className="pricing-plan">
             <input

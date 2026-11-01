@@ -534,17 +534,22 @@ const SOURCE_LABELS: Record<string, string> = {
   workday_cxs: "Workday",
 };
 
+/** Hiring-system name for a jobs.source value. Null for blank or paused feeds. */
+export function hiringSystemName(source: string | null | undefined): string | null {
+  const key = (source || "").split(":")[0];
+  if (!key || (EXCLUDED_SOURCE_KEYS as readonly string[]).includes(key)) return null;
+  if (key.startsWith("site_")) return "employers' own websites";
+  return SOURCE_LABELS[key] || key;
+}
+
 async function listingFactsUncached(): Promise<{ sources: string[]; fetched: string; employerCount: number }> {
   const sources = await query<{ source: string | null }>(
     `select distinct source from jobs where removed_at is null`,
   );
   const names = new Set<string>();
   for (const row of sources) {
-    const key = (row.source || "").split(":")[0];
-    // Same paused-feed list as the public stats page (Toronto Police Service).
-    if (!key || (EXCLUDED_SOURCE_KEYS as readonly string[]).includes(key)) continue;
-    if (key.startsWith("site_")) names.add("employers' own websites");
-    else names.add(SOURCE_LABELS[key] || key);
+    const name = hiringSystemName(row.source);
+    if (name) names.add(name);
   }
   const dates = await query<{ first: string | null; last: string | null }>(
     `select min(fetched_at)::date::text as first, max(fetched_at)::date::text as last

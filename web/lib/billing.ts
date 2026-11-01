@@ -5,6 +5,7 @@ import { query } from "./db";
 import { profileIsSubscribed, subscriptionBlocksNewCheckout } from "./guest-checkout";
 import { disclosureText, stripeSubmitMessage, stripeTermsMessage } from "./legal-copy";
 import { LEGAL } from "./legal-config";
+import type { CheckoutUtm } from "./checkout-utm";
 import { planPriceLine, type PlanId } from "./site";
 
 export class BillingNotConfiguredError extends Error {
@@ -32,6 +33,10 @@ export type CheckoutInput = {
   guestCheckout?: boolean;
   /** True when a magic link was already emailed while creating the account. */
   guestSignInSent?: boolean;
+  /** Ad parameters from /start. Empty values are left off the Stripe metadata. */
+  utm?: CheckoutUtm;
+  /** Set only for the /start quiz. Any other value keeps the pricing cancel URL. */
+  cancelPath?: string;
 };
 
 export type PortalInput = {
@@ -104,6 +109,11 @@ export function checkoutSessionCreateParams(
     metadata.signin_origin = input.origin;
     metadata.signin_link_sent = input.guestSignInSent ? "1" : "0";
   }
+  const utm = input.utm || {};
+  for (const key of ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const) {
+    const value = (utm[key] || "").trim().slice(0, 200);
+    if (value) metadata[key] = value;
+  }
   const successPath = input.guestCheckout
     ? "/checkout/return/?session_id={CHECKOUT_SESSION_ID}"
     : "/account/?checkout=success&session_id={CHECKOUT_SESSION_ID}";
@@ -116,7 +126,7 @@ export function checkoutSessionCreateParams(
     client_reference_id: input.profileId,
     line_items: [{ price: priceId, quantity: 1, tax_rates: [taxRateId] }],
     success_url: `${input.origin}${successPath}`,
-    cancel_url: `${input.origin}/pricing/`,
+    cancel_url: `${input.origin}${input.cancelPath === "/start/" ? "/start/" : "/pricing/"}`,
     allow_promotion_codes: false,
     payment_method_collection: "always",
     billing_address_collection: "required",
@@ -135,6 +145,11 @@ export function checkoutSessionCreateParams(
         plan: input.plan,
         terms_version: LEGAL.termsVersion,
         tax_province: input.province,
+        ...Object.fromEntries(
+          (["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const)
+            .map((key) => [key, (utm[key] || "").trim().slice(0, 200)] as const)
+            .filter(([, value]) => value),
+        ),
       },
     },
   };

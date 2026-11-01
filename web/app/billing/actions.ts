@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { getViewer, requestOrigin } from "@/lib/auth";
 import { isProvinceCode } from "@/lib/ca-tax";
+import { checkoutUtmFromForm } from "@/lib/checkout-utm";
 import {
   AlreadySubscribedError,
   BillingNotConfiguredError,
@@ -23,14 +24,39 @@ function isPlan(value: string): value is PlanId {
   return value === "month" || value === "quarter" || value === "year";
 }
 
+function fromStart(formData: FormData): boolean {
+  return String(formData.get("checkout_from") || "") === "start";
+}
+
+function startNotice(formData: FormData, notice: string, email = ""): never {
+  const params = new URLSearchParams();
+  params.set("notice", notice);
+  if (email && isCheckoutEmail(email)) params.set("email", email);
+  const utm = checkoutUtmFromForm(formData);
+  for (const [key, value] of Object.entries(utm)) {
+    if (value) params.set(key, value);
+  }
+  redirect(`/start/?${params.toString()}`);
+}
+
 export async function startCheckout(formData: FormData) {
   const viewer = await getViewer();
-  if (!viewer.email || !viewer.profile) redirect("/login/?next=/pricing/");
+  const quiz = fromStart(formData);
+  if (!viewer.email || !viewer.profile) redirect(quiz ? "/login/?next=/start/" : "/login/?next=/pricing/");
   const plan = String(formData.get("plan") || "");
-  if (!isPlan(plan)) redirect("/pricing/?notice=plan");
-  if (formData.get("agree") !== plan) redirect("/pricing/?notice=terms");
+  if (!isPlan(plan)) {
+    if (quiz) startNotice(formData, "plan");
+    redirect("/pricing/?notice=plan");
+  }
+  if (formData.get("agree") !== plan) {
+    if (quiz) startNotice(formData, "terms");
+    redirect("/pricing/?notice=terms");
+  }
   const province = String(formData.get("province") || "");
-  if (!isProvinceCode(province)) redirect("/pricing/?notice=province");
+  if (!isProvinceCode(province)) {
+    if (quiz) startNotice(formData, "province");
+    redirect("/pricing/?notice=province");
+  }
   let url = "";
   try {
     const origin = await requestOrigin();
@@ -40,17 +66,23 @@ export async function startCheckout(formData: FormData) {
       plan,
       origin,
       province,
+      utm: checkoutUtmFromForm(formData),
+      cancelPath: quiz ? "/start/" : undefined,
     });
     url = session.url;
   } catch (error) {
-    if (error instanceof BillingNotConfiguredError) redirect("/pricing/?notice=stripe");
+    if (error instanceof BillingNotConfiguredError) {
+      if (quiz) startNotice(formData, "stripe");
+      redirect("/pricing/?notice=stripe");
+    }
     if (error instanceof AlreadySubscribedError) redirect("/account/");
     throw error;
   }
   redirect(url);
 }
 
-function pricingNotice(notice: string, email: string): never {
+function pricingNotice(notice: string, email: string, formData?: FormData): never {
+  if (formData && fromStart(formData)) startNotice(formData, notice, email);
   const valid = isCheckoutEmail(email) ? `&email=${encodeURIComponent(email)}` : "";
   redirect(`/pricing/?notice=${notice}${valid}#plans`);
 }
@@ -60,11 +92,12 @@ export async function startGuestCheckout(formData: FormData) {
   if (viewer.email) return startCheckout(formData);
   const email = normalizeCheckoutEmail(String(formData.get("email") || ""));
   const plan = String(formData.get("plan") || "");
-  if (!isCheckoutEmail(email)) pricingNotice("email", "");
-  if (!isPlan(plan)) pricingNotice("plan", email);
-  if (formData.get("agree") !== plan) pricingNotice("terms", email);
+  const quiz = fromStart(formData);
+  if (!isCheckoutEmail(email)) pricingNotice("email", "", formData);
+  if (!isPlan(plan)) pricingNotice("plan", email, formData);
+  if (formData.get("agree") !== plan) pricingNotice("terms", email, formData);
   const province = String(formData.get("province") || "");
-  if (!isProvinceCode(province)) pricingNotice("province", email);
+  if (!isProvinceCode(province)) pricingNotice("province", email, formData);
   let url = "";
   try {
     const origin = await requestOrigin();
@@ -77,12 +110,14 @@ export async function startGuestCheckout(formData: FormData) {
       province,
       guestCheckout: true,
       guestSignInSent: profile.signInSent,
+      utm: checkoutUtmFromForm(formData),
+      cancelPath: quiz ? "/start/" : undefined,
     });
     url = session.url;
   } catch (error) {
-    if (error instanceof BillingNotConfiguredError) pricingNotice("stripe", email);
-    if (error instanceof AlreadySubscribedError) pricingNotice("subscribed", email);
-    if (error instanceof CheckoutProfileError) pricingNotice(error.notice, email);
+    if (error instanceof BillingNotConfiguredError) pricingNotice("stripe", email, formData);
+    if (error instanceof AlreadySubscribedError) pricingNotice("subscribed", email, formData);
+    if (error instanceof CheckoutProfileError) pricingNotice(error.notice, email, formData);
     throw error;
   }
   redirect(url);

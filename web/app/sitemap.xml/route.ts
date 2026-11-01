@@ -15,6 +15,7 @@ function escapeXml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+// /start/ is an ad landing quiz. It is noindex and intentionally absent here.
 const STATIC_PATHS = ["/", "/jobs/", "/employers/", "/match/", "/pricing/", "/about/", "/faq/", "/stats/", "/privacy/", "/terms/"];
 const LISTING_PATHS = new Set(["/", "/jobs/", "/employers/", "/stats/"]);
 
