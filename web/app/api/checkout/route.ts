@@ -1,3 +1,4 @@
+import { attributionForBody } from "@/lib/attribution-server";
 import { getViewer, requestOrigin } from "@/lib/auth";
 import { isProvinceCode } from "@/lib/ca-tax";
 import { AlreadySubscribedError, BillingNotConfiguredError, createCheckoutSession } from "@/lib/billing";
@@ -16,12 +17,14 @@ export async function POST(request: Request) {
   }
   let plan: PlanId;
   let province = "";
+  let body: {
+    plan?: unknown;
+    agree?: unknown;
+    province?: unknown;
+    attribution?: unknown;
+  };
   try {
-    const body = (await request.json()) as {
-      plan?: unknown;
-      agree?: unknown;
-      province?: unknown;
-    };
+    body = (await request.json()) as typeof body;
     if (!isPlan(body.plan)) return Response.json({ error: "Unknown plan." }, { status: 400 });
     if (body.agree !== true && body.agree !== body.plan) {
       return Response.json({ error: "Agree to the Terms before checkout." }, { status: 400 });
@@ -42,6 +45,7 @@ export async function POST(request: Request) {
       plan,
       origin,
       province,
+      attribution: await attributionForBody(body),
     });
     return Response.json(session);
   } catch (error) {

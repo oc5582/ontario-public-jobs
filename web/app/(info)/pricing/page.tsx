@@ -1,6 +1,7 @@
 import { PricingView } from "@/components/AnalyticsEvents";
 import { MembershipCompare } from "@/components/MembershipCompare";
 import { CheckoutForm } from "@/components/CheckoutForm";
+import { checkoutUtmFromRecord } from "@/lib/checkout-utm";
 import { PricingRenewal, PricingTrust } from "@/components/PricingPlans";
 import { getViewer } from "@/lib/auth";
 import { isCheckoutEmail, normalizeCheckoutEmail, profileIsSubscribed } from "@/lib/guest-checkout";
@@ -110,6 +111,7 @@ export default async function PricingPage({
               collectEmail={guest}
               defaultEmail={echoEmail}
               initialPlan={initialPlan}
+              utm={checkoutUtmFromRecord(params)}
               provinces={CA_TAX_JURISDICTIONS.map((item) => ({
                 code: item.code,
                 label: `${item.name} (${item.displayName} ${item.percentage}%${item.code === "QC" ? ", GST only" : ""})`,

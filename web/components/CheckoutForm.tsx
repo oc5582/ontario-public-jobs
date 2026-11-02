@@ -1,10 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PlanCards, PricingRenewal, PricingTax, PricingTrust } from "@/components/PricingPlans";
+import { applyStoredAttribution } from "@/lib/attribution-browser";
+import { ATTRIBUTION_KEYS } from "@/lib/attribution";
 import { checkoutCheckboxText } from "@/lib/legal-copy";
 import { trackMeta } from "@/lib/meta-pixel";
-import { CHECKOUT_UTM_KEYS, type CheckoutUtm } from "@/lib/checkout-utm";
+import type { CheckoutUtm } from "@/lib/checkout-utm";
 import { planPixel, type PlanId } from "@/lib/site";
 
 function consentParts(plan: PlanId): { before: string; after: string } {
@@ -43,7 +45,12 @@ export function CheckoutForm({
 }) {
   const [plan, setPlan] = useState<PlanId>(initialPlan);
   const agreeRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const consent = consentParts(plan);
+
+  useEffect(() => {
+    if (formRef.current) applyStoredAttribution(formRef.current);
+  }, [utm]);
 
   function choose(next: PlanId) {
     setPlan(next);
@@ -53,9 +60,11 @@ export function CheckoutForm({
 
   return (
     <form
+      ref={formRef}
       className="pricing-checkout"
       action={action}
       onSubmit={(event) => {
+        applyStoredAttribution(event.currentTarget);
         const selectedPlan = new FormData(event.currentTarget).get("plan");
         if (agreeRef.current && typeof selectedPlan === "string") agreeRef.current.value = selectedPlan;
         if (typeof selectedPlan !== "string") return;
@@ -109,10 +118,12 @@ export function CheckoutForm({
         </span>
       </div>
       {checkoutFrom ? <input type="hidden" name="checkout_from" value={checkoutFrom} /> : null}
-      {CHECKOUT_UTM_KEYS.map((key) => {
-        const value = utm?.[key];
-        return value ? <input key={key} type="hidden" name={key} value={value} /> : null;
-      })}
+      {ATTRIBUTION_KEYS.map((key) => (
+        <input key={key} type="hidden" name={key} defaultValue={utm?.[key] || ""} />
+      ))}
+      {ATTRIBUTION_KEYS.map((key) => (
+        <input key={`last_${key}`} type="hidden" name={`last_${key}`} defaultValue="" />
+      ))}
       <button className="pricing-cta" type="submit">
         {submitLabel}
       </button>

@@ -2,6 +2,7 @@ import type { PoolClient } from "pg";
 import Stripe from "stripe";
 import { reportEvent } from "./analytics";
 import { fulfillCheckoutAgreement } from "./agreement-mail";
+import { attributionColumnValues, attributionFromStripeMetadata, profileAttributionUpdateSql } from "./attribution";
 import { getStripe, planForPrice } from "./billing";
 import { query, withTransaction } from "./db";
 import { sendDueRenewalReminders } from "./renewal-reminders";
@@ -525,6 +526,45 @@ async function applyRevocation(client: PoolClient, event: Stripe.Event, plan: Re
   );
 }
 
+let attributionColumnsReady = false;
+let attributionColumnsWarned = false;
+
+async function profileHasAttributionColumns(client: PoolClient): Promise<boolean> {
+  if (attributionColumnsReady) return true;
+  const found = await client.query(
+    `select 1 from information_schema.columns
+     where table_schema = 'public' and table_name = 'profiles' and column_name = 'utm_source'`,
+  );
+  if ((found.rowCount ?? 0) > 0) {
+    attributionColumnsReady = true;
+    return true;
+  }
+  if (!attributionColumnsWarned) {
+    attributionColumnsWarned = true;
+    console.error(
+      JSON.stringify({
+        event: "profile_attribution_columns_missing",
+        message: "Apply supabase/migrations/20261102150000_profile_ad_attribution.sql",
+      }),
+    );
+  }
+  return false;
+}
+
+/** Copies checkout ad metadata onto the member row. First-touch columns stay put once set. */
+async function rememberPurchaseAttribution(client: PoolClient, session: Stripe.Checkout.Session): Promise<void> {
+  const values = attributionColumnValues(attributionFromStripeMetadata(session.metadata));
+  if (values.every((value) => !value)) return;
+  const profileId = await findProfile(client, {
+    profileId: uuidOrNull(session.client_reference_id) || uuidOrNull(session.metadata?.profile_id),
+    customerId: idOf(session.customer),
+    subscriptionId: typeof session.subscription === "string" ? session.subscription : null,
+  });
+  if (!profileId) return;
+  if (!(await profileHasAttributionColumns(client))) return;
+  await client.query(profileAttributionUpdateSql(), [profileId, ...values]);
+}
+
 async function applyEvent(
   client: PoolClient,
   event: Stripe.Event,
@@ -540,18 +580,22 @@ async function applyEvent(
     const session = event.data.object as Stripe.Checkout.Session;
     if (session.mode && session.mode !== "subscription") return null;
     const profileHint = uuidOrNull(session.client_reference_id) || uuidOrNull(session.metadata?.profile_id);
+    let purchasePlan: PlanId | null = null;
     if (subscription) {
       const activated = await writeSubscription(client, event, subscription, profileHint);
       const plan = checkoutActivationPlan(event, subscription);
-      return activated && plan ? plan : null;
+      purchasePlan = activated && plan ? plan : null;
+    } else if (session.payment_status !== "no_payment_required") {
+      await linkIds(client, event, {
+        profileId: profileHint,
+        customerId: idOf(session.customer),
+        subscriptionId: typeof session.subscription === "string" ? session.subscription : null,
+      });
+    } else {
+      return null;
     }
-    if (session.payment_status === "no_payment_required") return null;
-    await linkIds(client, event, {
-      profileId: profileHint,
-      customerId: idOf(session.customer),
-      subscriptionId: typeof session.subscription === "string" ? session.subscription : null,
-    });
-    return null;
+    await rememberPurchaseAttribution(client, session);
+    return purchasePlan;
   }
   await writeSubscription(client, event, event.data.object as Stripe.Subscription, null);
   return null;

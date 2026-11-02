@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/next";
 import { AdNotice } from "@/components/AdNotice";
+import { AttributionCapture } from "@/components/AttributionCapture";
 import { MetaEvents } from "@/components/MetaEvents";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteScripts } from "@/components/SiteScripts";
@@ -59,10 +61,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           fetchPriority="high"
         />
         <link rel="stylesheet" href="/styles.css" />
+        <script src="/attribution.js" />
         <CloudflareAnalytics />
       </head>
       <body>
         {children}
+        <Suspense fallback={null}>
+          <AttributionCapture />
+        </Suspense>
         <SiteFooter />
         <AdNotice pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID || ""} clarityId={clarityProjectId()} />
         <MetaEvents />
