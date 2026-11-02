@@ -1,6 +1,7 @@
 "use client";
 
 import { loadClarity } from "@/lib/clarity";
+import { installGoogleAdsBridge, loadGoogleAds } from "@/lib/google-ads";
 import { pixelBlockedPath } from "@/lib/legal-copy";
 import { AD_TRACKING_KEY, loadMetaPixel } from "@/lib/meta-pixel";
 import { usePathname } from "next/navigation";
@@ -41,6 +42,7 @@ function NoticeCopy({ pixelId, clarityId }: { pixelId: string; clarityId: string
 }
 
 export function AdNotice({ pixelId, clarityId = "" }: { pixelId: string; clarityId?: string }) {
+  installGoogleAdsBridge();
   const path = usePathname() || "/";
   const blocked = pixelBlockedPath(path);
   const [choice, setChoice] = useState<string | null>("pending");
@@ -53,6 +55,11 @@ export function AdNotice({ pixelId, clarityId = "" }: { pixelId: string; clarity
     if (choice !== "on" || blocked || !pixelId) return;
     loadMetaPixel(pixelId);
   }, [choice, blocked, pixelId]);
+
+  useEffect(() => {
+    if (choice !== "on" || blocked) return;
+    loadGoogleAds();
+  }, [choice, blocked]);
 
   useEffect(() => {
     if (choice !== "on" || !clarityId) return;

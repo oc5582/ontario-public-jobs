@@ -7,6 +7,7 @@ import type { CheckoutUtm } from "@/lib/checkout-utm";
 import { isCheckoutEmail } from "@/lib/guest-checkout";
 import { LEGAL } from "@/lib/legal-config";
 import { alertConsentLabel, alertConsentSender, disclosureText, refundSentence } from "@/lib/legal-copy";
+import { trackGoogleAdsLead } from "@/lib/google-ads";
 import { trackMeta } from "@/lib/meta-pixel";
 import {
   buildQuizStats,
@@ -419,6 +420,7 @@ export function QuizApp({
       const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!response.ok || body.ok === false) return body.error || "Something went wrong. Please try again.";
       trackMeta("track", "Lead");
+      trackGoogleAdsLead();
       fetch("/api/alerts/consent/", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
