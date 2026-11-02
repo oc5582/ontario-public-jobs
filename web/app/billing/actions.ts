@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { getViewer, requestOrigin } from "@/lib/auth";
 import { isProvinceCode } from "@/lib/ca-tax";
-import { checkoutUtmFromForm } from "@/lib/checkout-utm";
+import { attributionForForm } from "@/lib/attribution-server";
 import {
   AlreadySubscribedError,
   BillingNotConfiguredError,
@@ -28,14 +28,10 @@ function fromStart(formData: FormData): boolean {
   return String(formData.get("checkout_from") || "") === "start";
 }
 
-function startNotice(formData: FormData, notice: string, email = ""): never {
+function startNotice(_formData: FormData, notice: string, email = ""): never {
   const params = new URLSearchParams();
   params.set("notice", notice);
   if (email && isCheckoutEmail(email)) params.set("email", email);
-  const utm = checkoutUtmFromForm(formData);
-  for (const [key, value] of Object.entries(utm)) {
-    if (value) params.set(key, value);
-  }
   redirect(`/start/?${params.toString()}`);
 }
 
@@ -66,7 +62,7 @@ export async function startCheckout(formData: FormData) {
       plan,
       origin,
       province,
-      utm: checkoutUtmFromForm(formData),
+      attribution: await attributionForForm(formData),
       cancelPath: quiz ? "/start/" : undefined,
     });
     url = session.url;
@@ -110,7 +106,7 @@ export async function startGuestCheckout(formData: FormData) {
       province,
       guestCheckout: true,
       guestSignInSent: profile.signInSent,
-      utm: checkoutUtmFromForm(formData),
+      attribution: await attributionForForm(formData),
       cancelPath: quiz ? "/start/" : undefined,
     });
     url = session.url;

@@ -5,7 +5,7 @@ import { query } from "./db";
 import { profileIsSubscribed, subscriptionBlocksNewCheckout } from "./guest-checkout";
 import { disclosureText, stripeSubmitMessage, stripeTermsMessage } from "./legal-copy";
 import { LEGAL } from "./legal-config";
-import type { CheckoutUtm } from "./checkout-utm";
+import { attributionMetadata, type StoredAttribution } from "./attribution";
 import { planPriceLine, type PlanId } from "./site";
 
 export class BillingNotConfiguredError extends Error {
@@ -33,8 +33,8 @@ export type CheckoutInput = {
   guestCheckout?: boolean;
   /** True when a magic link was already emailed while creating the account. */
   guestSignInSent?: boolean;
-  /** Ad parameters from /start. Empty values are left off the Stripe metadata. */
-  utm?: CheckoutUtm;
+  /** First-touch and last-touch ad parameters. Empty values are left off Stripe metadata. */
+  attribution?: StoredAttribution;
   /** Set only for the /start quiz. Any other value keeps the pricing cancel URL. */
   cancelPath?: string;
 };
@@ -109,11 +109,8 @@ export function checkoutSessionCreateParams(
     metadata.signin_origin = input.origin;
     metadata.signin_link_sent = input.guestSignInSent ? "1" : "0";
   }
-  const utm = input.utm || {};
-  for (const key of ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const) {
-    const value = (utm[key] || "").trim().slice(0, 200);
-    if (value) metadata[key] = value;
-  }
+  const adMetadata = attributionMetadata(input.attribution);
+  Object.assign(metadata, adMetadata);
   const successPath = input.guestCheckout
     ? "/checkout/return/?session_id={CHECKOUT_SESSION_ID}"
     : "/account/?checkout=success&session_id={CHECKOUT_SESSION_ID}";
@@ -145,11 +142,7 @@ export function checkoutSessionCreateParams(
         plan: input.plan,
         terms_version: LEGAL.termsVersion,
         tax_province: input.province,
-        ...Object.fromEntries(
-          (["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const)
-            .map((key) => [key, (utm[key] || "").trim().slice(0, 200)] as const)
-            .filter(([, value]) => value),
-        ),
+        ...adMetadata,
       },
     },
   };
