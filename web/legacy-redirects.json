@@ -1,15 +1,7 @@
 [
   {
-    "from": "/jobs/agco-director-people-and-culture-strategy.html",
-    "to": "/jobs/alcohol-and-gaming-commission-of-ontario-agco/director-people-and-culture-strategy/"
-  },
-  {
     "from": "/jobs/agco-senior-human-resources-business-partner.html",
     "to": "/jobs/alcohol-and-gaming-commission-of-ontario-agco/senior-human-resources-business-partner/"
-  },
-  {
-    "from": "/jobs/cbc-ai-lead-architect-software-and-platforms-architecture-t-and-i-telework-hybrid.html",
-    "to": "/jobs/canadian-broadcasting-corporation-cbc-radio-canada/ai-lead-architect-software-and-platforms-architecture-t-i-telework-hybrid/"
   },
   {
     "from": "/jobs/cbc-brand-ambassador-on-call-french-services-on-site.html",
@@ -38,10 +30,6 @@
   {
     "from": "/jobs/cib-analyst-investments.html",
     "to": "/jobs/canada-infrastructure-bank/analyst-investments/"
-  },
-  {
-    "from": "/jobs/cib-project-manager-it-and-business-portfolio-12-month-contract.html",
-    "to": "/jobs/canada-infrastructure-bank/project-manager-it-and-business-portfolio-12-month-contract/"
   },
   {
     "from": "/jobs/cib-vice-president-enterprise-legal.html",
@@ -98,62 +86,6 @@
   {
     "from": "/jobs/edc-associ-e-et-associ-e-principale-gestion-de-portefeuille-fr-265.html",
     "to": "/jobs/export-development-canada-edc/associ-e-et-associ-e-principale-gestion-de-portefeuille-fr-265/"
-  },
-  {
-    "from": "/jobs/edc-edc-student-internships-general-stream-starting-winter-2027.html",
-    "to": "/jobs/export-development-canada-edc/edc-student-internships-general-stream-starting-winter-2027/"
-  },
-  {
-    "from": "/jobs/edc-edc-student-new-grad-positions-commerce-stream-winter-2027.html",
-    "to": "/jobs/export-development-canada-edc/edc-student-new-grad-positions-commerce-stream-winter-2027/"
-  },
-  {
-    "from": "/jobs/edc-edc-student-new-grad-positions-finance-stream-winter-2027-en-697.html",
-    "to": "/jobs/export-development-canada-edc/edc-student-new-grad-positions-finance-stream-winter-2027-en-697/"
-  },
-  {
-    "from": "/jobs/edc-edc-student-new-grad-positions-human-resources-stream-winter-2027-en-729.html",
-    "to": "/jobs/export-development-canada-edc/edc-student-new-grad-positions-human-resources-stream-winter-2027-en-729/"
-  },
-  {
-    "from": "/jobs/edc-edc-student-new-grad-positions-marketing-and-communication-stream-winter-2027.html",
-    "to": "/jobs/export-development-canada-edc/edc-student-new-grad-positions-marketing-communication-stream-winter-2027/"
-  },
-  {
-    "from": "/jobs/edc-edc-student-new-grad-positions-multiple-streams-winter-2027.html",
-    "to": "/jobs/export-development-canada-edc/edc-student-new-grad-positions-multiple-streams-winter-2027/"
-  },
-  {
-    "from": "/jobs/edc-edc-student-new-grad-positions-technology-and-analytics-winter-2027.html",
-    "to": "/jobs/export-development-canada-edc/edc-student-new-grad-positions-technology-and-analytics-winter-2027/"
-  },
-  {
-    "from": "/jobs/edc-postes-d-edc-ouverts-aux-personnes-tudiantes-pour-d-hiver-2027-g-n-ral.html",
-    "to": "/jobs/export-development-canada-edc/postes-d-edc-ouverts-aux-personnes-tudiantes-pour-d-hiver-2027-g-n-ral/"
-  },
-  {
-    "from": "/jobs/edc-postes-pour-tudiants-et-nouveaux-dipl-m-s-commerce-hiver-2027.html",
-    "to": "/jobs/export-development-canada-edc/postes-pour-tudiants-et-nouveaux-dipl-m-s-commerce-hiver-2027/"
-  },
-  {
-    "from": "/jobs/edc-postes-pour-tudiants-et-nouveaux-dipl-m-s-finances-hiver-2027.html",
-    "to": "/jobs/export-development-canada-edc/postes-pour-tudiants-et-nouveaux-dipl-m-s-finances-hiver-2027/"
-  },
-  {
-    "from": "/jobs/edc-postes-pour-tudiants-et-nouveaux-dipl-m-s-marketing-et-comms-hiver.html",
-    "to": "/jobs/export-development-canada-edc/postes-pour-tudiants-et-nouveaux-dipl-m-s-marketing-et-comms-hiver/"
-  },
-  {
-    "from": "/jobs/edc-postes-pour-tudiants-et-nouveaux-dipl-m-s-ressources-humaines-hiver-2027.html",
-    "to": "/jobs/export-development-canada-edc/postes-pour-tudiants-et-nouveaux-dipl-m-s-ressources-humaines-hiver-2027/"
-  },
-  {
-    "from": "/jobs/edc-postes-pour-tudiants-et-nouveaux-dipl-m-s-technologie-et-analytique-hiver.html",
-    "to": "/jobs/export-development-canada-edc/postes-pour-tudiants-et-nouveaux-dipl-m-s-technologie-et-analytique-hiver/"
-  },
-  {
-    "from": "/jobs/edc-postes-pour-tudiants-et-nouveaux-dipl-m-s-volet-multiples-hiver-2027.html",
-    "to": "/jobs/export-development-canada-edc/postes-pour-tudiants-et-nouveaux-dipl-m-s-volet-multiples-hiver-2027/"
   },
   {
     "from": "/jobs/ieso-specialist-information-security.html",
@@ -232,10 +164,6 @@
     "to": "/jobs/ontario-cannabis-retail-corporation-ontario-cannabis-store/senior-manager-project-management/"
   },
   {
-    "from": "/jobs/ocs-senior-policy-advisor.html",
-    "to": "/jobs/ontario-cannabis-retail-corporation-ontario-cannabis-store/senior-policy-advisor/"
-  },
-  {
     "from": "/jobs/pho-medical-laboratory-technologist-1.html",
     "to": "/jobs/public-health-ontario-ontario-agency-for-health-protection-and-promotion/medical-laboratory-technologist-1/"
   },
@@ -264,10 +192,6 @@
     "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/conseiller-re-ventes-publicitaires/"
   },
   {
-    "from": "/jobs/toronto-hydro-building-system-technician-toronto-on-ca.html",
-    "to": "/jobs/toronto-hydro-corporation/building-system-technician-toronto-on-ca/"
-  },
-  {
     "from": "/jobs/toronto-hydro-engineer-toronto-on-ca.html",
     "to": "/jobs/toronto-hydro-corporation/engineer-toronto-on-ca-574239717/"
   },
@@ -277,7 +201,7 @@
   },
   {
     "from": "/jobs/toronto-hydro-manager-stations-toronto-on-ca.html",
-    "to": "/jobs/toronto-hydro-corporation/manager-stations-toronto-on-ca-605749717/"
+    "to": "/jobs/toronto-hydro-corporation/manager-stations-toronto-on-ca/"
   },
   {
     "from": "/jobs/tpa-maintenance-grade-2-nights.html",
@@ -298,10 +222,6 @@
   {
     "from": "/jobs/tvo-manager-web-and-mobile-delivery-bilingual.html",
     "to": "/jobs/ontario-educational-communications-authority-tvo/manager-web-mobile-delivery-bilingual/"
-  },
-  {
-    "from": "/jobs/workday-cxs-ai-lead-architect-software-and-platforms-architecture-t-i-telework-hybrid.html",
-    "to": "/jobs/canadian-broadcasting-corporation-cbc-radio-canada/ai-lead-architect-software-and-platforms-architecture-t-i-telework-hybrid/"
   },
   {
     "from": "/jobs/workday-cxs-brand-ambassador-on-call-french-services-on-site.html",
@@ -376,12 +296,12 @@
     "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/candidature-spontan-e/"
   },
   {
-    "from": "/tfo-conseiller-re-ventes-publicitaires.html",
-    "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/conseiller-re-ventes-publicitaires/"
+    "from": "/tfo-charg-e-de-strat-gie-et-de-la-performance-youtube.html",
+    "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/charg-e-de-strat-gie-et-de-la-performance-youtube/"
   },
   {
-    "from": "/toronto-hydro-building-system-technician-toronto-on-ca.html",
-    "to": "/jobs/toronto-hydro-corporation/building-system-technician-toronto-on-ca/"
+    "from": "/tfo-conseiller-re-ventes-publicitaires.html",
+    "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/conseiller-re-ventes-publicitaires/"
   },
   {
     "from": "/toronto-hydro-capital-and-maintenance-program-analyst-12-month-contract-toronto-on-ca.html",
@@ -401,7 +321,7 @@
   },
   {
     "from": "/toronto-hydro-manager-stations-toronto-on-ca.html",
-    "to": "/jobs/toronto-hydro-corporation/manager-stations-toronto-on-ca-605749717/"
+    "to": "/jobs/toronto-hydro-corporation/manager-stations-toronto-on-ca/"
   },
   {
     "from": "/toronto-hydro-two-2-engineer-toronto-on-ca.html",
@@ -426,10 +346,6 @@
   {
     "from": "/ttc-formwork-carpenter.html",
     "to": "/jobs/toronto-transit-commission/formwork-carpenter/"
-  },
-  {
-    "from": "/tvo-labour-and-employee-relations-manager.html",
-    "to": "/jobs/ontario-educational-communications-authority-tvo/labour-and-employee-relations-manager/"
   },
   {
     "from": "/tvo-manager-web-and-mobile-delivery-bilingual.html",
