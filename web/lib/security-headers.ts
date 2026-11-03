@@ -2,7 +2,8 @@
  * Headers for every response. Checkout and the billing portal are full-page
  * redirects to Stripe, so this policy does not frame those pages. It does
  * allow the scripts the site actually loads: our own, the Cloudflare beacon,
- * the Meta Pixel and Microsoft Clarity (each injected only after consent),
+ * the Meta Pixel, the Google Ads tag, and Microsoft Clarity (each injected
+ * only after consent),
  * pdf.js from jsdelivr, Stripe.js in case a Stripe page is embedded later,
  * and Vercel Web Analytics.
  * The production script is /_vercel/insights/script.js on this origin, and
@@ -15,12 +16,12 @@ export const CONTENT_SECURITY_POLICY = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self' https://ontario-public-jobs-signup.publicjobs.workers.dev",
-  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://static.cloudflareinsights.com https://connect.facebook.net https://cdn.jsdelivr.net https://js.stripe.com https://www.clarity.ms https://*.clarity.ms https://c.bing.com",
+  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://static.cloudflareinsights.com https://connect.facebook.net https://cdn.jsdelivr.net https://js.stripe.com https://www.clarity.ms https://*.clarity.ms https://c.bing.com https://www.googletagmanager.com https://www.googleadservices.com https://www.google.com https://www.google.ca https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://www.facebook.com https://*.facebook.com https://*.stripe.com https://www.clarity.ms https://*.clarity.ms https://c.bing.com",
+  "img-src 'self' data: blob: https://www.facebook.com https://*.facebook.com https://*.stripe.com https://www.clarity.ms https://*.clarity.ms https://c.bing.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.google.com https://www.google.ca",
   "font-src 'self'",
-  "connect-src 'self' https://*.supabase.co https://ontario-public-jobs-signup.publicjobs.workers.dev https://cdn.jsdelivr.net https://www.facebook.com https://*.facebook.com https://connect.facebook.net https://static.cloudflareinsights.com https://cloudflareinsights.com https://api.stripe.com https://*.stripe.com https://www.clarity.ms https://*.clarity.ms https://c.bing.com",
-  "frame-src https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://billing.stripe.com https://*.stripe.com",
+  "connect-src 'self' https://*.supabase.co https://ontario-public-jobs-signup.publicjobs.workers.dev https://cdn.jsdelivr.net https://www.facebook.com https://*.facebook.com https://connect.facebook.net https://static.cloudflareinsights.com https://cloudflareinsights.com https://api.stripe.com https://*.stripe.com https://www.clarity.ms https://*.clarity.ms https://c.bing.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://ad.doubleclick.net https://www.google.com https://www.google.ca",
+  "frame-src https://www.googletagmanager.com https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://billing.stripe.com https://*.stripe.com",
   "worker-src 'self' blob: https://cdn.jsdelivr.net",
 ].join("; ");
 

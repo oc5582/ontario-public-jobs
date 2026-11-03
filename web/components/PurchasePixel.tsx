@@ -1,5 +1,6 @@
 "use client";
 
+import { trackGoogleAdsPurchase } from "@/lib/google-ads";
 import { trackMeta } from "@/lib/meta-pixel";
 import { useEffect, useRef } from "react";
 
@@ -28,6 +29,7 @@ export function PurchasePixel({ event }: { event: PurchaseEvent | null }) {
       { value: event.value, currency: "CAD", content_name: event.contentName },
       event.eventId,
     );
+    trackGoogleAdsPurchase(event.value, event.eventId);
   }, [event]);
   return null;
 }

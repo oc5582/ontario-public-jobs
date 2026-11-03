@@ -67,6 +67,12 @@ else process.env.VERCEL_ENV = savedEnv;
 for (const host of [
   "js.stripe.com",
   "connect.facebook.net",
+  "www.googletagmanager.com",
+  "www.googleadservices.com",
+  "googleads.g.doubleclick.net",
+  "pagead2.googlesyndication.com",
+  "www.google.com",
+  "www.google.ca",
   "static.cloudflareinsights.com",
   "va.vercel-scripts.com",
   "supabase.co",
