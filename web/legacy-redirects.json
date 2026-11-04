@@ -116,10 +116,6 @@
     "to": "/jobs/law-society-of-ontario/legal-assistant-litigation-services-contract/"
   },
   {
-    "from": "/jobs/lso-lso-connects-representative-6-month-contract.html",
-    "to": "/jobs/law-society-of-ontario/lso-connects-representative-6-month-contract/"
-  },
-  {
     "from": "/jobs/lso-manager-building-maintenance-and-operations.html",
     "to": "/jobs/law-society-of-ontario/manager-building-maintenance-and-operations/"
   },
@@ -138,10 +134,6 @@
   {
     "from": "/jobs/oci-director-strategic-partnerships.html",
     "to": "/jobs/ontario-centre-of-innovation/director-strategic-partnerships/"
-  },
-  {
-    "from": "/jobs/oci-director-strategic-programs.html",
-    "to": "/jobs/ontario-centre-of-innovation/director-strategic-programs/"
   },
   {
     "from": "/jobs/oci-program-accounting-analyst.html",
@@ -296,10 +288,6 @@
     "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/candidature-spontan-e/"
   },
   {
-    "from": "/tfo-charg-e-de-strat-gie-et-de-la-performance-youtube.html",
-    "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/charg-e-de-strat-gie-et-de-la-performance-youtube/"
-  },
-  {
     "from": "/tfo-conseiller-re-ventes-publicitaires.html",
     "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/conseiller-re-ventes-publicitaires/"
   },
@@ -328,6 +316,10 @@
     "to": "/jobs/toronto-hydro-corporation/two-2-engineer-toronto-on-ca/"
   },
   {
+    "from": "/toronto-zoo-painter-grade-1.html",
+    "to": "/jobs/toronto-zoo-board-of-management/painter-grade-1/"
+  },
+  {
     "from": "/tpa-maintenance-grade-2-nights.html",
     "to": "/jobs/toronto-parking-authority/maintenance-grade-2-nights/"
   },
@@ -350,9 +342,5 @@
   {
     "from": "/tvo-manager-web-and-mobile-delivery-bilingual.html",
     "to": "/jobs/ontario-educational-communications-authority-tvo/manager-web-mobile-delivery-bilingual/"
-  },
-  {
-    "from": "/wsib-senior-it-business-analyst.html",
-    "to": "/jobs/workplace-safety-and-insurance-board/senior-it-business-analyst/"
   }
 ]
