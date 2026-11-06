@@ -104,10 +104,6 @@
     "to": "/jobs/law-society-of-ontario/director-enterprise-planning-and-performance-permanent/"
   },
   {
-    "from": "/jobs/lso-intermediate-dynamics-365-developer-it-12-month-contract.html",
-    "to": "/jobs/law-society-of-ontario/intermediate-dynamics-365-developer-it-12-month-contract/"
-  },
-  {
     "from": "/jobs/lso-legal-assistant-litigation-services-contract.html",
     "to": "/jobs/law-society-of-ontario/legal-assistant-litigation-services-contract/"
   },
@@ -122,10 +118,6 @@
   {
     "from": "/jobs/metrolinx-rail-traffic-controller-talent-pool.html",
     "to": "/jobs/metrolinx/rail-traffic-controller-talent-pool/"
-  },
-  {
-    "from": "/jobs/oci-director-sector-and-regional-development.html",
-    "to": "/jobs/ontario-centre-of-innovation/director-sector-regional-development/"
   },
   {
     "from": "/jobs/oci-director-strategic-partnerships.html",
@@ -202,6 +194,10 @@
   {
     "from": "/jobs/tssa-inspector-fuels.html",
     "to": "/jobs/technical-standards-and-safety-authority-tssa/inspector-fuels/"
+  },
+  {
+    "from": "/jobs/tvo-manager-major-gifts.html",
+    "to": "/jobs/ontario-educational-communications-authority-tvo/manager-major-gifts/"
   },
   {
     "from": "/jobs/tvo-manager-web-and-mobile-delivery-bilingual.html",
@@ -322,6 +318,10 @@
   {
     "from": "/ttc-formwork-carpenter.html",
     "to": "/jobs/toronto-transit-commission/formwork-carpenter/"
+  },
+  {
+    "from": "/tvo-manager-major-gifts.html",
+    "to": "/jobs/ontario-educational-communications-authority-tvo/manager-major-gifts/"
   },
   {
     "from": "/tvo-manager-web-and-mobile-delivery-bilingual.html",
