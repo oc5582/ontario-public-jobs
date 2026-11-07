@@ -1,5 +1,6 @@
 import { englishList } from "@/lib/format";
 import { listingFacts } from "@/lib/jobs";
+import { LEGIT_PATH } from "@/lib/legit";
 import { LEGAL } from "@/lib/legal-config";
 import { SITE_URL } from "@/lib/site";
 
@@ -31,6 +32,7 @@ Listings are refreshed every weekday. ${facts.fetched} Contact: ${LEGAL.supportE
 - [Membership](${SITE_URL}/pricing/): Prices plus applicable GST/HST, and the cancel and 5-day refund terms.
 - [About](${SITE_URL}/about/): Who runs the site, what it covers, how listings are collected, and how often they are updated.
 - [FAQ](${SITE_URL}/faq/): Answers to common questions about the site.
+- [Is PublicJobs.ca legit?](${SITE_URL}${LEGIT_PATH}): Who runs the site, where the jobs come from, what is free, what a membership costs, and how refunds work.
 - [Sitemap](${SITE_URL}/sitemap.xml): Published URLs. Job pages that are still open, employer pages, and the static pages. Not filtered list URLs.
 
 ## Optional

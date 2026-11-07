@@ -21,6 +21,7 @@ export function SiteFooter() {
         <p>{FOOTER}</p>
         <nav className="footer-nav" aria-label="Footer">
           {link("About", "/about/", "/about")}
+          {link("Is PublicJobs.ca legit?", "/is-publicjobs-ca-legit/", "/is-publicjobs-ca-legit")}
           {link("Frequently asked questions", "/faq/", "/faq")}
           {link("Job stats", "/stats/", "/stats")}
           {link("Guides", "/guides/", "/guides")}

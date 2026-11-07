@@ -9,6 +9,7 @@ function currentKey(pathname: string): string {
   if (path === "/match") return "match";
   if (path === "/employers" || path.startsWith("/employers/")) return "employers";
   if (path === "/about") return "about";
+  if (path === "/is-publicjobs-ca-legit") return "legit";
   if (path === "/faq") return "faq";
   if (path === "/guides" || path.startsWith("/guides/")) return "guides";
   if (path === "/stats") return "stats";
@@ -91,6 +92,7 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
             </button>
             <ul className="nav-more-panel" id="nav-more-panel" hidden={!open}>
               <li>{nav("About", "/about/", "about")}</li>
+              <li>{nav("Is PublicJobs.ca legit?", "/is-publicjobs-ca-legit/", "legit")}</li>
               <li>{nav("FAQ", "/faq/", "faq")}</li>
               <li>{nav("Job stats", "/stats/", "stats")}</li>
               <li>{nav("Guides", "/guides/", "guides")}</li>
