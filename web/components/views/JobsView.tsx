@@ -1,11 +1,8 @@
-import { FilterBar } from "@/components/FilterBar";
-import { JobList } from "@/components/JobList";
 import { JsonLd } from "@/components/JsonLd";
-import { UnlockCard } from "@/components/UnlockCard";
+import { OpeningsBrowser } from "@/components/OpeningsBrowser";
 import type { JobFilters } from "@/lib/filters";
 import { itemListJsonLd } from "@/lib/jsonld";
 import { getFacets, paywallPreview, searchJobs } from "@/lib/jobs";
-import { paywallFiltering, paywallFocus } from "@/lib/paywall";
 import { SITE_URL } from "@/lib/site";
 
 export async function JobsView({
@@ -24,37 +21,24 @@ export async function JobsView({
   ]);
   const shown = result.jobs.length;
   const preview = member || shown >= result.total ? null : await paywallPreview(filters, shown);
-  const intro = member
-    ? `${result.total} current openings from public employers in Toronto and the GTA. You are signed in, so this is the full list.`
-    : `${result.total} current openings from public employers in Toronto and the GTA. Showing the newest ${shown}.`;
 
   return (
     <main>
       <JsonLd data={itemListJsonLd("All job openings", `${SITE_URL}/jobs/`, result.jobs)} />
       <article className="job-page content">
-        <p className="crumb">
-          <a href="/">All openings</a>
-        </p>
-        <h1>All job openings</h1>
-        <section className="description">
-          <p>{intro}</p>
-        </section>
-        <FilterBar action="/jobs/" filters={filters} facets={facets} />
-        {result.total === 0 ? (
-          <p className="listings-empty">No openings match that search.</p>
-        ) : (
-          <JobList jobs={result.jobs} applied={member ? appliedSet : undefined} />
-        )}
-        {member ? null : (
-          <UnlockCard
-            total={result.total}
-            shown={shown}
-            place="jobs"
-            filtering={paywallFiltering(filters)}
-            focus={paywallFocus(filters)}
-            preview={preview}
-          />
-        )}
+        <OpeningsBrowser
+          filters={filters}
+          facets={facets}
+          jobs={result.jobs}
+          total={result.total}
+          member={member}
+          applied={appliedSet}
+          preview={preview}
+          action="/jobs/"
+          place="jobs"
+          titleTag="h1"
+          showCrumb
+        />
       </article>
     </main>
   );

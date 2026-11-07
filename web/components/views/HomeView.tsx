@@ -1,33 +1,42 @@
 import { JsonLd } from "@/components/JsonLd";
-import { JobList } from "@/components/JobList";
 import { MatchPromo } from "@/components/MatchPromo";
+import { OpeningsBrowser } from "@/components/OpeningsBrowser";
 import { SearchField } from "@/components/SearchField";
 import { SignupForm } from "@/components/SignupForm";
-import { UnlockCard } from "@/components/UnlockCard";
 import { emptyFilters, queryFromFilters, type JobFilters } from "@/lib/filters";
 import { countNoun } from "@/lib/format";
 import { alertConsentLabel, alertConsentSender } from "@/lib/legal-copy";
 import { homeJsonLd, itemListJsonLd } from "@/lib/jsonld";
-import { paywallPreview, searchJobs } from "@/lib/jobs";
-import { paywallFiltering, paywallFocus } from "@/lib/paywall";
+import { getFacets, paywallPreview, searchJobs } from "@/lib/jobs";
 import { H1, SITE_URL, SUBHEAD } from "@/lib/site";
 
-export async function HomeView({ filters, member }: { filters: JobFilters; member: boolean }) {
+export async function HomeView({
+  filters,
+  member,
+  applied,
+}: {
+  filters: JobFilters;
+  member: boolean;
+  applied?: Promise<ReadonlySet<string>>;
+}) {
   const filtering = Boolean(queryFromFilters(filters));
-  const result = await searchJobs(filters, member);
+  const [result, facets, appliedSet, unfiltered] = await Promise.all([
+    searchJobs(filters, member),
+    getFacets(),
+    applied ?? Promise.resolve(undefined),
+    filtering ? searchJobs(emptyFilters(), false) : Promise.resolve(null),
+  ]);
   const preview =
     member || result.jobs.length >= result.total
       ? null
       : await paywallPreview(filters, result.jobs.length);
-  const openTotal = filtering ? (await searchJobs(emptyFilters(), false)).total : result.total;
+  const openTotal = unfiltered ? unfiltered.total : result.total;
   const label = countNoun(result.total, filtering);
-  const browseQuery = queryFromFilters(filters);
-  const browseHref = browseQuery ? `/jobs/?${browseQuery}` : "/jobs/";
 
   return (
     <main>
       <JsonLd data={homeJsonLd()} />
-      <JsonLd data={itemListJsonLd("Current openings", `${SITE_URL}/`, result.jobs)} />
+      <JsonLd data={itemListJsonLd("All job openings", `${SITE_URL}/`, result.jobs)} />
       <div className="content">
         <section className="hero" aria-labelledby="page-heading">
           <h1 id="page-heading">{H1}</h1>
@@ -49,33 +58,20 @@ export async function HomeView({ filters, member }: { filters: JobFilters; membe
         <MatchPromo count={openTotal} />
         <SignupForm consent={alertConsentLabel()} sender={alertConsentSender()} />
 
-        <section className="listings" aria-labelledby="listings-heading">
-          <h2 id="listings-heading">Current openings</h2>
-          <p className="listings-index">
-            <a href={browseHref}>
-              Browse all {result.total} {label}
-            </a>
-          </p>
-          {result.total === 0 ? (
-            <p id="listings-empty" className="listings-empty" aria-live="polite">
-              No openings match that search.
-            </p>
-          ) : (
-            <p id="listings-empty" className="listings-empty" aria-live="polite" hidden>
-              No openings match that search.
-            </p>
-          )}
-          <JobList jobs={result.jobs} id="job-list" />
-          {member ? null : (
-            <UnlockCard
-              total={result.total}
-              shown={result.jobs.length}
-              place="home"
-              filtering={paywallFiltering(filters)}
-              focus={paywallFocus(filters)}
-              preview={preview}
-            />
-          )}
+        <section className="job-page home-openings" aria-labelledby="listings-heading">
+          <OpeningsBrowser
+            filters={filters}
+            facets={facets}
+            jobs={result.jobs}
+            total={result.total}
+            member={member}
+            applied={appliedSet}
+            preview={preview}
+            action="/"
+            place="home"
+            titleTag="h2"
+            listId="job-list"
+          />
         </section>
       </div>
     </main>

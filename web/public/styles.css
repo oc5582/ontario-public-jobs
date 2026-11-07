@@ -786,7 +786,8 @@ button[type="submit"]:disabled {
   border-left: 3px solid var(--urgent);
 }
 
-.job-page h1 {
+.job-page h1,
+.home-openings > h2 {
   margin: 0 0 0.4rem;
   max-width: 40rem;
   font-size: clamp(1.75rem, 2vw + 1rem, 2.25rem);
