@@ -1,5 +1,5 @@
 import { CATEGORY_LABELS, TYPE_LABELS } from "@/lib/site";
-import type { JobFilters } from "@/lib/filters";
+import { queryFromFilters, type JobFilters } from "@/lib/filters";
 import type { Facets } from "@/lib/types";
 
 export function FilterBar({
@@ -14,7 +14,7 @@ export function FilterBar({
   lockEmployer?: boolean;
 }) {
   return (
-    <form className="filter-bar" method="get" action={action}>
+    <form className="filter-bar" method="get" action={action} key={queryFromFilters(filters)}>
       <div className="filter-field">
         <label htmlFor="f-q">Search</label>
         <input id="f-q" name="q" type="search" defaultValue={filters.q} autoComplete="off" />
