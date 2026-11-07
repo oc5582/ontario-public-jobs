@@ -224,3 +224,19 @@
   color: var(--muted);
   font-size: 0.9375rem;
 }
+
+.guide-body .guide-chart {
+  margin: 1rem 0 1.25rem;
+}
+
+.guide-body .guide-chart svg {
+  display: block;
+  max-width: 40rem;
+  height: auto;
+}
+
+.guide-body .guide-chart figcaption {
+  margin-top: 0.4rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
