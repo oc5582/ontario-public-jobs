@@ -1,4 +1,5 @@
 import { listingLastmod, sitemapEmployers, sitemapJobs } from "@/lib/jobs";
+import { LEGIT_PATH, LEGIT_PUBLISHED } from "@/lib/legit";
 import { LEGAL } from "@/lib/legal-config";
 import { SITE_URL } from "@/lib/site";
 import { GUIDES, guidePath } from "@/lib/guides";
@@ -26,6 +27,7 @@ export async function GET() {
       const lastmod = LISTING_PATHS.has(path) ? listing : path === "/privacy/" || path === "/terms/" ? LEGAL.termsVersion : "";
       return urlNode(`${SITE_URL}${path}`, lastmod);
     }),
+    urlNode(`${SITE_URL}${LEGIT_PATH}`, LEGIT_PUBLISHED),
     ...employers.map((employer) => urlNode(`${SITE_URL}/employers/${employer.slug}/`, employer.lastmod)),
     ...jobs.map((job) => {
       const path = job.path.endsWith("/") ? job.path : `${job.path}/`;

@@ -210,6 +210,14 @@
   margin-bottom: 0;
 }
 
+.guide-body blockquote cite {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  font-style: normal;
+}
+
 .guide-body ol {
   margin: 0 0 0.9rem;
   padding-left: 1.5rem;
