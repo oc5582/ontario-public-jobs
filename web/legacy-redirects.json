@@ -96,14 +96,6 @@
     "to": "/jobs/law-society-of-ontario/auditor-spot-audit-remote-toronto/"
   },
   {
-    "from": "/jobs/lso-coordinator-examination-accommodation-and-delivery.html",
-    "to": "/jobs/law-society-of-ontario/coordinator-examination-accommodation-and-delivery/"
-  },
-  {
-    "from": "/jobs/lso-director-enterprise-planning-and-performance-permanent.html",
-    "to": "/jobs/law-society-of-ontario/director-enterprise-planning-and-performance-permanent/"
-  },
-  {
     "from": "/jobs/lso-legal-assistant-litigation-services-contract.html",
     "to": "/jobs/law-society-of-ontario/legal-assistant-litigation-services-contract/"
   },
@@ -200,10 +192,6 @@
     "to": "/jobs/ontario-educational-communications-authority-tvo/manager-major-gifts/"
   },
   {
-    "from": "/jobs/tvo-manager-web-and-mobile-delivery-bilingual.html",
-    "to": "/jobs/ontario-educational-communications-authority-tvo/manager-web-mobile-delivery-bilingual/"
-  },
-  {
     "from": "/jobs/workday-cxs-brand-ambassador-on-call-french-services-on-site.html",
     "to": "/jobs/canadian-broadcasting-corporation-cbc-radio-canada/brand-ambassador-on-call-french-services-on-site/"
   },
@@ -284,6 +272,10 @@
     "to": "/jobs/toronto-hydro-corporation/capital-maintenance-program-analyst-12-month-contract-toronto-on-ca/"
   },
   {
+    "from": "/toronto-hydro-capital-and-maintenance-program-analyst-toronto-on-ca.html",
+    "to": "/jobs/toronto-hydro-corporation/capital-maintenance-program-analyst-toronto-on-ca/"
+  },
+  {
     "from": "/toronto-hydro-engineer-toronto-on-ca.html",
     "to": "/jobs/toronto-hydro-corporation/engineer-toronto-on-ca-574239717/"
   },
@@ -322,9 +314,5 @@
   {
     "from": "/tvo-manager-major-gifts.html",
     "to": "/jobs/ontario-educational-communications-authority-tvo/manager-major-gifts/"
-  },
-  {
-    "from": "/tvo-manager-web-and-mobile-delivery-bilingual.html",
-    "to": "/jobs/ontario-educational-communications-authority-tvo/manager-web-mobile-delivery-bilingual/"
   }
 ]
