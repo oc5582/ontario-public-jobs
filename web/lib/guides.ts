@@ -19,6 +19,15 @@ export type Guide = {
 /** Newest first. Each body lives in content/guides/{slug}.html, without the H1. */
 export const GUIDES: Guide[] = [
   {
+    slug: "how-to-get-a-job-at-the-city-of-burlington",
+    title: "How to Get a Job at the City of Burlington: Hiring Steps, Pay and Tips",
+    seoTitle: "How to Get a Job at the City of Burlington",
+    description:
+      "How City of Burlington hiring works: applying on Workday, the panel interview, tests and police checks, current pay ranges, unions and the OMERS pension.",
+    published: "2026-11-12",
+    updated: "2026-11-12",
+  },
+  {
     slug: "gta-public-sector-jobs-report-november-2026",
     title: "GTA Public-Sector Jobs Report, November 2026",
     seoTitle: "GTA Public-Sector Jobs Report: November 2026",
