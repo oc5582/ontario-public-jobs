@@ -19,6 +19,15 @@ export type Guide = {
 /** Newest first. Each body lives in content/guides/{slug}.html, without the H1. */
 export const GUIDES: Guide[] = [
   {
+    slug: "how-csis-hiring-works",
+    title: "How CSIS Hiring Works: Security Clearance, Polygraph and Timeline",
+    seoTitle: "How CSIS Hiring Works: Clearance, Polygraph, Timeline",
+    description:
+      "How CSIS hires: 10 steps, the Enhanced Top Secret clearance and polygraph, a 6 to 18 month timeline, pay levels and Toronto roles.",
+    published: "2026-11-13",
+    updated: "2026-11-13",
+  },
+  {
     slug: "how-to-get-a-job-at-the-city-of-burlington",
     title: "How to Get a Job at the City of Burlington: Hiring Steps, Pay and Tips",
     seoTitle: "How to Get a Job at the City of Burlington",
