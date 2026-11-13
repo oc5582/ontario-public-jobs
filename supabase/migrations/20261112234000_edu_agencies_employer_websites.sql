@@ -1,0 +1,73 @@
+-- GTA universities/colleges + public agencies (branch scrapers/gta-edu-agencies): official homepages.
+-- Data-only, no schema change. Each homepage was requested on 2026-11-12 (America/Toronto): 56 of 61 returned 200;
+-- the rest answer non-browser clients with a bot-wall 403 or were unreachable from the box (see employer_websites_checked.json).
+-- The importer creates employers rows (slug, name) on first import, so run this AFTER the first import that includes
+-- these employers. Safe to re-run; only fills empty websites.
+-- NOT APPLIED and kept out of supabase/migrations on purpose so no CI/preview applies it.
+-- At go-live copy to supabase/migrations/<ts>_edu_agencies_employer_websites.sql.
+
+update public.employers as e set website = v.website, updated_at = now()
+from (values
+  ('alectra-utilities', 'https://alectrautilities.com/'),
+  ('algoma-university-brampton-campus', 'https://algomau.ca/'),
+  ('brampton-library', 'https://www.bramptonlibrary.ca/'),
+  ('burlington-hydro', 'https://www.burlingtonhydro.com/'),
+  ('burlington-public-library', 'https://www.bpl.on.ca/'),
+  ('catholic-children-s-aid-society-of-toronto', 'https://www.torontoccas.org/'),
+  ('centennial-college', 'https://www.centennialcollege.ca/'),
+  ('central-lake-ontario-conservation-authority', 'https://www.cloca.com/'),
+  ('clarington-library-museums-archives', 'https://www.cplma.ca/'),
+  ('conservation-halton', 'https://www.conservationhalton.ca/'),
+  ('credit-valley-conservation', 'https://cvc.ca/'),
+  ('durham-children-s-aid-society', 'https://www.durhamcas.ca/'),
+  ('durham-college', 'https://durhamcollege.ca/'),
+  ('electrical-safety-authority', 'https://esasafe.com/'),
+  ('elexicon-energy', 'https://elexiconenergy.com/'),
+  ('george-brown-polytechnic', 'https://www.georgebrown.ca/'),
+  ('humber-polytechnic', 'https://humber.ca/'),
+  ('jewish-family-child-service-of-greater-toronto', 'https://www.jfandcs.com/'),
+  ('lake-simcoe-region-conservation-authority', 'https://www.lsrca.on.ca/'),
+  ('markham-public-library', 'https://markhampubliclibrary.ca/'),
+  ('milton-hydro', 'https://www.miltonhydro.com/'),
+  ('municipal-property-assessment-corporation-mpac', 'https://www.mpac.ca/'),
+  ('native-child-and-family-services-of-toronto', 'https://nativechild.org/'),
+  ('newmarket-tay-power-distribution', 'https://www.ntpower.ca/'),
+  ('oakville-hydro', 'https://www.oakvillehydro.com/'),
+  ('oakville-public-library', 'https://opl.ca/'),
+  ('ocad-university', 'https://www.ocadu.ca/'),
+  ('office-of-the-auditor-general-of-ontario', 'https://www.auditor.on.ca/'),
+  ('omers', 'https://www.omers.com/'),
+  ('ontario-arts-council', 'https://www.arts.on.ca/'),
+  ('ontario-clean-water-agency', 'https://www.ocwa.com/'),
+  ('ontario-college-of-teachers', 'https://www.oct.ca/'),
+  ('ontario-health-athome', 'https://ontariohealthathome.ca/'),
+  ('ontario-motor-vehicle-industry-council-omvic', 'https://www.omvic.ca/'),
+  ('ontario-pension-board', 'https://www.opb.ca/'),
+  ('ontario-teachers-pension-plan', 'https://www.otpp.com/'),
+  ('ontario-tech-university', 'https://ontariotechu.ca/'),
+  ('optrust', 'https://www.optrust.com/'),
+  ('oshawa-power', 'https://www.oshawapower.ca/'),
+  ('peel-children-s-aid-society', 'https://www.peelcas.org/'),
+  ('peel-regional-police', 'https://www.peelpolice.ca/'),
+  ('portstoronto', 'https://www.portstoronto.com/'),
+  ('real-estate-council-of-ontario-reco', 'https://www.reco.on.ca/'),
+  ('regional-municipality-of-peel', 'https://www.peelregion.ca/'),
+  ('seneca-polytechnic', 'https://www.senecapolytechnic.ca/'),
+  ('sheridan-college', 'https://www.sheridancollege.ca/'),
+  ('supply-ontario', 'https://www.supplyontario.ca/'),
+  ('tarion-warranty-corporation', 'https://www.tarion.com/'),
+  ('toronto-metropolitan-university', 'https://www.torontomu.ca/'),
+  ('toronto-seniors-housing-corporation', 'https://www.torontoseniorshousing.ca/'),
+  ('trent-university-durham-gta', 'https://www.trentu.ca/durham/'),
+  ('tyndale-university', 'https://www.tyndale.ca/'),
+  ('universit-de-l-ontario-fran-ais', 'https://uontario.ca/'),
+  ('university-of-toronto', 'https://www.utoronto.ca/'),
+  ('vaughan-public-libraries', 'https://www.vaughanpl.info/'),
+  ('victoria-university-in-the-university-of-toronto', 'https://www.vicu.utoronto.ca/'),
+  ('whitchurch-stouffville-public-library', 'https://wsplibrary.ca/'),
+  ('wilfrid-laurier-university-milton-campus', 'https://www.wlu.ca/'),
+  ('york-region-children-s-aid-society', 'https://www.yorkcas.org/'),
+  ('york-regional-police', 'https://www.yrp.ca/'),
+  ('york-university', 'https://www.yorku.ca/')
+) as v(slug, website)
+where e.slug = v.slug and (e.website is null or e.website = '');

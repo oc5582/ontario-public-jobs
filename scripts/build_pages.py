@@ -76,6 +76,27 @@ SEARCH_ALIASES = {
     "Toronto Transit Commission": "TTC",
     "Workplace Safety and Insurance Appeals Tribunal": "WSIAT",
     "Workplace Safety and Insurance Board": "WSIB",
+    # GTA hospitals (scrapers/gta-hospitals): names seekers type
+    "Humber River Health": "HRH Humber River Hospital",
+    "Scarborough Health Network": "SHN",
+    "Sinai Health": "Mount Sinai Hospital",
+    "Trillium Health Partners": "THP Credit Valley Mississauga Hospital",
+    "Unity Health Toronto": "St. Michael's Hospital St. Joseph's Health Centre Providence",
+    "William Osler Health System": "Osler Brampton Civic Etobicoke General",
+    "Women's College Hospital": "WCH",
+    "Oak Valley Health": "Markham Stouffville Hospital",
+    "Halton Healthcare": "Oakville Trafalgar Milton District Georgetown Hospital",
+    "Holland Bloorview Kids Rehabilitation Hospital": "Holland Bloorview",
+    # GTA universities/colleges + agencies (scrapers/gta-edu-agencies)
+    "University of Toronto": "UofT U of T",
+    "Toronto Metropolitan University": "TMU Ryerson",
+    "York University": "YorkU",
+    "Ontario Teachers' Pension Plan": "OTPP Teachers",
+    "Ontario Pension Board": "OPB",
+    "Ontario Health atHome": "home care",
+    "Regional Municipality of Peel": "Peel Region",
+    "Electrical Safety Authority": "ESA",
+    "Office of the Auditor General of Ontario": "OAGO",
 }
 
 SIGNUP_HEADING_DESKTOP = "Or get new openings by email"

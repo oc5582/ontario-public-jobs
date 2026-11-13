@@ -227,6 +227,14 @@ def format_descriptions(texts: list[str]) -> list[dict]:
     return json.loads(proc.stdout)
 
 
+def home_hidden(job: dict) -> bool:
+    """Feed flag set by sources that must not fill the default homepage's free list."""
+    value = job.get("home_hidden")
+    if isinstance(value, str):
+        return value.strip().lower() in ("1", "true", "yes")
+    return bool(value)
+
+
 def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
     today = bp.today_toronto()
     with conn.cursor() as cur:
@@ -278,7 +286,7 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
                   salary, salary_annual_min, salary_annual_max, salary_currency,
                   salary_unit, department, description, paragraphs, description_html,
                   apply_url, tier, source, fetched_at, external_id, category,
-                  search_alias, jobposting, removed_at, updated_at
+                  search_alias, jobposting, home_hidden, removed_at, updated_at
                 ) values (
                   %s, %s, %s, %s, %s, %s,
                   %s, %s, %s, %s, %s,
@@ -286,7 +294,7 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
                   %s, %s, %s, %s,
                   %s, %s, %s, %s, %s,
                   %s, %s, %s, %s, %s, %s,
-                  %s, %s, null, now()
+                  %s, %s, %s, null, now()
                 )
                 on conflict (path) do update set
                   employer_id = excluded.employer_id,
@@ -321,6 +329,7 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
                   category = excluded.category,
                   search_alias = excluded.search_alias,
                   jobposting = excluded.jobposting,
+                  home_hidden = excluded.home_hidden,
                   removed_at = null,
                   updated_at = now()
                 """,
@@ -358,6 +367,7 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
                     category_for(job),
                     alias,
                     Json(posting) if posting else None,
+                    home_hidden(job),
                 ),
             )
 

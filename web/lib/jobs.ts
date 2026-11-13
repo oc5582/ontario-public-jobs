@@ -33,6 +33,20 @@ export const EFFECTIVE_POSTED = "coalesce(j.posted_date, j.first_seen_at::date)"
 /** Newest effective posted date, then fetch time, then title. Every job list uses this. */
 export const JOB_ORDER = `${EFFECTIVE_POSTED} desc nulls last, j.fetched_at desc nulls last, j.title asc`;
 
+/**
+ * The default page (no keyword, no filter) for a non-member: jobs whose feed source set
+ * `home_hidden` (GTA hospitals, universities/colleges, agencies added 2026-11-12) sort after every
+ * other open job, so they never fill the free list or the locked teaser rows. They still count in
+ * the total and show normally once any keyword or filter is used, on employer pages and for members.
+ */
+export function freeDefaultList(filters: JobFilters, member: boolean): boolean {
+  return !member && !hasFilters(filters);
+}
+
+function listOrder(filters: JobFilters, member: boolean): string {
+  return freeDefaultList(filters, member) ? `j.home_hidden asc, ${JOB_ORDER}` : JOB_ORDER;
+}
+
 type ListRow = {
   title: string;
   employer_name: string;
@@ -127,7 +141,7 @@ async function searchJobsUncached(
      from jobs j
      join employers e on e.id = j.employer_id
      where ${where}
-     order by ${JOB_ORDER}
+     order by ${listOrder(filters, member || uncapped)}
      ${limit}`,
     params,
   );
@@ -175,7 +189,7 @@ async function paywallPreviewUncached(filters: JobFilters, offset: number): Prom
        ) as teasers
      from (
        select ${PAYWALL_TEASER_SELECT},
-              row_number() over (order by ${JOB_ORDER}) as rn
+              row_number() over (order by ${listOrder(filters, false)}) as rn
        from jobs j
        join employers e on e.id = j.employer_id
        where ${where}
