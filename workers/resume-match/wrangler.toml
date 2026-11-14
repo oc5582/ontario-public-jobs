@@ -12,6 +12,10 @@ enabled = true
 [ai]
 binding = "AI"
 
+# Optional vars. Leave both unset in production.
+# MATCH_MONTHLY_CAP_USD = "10"   # estimated AI spend cap for the UTC month. Default in code is 10.
+# MATCH_CANDIDATES = "500"       # jobs the SQL pass sends to the model. Default in code is 500.
+
 [[kv_namespaces]]
 binding = "USAGE"          # preview_html page + optional config_model / config_batch overrides
 id = "fdff87dd6046498092ba6d5c905aa521"

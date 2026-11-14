@@ -206,7 +206,7 @@ Paid members can save one resume on `/account/` (PDF, Word, or paste; the file s
 
 Saturday crons `GET /api/cron/weekly-matches/` (`CRON_SECRET`, 13:00–16:00 UTC, which is Saturday morning in Toronto) run a tighter match than `/match/`: Worker `match_mode: "tight"` when that source is deployed, then the app keeps only `strong` hits whose reason is at least 8 words, capped at 15. `maybe` fits are dropped. Zero strong matches do not send email. The email is a short note plus a link to `/account/#weekly-matches`, with an unsubscribe link that turns the checkbox off. `?dry_run=1` plans the run and returns the email text without calling the Worker or sending mail.
 
-The job does not write `resume_match_usage`, so it does not use the 20-a-day member allowance. Calls are one at a time. The Worker’s $10 monthly cap and daily cap still apply. This job also stops for the rest of that Saturday once its own estimated spend for the UTC month reaches $4, and it logs `{ "event": "weekly_match_skip" }`. Apply `supabase/migrations/20261024120000_weekly_resume_matches.sql` before the first run. Deleting an account deletes the saved resume and the weekly list.
+The job does not write `resume_match_usage`, so it does not use the 20-a-day member allowance. Calls are one at a time. The Worker’s monthly cap (default $10) and daily cap still apply. This job also stops for the rest of that Saturday once its own estimated spend for the UTC month reaches $4, and it logs `{ "event": "weekly_match_skip" }`. Apply `supabase/migrations/20261024120000_weekly_resume_matches.sql` before the first run. Deleting an account deletes the saved resume and the weekly list.
 
 ```bash
 node --import ./scripts/register-ts.mjs --experimental-strip-types scripts/test_weekly_match.mts
