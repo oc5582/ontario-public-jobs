@@ -21,7 +21,7 @@ import { SITE_URL } from "./site";
  *    generic ones ("Your experience matches this role.").
  * 3. Keep at most WEEKLY_RESULT_CAP hits, in the order the Worker returned them.
  *
- * Cost: the Worker still enforces its $10 USD monthly cap and its daily cap.
+ * Cost: the Worker still enforces its monthly AI spend cap (default $10 USD) and its daily cap.
  * This job also stops for the rest of the Toronto Saturday once estimated
  * weekly spend for the UTC month reaches WEEKLY_SPEND_SLICE_USD, so on-demand
  * matching keeps the rest of the budget. Calls are one at a time. A paused or

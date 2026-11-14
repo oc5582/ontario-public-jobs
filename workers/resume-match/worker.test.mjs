@@ -14,6 +14,7 @@ const listings = Array.from({ length: 11 }, (_, i) => ({
   path: `jobs/city-of-toronto/clerk-${i + 1}/`,
 }));
 const indexSecrets = [];
+const indexBodies = [];
 
 const rows = new Map();
 let mode = "ok";
@@ -61,11 +62,12 @@ function createDb() {
 globalThis.caches = { default: { async match() { return null; }, async put() {} } };
 globalThis.fetch = async (url, init = {}) => {
   if (mode === "crash") return new Response("no", { status: 500 });
-  if (String(url).endsWith("/rest/v1/rpc/match_index")) {
-    const got = JSON.parse(init.body).p_secret;
-    indexSecrets.push(got);
-    if (got !== SECRET || !new Headers(init.headers).get("apikey")) return new Response("{}", { status: 401 });
-    return new Response(JSON.stringify(listings), { status: 200 });
+  if (String(url).includes("/rest/v1/rpc/match_candidates")) {
+    const got = JSON.parse(init.body);
+    indexSecrets.push(got.p_secret);
+    indexBodies.push(got);
+    if (got.p_secret !== SECRET || !new Headers(init.headers).get("apikey")) return new Response("{}", { status: 401 });
+    return new Response(JSON.stringify({ open_count: 3569, jobs: listings }), { status: 200 });
   }
   throw new Error(`unexpected fetch ${url}`);
 };
@@ -170,6 +172,8 @@ const ipMsg = "Resume matching from this network is busy today. Please try again
     assert.equal(result.json.ok, true);
     assert.equal(result.json.remaining, 3 - i);
     assert.equal(result.json.partial, false);
+    assert.equal(result.json.jobs_checked, 3569);
+    assert.equal(result.json.meta.candidates, listings.length);
   }
   assert.equal(signups.length, signupBefore + 3);
   const blocked = await direct("lifetime@publicjobs.test", "203.0.113.80");
@@ -212,6 +216,30 @@ const ipMsg = "Resume matching from this network is busy today. Please try again
   assert.equal(result.status, 503);
   assert.match(result.json.error, /paused/i);
   assert.equal(signups.length, before);
+  rows.delete(`spend:${month}`);
+}
+
+// A bad override keeps the $10 default. A higher override does not lower the cap. A lower one is honored.
+{
+  const month = new Date().toISOString().slice(0, 7);
+  rows.set(`spend:${month}`, 10 * 1e6);
+  const fallback = await call(
+    { email: "cap-nope@publicjobs.test", casl_consent: "yes", resume_text: resume },
+    { ip: "203.0.113.96" },
+    { MATCH_MONTHLY_CAP_USD: "nope" },
+  );
+  assert.equal(fallback.status, 503);
+  assert.match(fallback.json.error, /paused/i);
+  const raised = await call({ resume_text: resume }, { trusted: true, ip: "198.51.100.20" }, { MATCH_MONTHLY_CAP_USD: "25" });
+  assert.equal(raised.status, 200, JSON.stringify(raised.json));
+  rows.set(`spend:${month}`, 1e6);
+  const paused = await call(
+    { email: "cap-one@publicjobs.test", casl_consent: "yes", resume_text: resume },
+    { ip: "203.0.113.98" },
+    { MATCH_MONTHLY_CAP_USD: "1" },
+  );
+  assert.equal(paused.status, 503);
+  assert.match(paused.json.error, /paused/i);
   rows.delete(`spend:${month}`);
 }
 
@@ -306,8 +334,19 @@ const ipMsg = "Resume matching from this network is busy today. Please try again
   assert.equal(lastSystem.includes("Be strict"), false);
 }
 
-// The job index comes from the Next.js site and is fetched with the Worker's secret.
+// The candidate list is scored in SQL with the Worker's secret, and the limit is clamped.
 assert.ok(indexSecrets.length > 0);
 assert.ok(indexSecrets.every((got) => got === SECRET));
+assert.ok(indexBodies.every((body) => body.p_limit === 500 && String(body.p_resume || "").includes("Customer service")));
+{
+  const before = indexBodies.length;
+  const clamped = await call({ resume_text: resume }, { trusted: true, ip: "198.51.100.41" }, { MATCH_CANDIDATES: "12" });
+  assert.equal(clamped.status, 200, JSON.stringify(clamped.json));
+  assert.equal(indexBodies.at(-1).p_limit, 50);
+  const wide = await call({ resume_text: resume }, { trusted: true, ip: "198.51.100.42" }, { MATCH_CANDIDATES: "5000" });
+  assert.equal(wide.status, 200);
+  assert.equal(indexBodies.at(-1).p_limit, 800);
+  assert.ok(indexBodies.length >= before + 2);
+}
 
 console.log("worker tests passed");

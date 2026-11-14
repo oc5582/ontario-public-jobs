@@ -2,10 +2,13 @@
 // Resume text is used only in memory to call the AI model. It is never stored or logged.
 
 const SITE = "https://publicjobs.ca";
-// Job index: Supabase function public.match_index (supabase/migrations/20261011180000_match_index.sql).
-// The old static /data/listings.json is gone since the switch to Next.js.
-// The publishable key is public; the function only answers with MATCH_TRUSTED_SECRET.
-const INDEX_URL = "https://qshleqzngbstqnthhxzw.supabase.co/rest/v1/rpc/match_index";
+// Candidates: Supabase function public.match_candidates
+// (supabase/migrations/20261114190000_match_candidates.sql). It scores the resume
+// against every current opening and returns a few hundred jobs. The full dump
+// (match_index) stays on the smaller list so the Worker that is live today does
+// not time out. The publishable key is public; the function only answers with
+// MATCH_TRUSTED_SECRET.
+const CANDIDATES_URL = "https://qshleqzngbstqnthhxzw.supabase.co/rest/v1/rpc/match_candidates";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_NsmTzFLw9U4N2ntJIOG6Cw_Qd4tSnTR";
 const DEFAULT_MODEL = "@cf/openai/gpt-oss-120b";
 // Cloudflare published Workers AI prices (USD). Used to estimate spend for the monthly cap.
@@ -16,14 +19,14 @@ const TOKEN_PRICES = {
 };
 
 // ---- Config ----
-const MONTHLY_SPEND_CAP_USD = 10; // stop matching once this month's estimated AI spend reaches this
+const MONTHLY_SPEND_CAP_USD = 10; // default; override with MATCH_MONTHLY_CAP_USD. Do not change this number.
+const DEFAULT_CANDIDATES = 500;   // jobs sent to the model after the SQL pass. Override with MATCH_CANDIDATES.
 const USES_PER_PERSON = 3;        // lifetime, per normalized email, direct callers only
 const IP_USES_PER_DAY = 10;       // per IP per UTC day, direct callers only. Not a lifetime cap.
 const DAILY_CAP = 300;            // all users, per UTC day
 const MAX_RESUME_CHARS = 15000;
 const MAX_BODY = 40000;
 const BATCH_SIZE = 32; // jobs per AI call; calls run in parallel
-const INDEX_TTL_SECONDS = 3600;
 
 const ALLOWED_ORIGINS = new Set([
   "https://publicjobs.ca",
@@ -95,6 +98,20 @@ function logLimit(limit) {
 function intEnv(env, name, fallback) {
   const n = parseInt(env && env[name], 10);
   return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+// Monthly cap in USD. Unset, blank, or not a positive number keeps the default.
+export function monthlySpendCapUsd(env) {
+  const raw = env && env.MATCH_MONTHLY_CAP_USD;
+  if (raw == null || String(raw).trim() === "") return MONTHLY_SPEND_CAP_USD;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : MONTHLY_SPEND_CAP_USD;
+}
+
+function candidateLimit(env) {
+  const n = parseInt(env && env.MATCH_CANDIDATES, 10);
+  if (!Number.isFinite(n) || n <= 0) return DEFAULT_CANDIDATES;
+  return Math.min(800, Math.max(50, n));
 }
 
 // Server-side callers (the Next.js app) send this header. It skips the per-email
@@ -203,28 +220,26 @@ function summarize(desc) {
   return s;
 }
 
-let memIndex = null;
-async function getIndex(ctx, env) {
-  if (memIndex && Date.now() - memIndex.at < INDEX_TTL_SECONDS * 1000) return memIndex.jobs;
-  const cache = caches.default;
-  const key = new Request("https://publicjobs-resume-match.internal/index-v3");
-  const hit = await cache.match(key);
-  if (hit) {
-    const jobs = await hit.json();
-    memIndex = { at: Date.now(), jobs };
-    return jobs;
-  }
+// Resume-specific, so this is not cached. The SQL pass already read every open job.
+async function getCandidates(env, resume) {
   const secret = String((env && env.MATCH_TRUSTED_SECRET) || "");
   if (!secret) throw new Error("index secret missing");
-  const res = await fetch(INDEX_URL, {
+  const url = String((env && env.MATCH_CANDIDATES_URL) || CANDIDATES_URL);
+  const key = String((env && env.SUPABASE_PUBLISHABLE_KEY) || SUPABASE_PUBLISHABLE_KEY);
+  const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json", apikey: SUPABASE_PUBLISHABLE_KEY },
-    body: JSON.stringify({ p_secret: secret }),
+    headers: { "Content-Type": "application/json", Accept: "application/json", apikey: key },
+    body: JSON.stringify({ p_secret: secret, p_resume: resume, p_limit: candidateLimit(env) }),
   });
   if (!res.ok) throw new Error(`index ${res.status}`);
-  const raw = await res.json();
-  if (!Array.isArray(raw) || !raw.length) throw new Error("index empty");
-  const sorted = sortJobs(raw);
+  let payload = await res.json();
+  if (typeof payload === "string") {
+    try { payload = JSON.parse(payload); } catch { payload = null; }
+  }
+  const rows = payload && Array.isArray(payload.jobs) ? payload.jobs : null;
+  const openCount = payload ? Number(payload.open_count) : NaN;
+  if (!rows || !Number.isFinite(openCount)) throw new Error("index empty");
+  const sorted = sortJobs(rows);
   // Rows carry the site path from the database. Older feeds without it fall back to the build_pages.py rules.
   if (sorted.some((j) => !j.path)) assignPaths(sorted);
   const jobs = sorted.map((j, i) => ({
@@ -237,10 +252,7 @@ async function getIndex(ctx, env) {
     summary: summarize(j.description),
     url: `${SITE}/${String(j.path || j._path).replace(/^\/+/, "")}`,
   }));
-  const body = JSON.stringify(jobs);
-  ctx.waitUntil(cache.put(key, new Response(body, { headers: { "Cache-Control": `max-age=${INDEX_TTL_SECONDS}` } })));
-  memIndex = { at: Date.now(), jobs };
-  return jobs;
+  return { jobs, openCount };
 }
 
 // ---- AI matching ----
@@ -411,7 +423,7 @@ async function handleMatch(request, env, ctx, origin) {
 
   try {
     // Limits first. Do not subscribe, and do not take a use, when a cap already blocks the match.
-    if ((await readCount(env, spendKey)) >= MONTHLY_SPEND_CAP_USD * 1e6) {
+    if ((await readCount(env, spendKey)) >= Math.round(monthlySpendCapUsd(env) * 1e6)) {
       logLimit("spend");
       return fail("paused", 503, origin);
     }
@@ -444,7 +456,7 @@ async function handleMatch(request, env, ctx, origin) {
       }
     }
 
-    const jobs = await getIndex(ctx, env);
+    const { jobs, openCount } = await getCandidates(env, resume);
     const [cfgModel, cfgBatch] = await Promise.all([env.USAGE.get("config_model"), env.USAGE.get("config_batch")]);
     const model = cfgModel || DEFAULT_MODEL;
     const batchSize = Math.min(150, Math.max(10, parseInt(cfgBatch || "", 10) || BATCH_SIZE));
@@ -489,10 +501,10 @@ async function handleMatch(request, env, ctx, origin) {
     return json({
       ok: true,
       strong, maybe,
-      jobs_checked: jobs.length,
+      jobs_checked: openCount,
       remaining: trusted ? null : Math.max(0, USES_PER_PERSON - personUses - 1),
       partial: false,
-      meta: { ms: Date.now() - t0, model, batches: batches.length, input_tokens: inTok, output_tokens: outTok, est_cost_usd: costMicro / 1e6 },
+      meta: { ms: Date.now() - t0, model, batches: batches.length, candidates: jobs.length, open_jobs: openCount, input_tokens: inTok, output_tokens: outTok, est_cost_usd: costMicro / 1e6 },
     }, 200, origin);
   } catch (err) {
     console.log(JSON.stringify({ event: "resume_match_failed", reason: "crash", message: err && err.message ? err.message.slice(0, 120) : "error" }));
