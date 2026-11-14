@@ -17,6 +17,11 @@ function one(value: string | string[] | undefined): string {
   return (raw || "").trim();
 }
 
+/** Query text stored in the URL and sent to search. Trims and caps the length. */
+export function searchQuery(value: string): string {
+  return value.trim().slice(0, 120);
+}
+
 function money(value: string): number | null {
   if (!value) return null;
   const number = Number(value.replace(/,/g, ""));
@@ -44,7 +49,7 @@ export function filtersFromSearch(
   const posted = one(params.posted_since);
   const closes = one(params.closes_by);
   return {
-    q: one(params.q).slice(0, 120),
+    q: searchQuery(one(params.q)),
     location: one(params.location).slice(0, 80),
     employer: one(params.employer).slice(0, 120),
     category: one(params.category).slice(0, 80),
