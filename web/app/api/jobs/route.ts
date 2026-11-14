@@ -1,6 +1,6 @@
 import { getViewer } from "@/lib/auth";
 import { filtersFromSearch, pageParam } from "@/lib/filters";
-import { searchJobs } from "@/lib/jobs";
+import { paywallPreview, searchJobs } from "@/lib/jobs";
 
 export const dynamic = "force-dynamic";
 
@@ -15,10 +15,14 @@ export async function GET(request: Request) {
     title: job.title,
     employer: job.employer,
     location: job.location,
+    location_places: job.location_places,
     closing: job.closing,
     type: job.type,
     href: job.href,
+    path: job.path,
   }));
+  const preview =
+    viewer.isMember || jobs.length >= result.total ? null : await paywallPreview(filters, jobs.length);
   return Response.json(
     {
       jobs,
@@ -26,6 +30,7 @@ export async function GET(request: Request) {
       page: viewer.isMember ? page : 1,
       pageIgnored: !viewer.isMember && page > 1,
       member: viewer.isMember,
+      preview,
     },
     {
       headers: {

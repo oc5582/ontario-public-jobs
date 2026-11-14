@@ -14,7 +14,14 @@ export function FilterBar({
   lockEmployer?: boolean;
 }) {
   return (
-    <form className="filter-bar" method="get" action={action} key={queryFromFilters(filters)}>
+    <form
+      className="filter-bar"
+      method="get"
+      action={action}
+      // Leave q out of the key. The title search updates that field in place,
+      // and a new key would wipe location and salary choices that are not submitted yet.
+      key={queryFromFilters({ ...filters, q: "" })}
+    >
       <div className="filter-field">
         <label htmlFor="f-q">Search</label>
         <input id="f-q" name="q" type="search" defaultValue={filters.q} autoComplete="off" />
