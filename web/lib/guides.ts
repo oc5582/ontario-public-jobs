@@ -19,6 +19,15 @@ export type Guide = {
 /** Newest first. Each body lives in content/guides/{slug}.html, without the H1. */
 export const GUIDES: Guide[] = [
   {
+    slug: "how-the-ontario-public-service-hires",
+    title: "How the Ontario Public Service Hires: Job Ads, Interviews and Security Checks",
+    seoTitle: "How the Ontario Public Service Hires: Steps and Checks",
+    description:
+      "How Ontario Public Service hiring works: the 5 steps, the 5-page application limit, scored panel interviews, security screening checks and how pay is posted.",
+    published: "2026-11-16",
+    updated: "2026-11-16",
+  },
+  {
     slug: "how-csis-hiring-works",
     title: "How CSIS Hiring Works: Security Clearance, Polygraph and Timeline",
     seoTitle: "How CSIS Hiring Works: Clearance, Polygraph, Timeline",
