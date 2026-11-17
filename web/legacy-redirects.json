@@ -1,9 +1,5 @@
 [
   {
-    "from": "/jobs/agco-senior-human-resources-business-partner.html",
-    "to": "/jobs/alcohol-and-gaming-commission-of-ontario-agco/senior-human-resources-business-partner/"
-  },
-  {
     "from": "/jobs/cbc-brand-ambassador-on-call-french-services-on-site.html",
     "to": "/jobs/canadian-broadcasting-corporation-cbc-radio-canada/brand-ambassador-on-call-french-services-on-site/"
   },
@@ -76,6 +72,10 @@
     "to": "/jobs/independent-electricity-system-operator-ieso/specialist-solutions-oracle-fusion-specialist/"
   },
   {
+    "from": "/jobs/imco-associate-investment-risk-research-and-analytics.html",
+    "to": "/jobs/investment-management-corporation-of-ontario-imco/associate-investment-risk-research-and-analytics/"
+  },
+  {
     "from": "/jobs/imco-associate-portfolio-manager-public-credit.html",
     "to": "/jobs/investment-management-corporation-of-ontario-imco/associate-portfolio-manager-public-credit/"
   },
@@ -90,6 +90,10 @@
   {
     "from": "/jobs/metrolinx-310t-mechanic-streetsville-various-shifts-44-04-hourly-pool.html",
     "to": "/jobs/metrolinx/310t-mechanic-streetsville-various-shifts-44-04-hourly-pool/"
+  },
+  {
+    "from": "/jobs/metrolinx-rail-traffic-controller-talent-pool.html",
+    "to": "/jobs/metrolinx/rail-traffic-controller-talent-pool/"
   },
   {
     "from": "/jobs/oci-director-strategic-partnerships.html",
@@ -170,6 +174,10 @@
   {
     "from": "/jobs/tvo-manager-major-gifts.html",
     "to": "/jobs/ontario-educational-communications-authority-tvo/manager-major-gifts/"
+  },
+  {
+    "from": "/jobs/workday-cxs-associate-investment-risk-research-and-analytics.html",
+    "to": "/jobs/investment-management-corporation-of-ontario-imco/associate-investment-risk-research-and-analytics/"
   },
   {
     "from": "/jobs/workday-cxs-associate-portfolio-manager-public-credit.html",
