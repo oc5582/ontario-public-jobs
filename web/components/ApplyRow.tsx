@@ -1,3 +1,4 @@
+import { SeeSimilarLink } from "@/components/SeeSimilarLink";
 import type { ReactNode } from "react";
 
 const APPLY_NOTE =
@@ -8,9 +9,12 @@ export function ApplyRow({ url, extra }: { url: string; extra?: ReactNode }) {
   return (
     <div className="apply-row">
       {url ? (
-        <a className="apply-btn" href={url} target="_blank" rel="noopener noreferrer">
-          Apply on employer site
-        </a>
+        <div className="apply-actions">
+          <a className="apply-btn" href={url} target="_blank" rel="noopener noreferrer">
+            Apply on employer site
+          </a>
+          <SeeSimilarLink />
+        </div>
       ) : null}
       {extra}
       {url ? <p className="apply-note">{APPLY_NOTE}</p> : null}

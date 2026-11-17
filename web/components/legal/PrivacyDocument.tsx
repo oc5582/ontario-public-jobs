@@ -206,8 +206,9 @@ export function PrivacyDocument() {
         We use Vercel Web Analytics. It does not set a cookie. It records page views and these events: signup (first
         sign-in, and whether it was email or Google), paywall_view (which page showed the membership card),
         pricing_view, checkout_start (which plan), purchase (which plan), match_email (an email was entered for a free
-        match, and whether the alert box was checked), match_run (no account, free account or membership), and
-        mark_applied (whether a member marked a job applied or undid it). Those events do not include your name, email
+        match, and whether the alert box was checked), match_run (no account, free account or membership),
+        mark_applied (whether a member marked a job applied or undid it), and see_similar_click (the See Similar
+        button on a job page). Those events do not include your name, email
         address, resume, card, or which job you marked.
       </p>
       <p>Our fonts are hosted on PublicJobs.ca itself, so loading them does not send your information to a font service.</p>
