@@ -233,6 +233,7 @@ button,
 .site-name,
 .site-nav a,
 .apply-btn,
+.see-similar,
 .crumb a {
   scroll-margin-top: 4.5rem;
 }
@@ -856,7 +857,17 @@ button[type="submit"]:disabled {
   margin: 0 0 1.75rem;
 }
 
-.apply-btn {
+.apply-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  max-width: 100%;
+  gap: 0.75rem;
+}
+
+.apply-btn,
+.see-similar {
   display: inline-block;
   margin: 0;
   padding: 0.75rem 1.15rem;
@@ -1817,7 +1828,10 @@ a.apply-btn:visited,
 .description a.apply-btn:visited,
 .match a.apply-btn,
 .match a.apply-btn:hover,
-.match a.apply-btn:visited {
+.match a.apply-btn:visited,
+a.see-similar,
+a.see-similar:hover,
+a.see-similar:visited {
   background: var(--civic);
   color: #fff;
   text-decoration: none;
