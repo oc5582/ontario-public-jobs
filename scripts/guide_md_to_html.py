@@ -9,7 +9,7 @@ text = open(src, encoding="utf-8").read()
 text = re.sub(r"\A---\n.*?\n---\n", "", text, flags=re.S)
 text = re.sub(r"\A\s*# .*\n", "", text)
 
-html = markdown.markdown(text, extensions=["tables", "sane_lists"], output_format="html")
+html = markdown.markdown(text, extensions=["tables", "sane_lists", "toc"], output_format="html")
 html = html.replace("<table>", '<div class="stats-table-wrap"><table class="stats-table">').replace(
     "</table>", "</table></div>"
 )

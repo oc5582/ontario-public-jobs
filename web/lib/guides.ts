@@ -19,6 +19,15 @@ export type Guide = {
 /** Newest first. Each body lives in content/guides/{slug}.html, without the H1. */
 export const GUIDES: Guide[] = [
   {
+    slug: "how-to-get-a-government-job-in-toronto",
+    title: "How to Get a Government Job in Toronto: A Step-by-Step Guide",
+    seoTitle: "How to Get a Government Job in Toronto: Step-by-Step Guide",
+    description:
+      "How to get a government job in Toronto: the federal, Ontario and City of Toronto employers, the organizations they own, where to find jobs and how hiring works.",
+    published: "2026-11-18",
+    updated: "2026-11-18",
+  },
+  {
     slug: "emergency-management-jobs-gta-public-sector",
     title: "Emergency Management Jobs in the GTA Public Sector: Roles, Pay and Training",
     seoTitle: "Emergency Management Jobs in the GTA: Roles, Pay, Training",
