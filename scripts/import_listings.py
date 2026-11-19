@@ -27,7 +27,8 @@ test@example.com, runs the description formatter, upserts by path, and sets
 removed_at on open rows whose path is not in the feed. It aborts without
 writing if the feed has fewer than 80% of the current non-removed jobs, or if
 any employer that currently has a non-removed job would drop to zero. Running
-it again with the same file is a no-op aside from updated_at.
+it again with the same file leaves updated_at where it is. fetched_at still
+moves, because that is the scrape time, not a content change.
 """
 
 from __future__ import annotations
@@ -331,7 +332,46 @@ def upsert(conn, jobs: list[dict], seed_member: bool) -> None:
                   jobposting = excluded.jobposting,
                   home_hidden = excluded.home_hidden,
                   removed_at = null,
-                  updated_at = now()
+                  -- updated_at is the last content change. A refresh that only
+                  -- rewrites fetched_at must not move it, or every job page's
+                  -- sitemap lastmod becomes the refresh day.
+                  updated_at = case
+                    when jobs.employer_id is distinct from excluded.employer_id
+                      or jobs.employer_slug is distinct from excluded.employer_slug
+                      or jobs.job_slug is distinct from excluded.job_slug
+                      or jobs.title is distinct from excluded.title
+                      or jobs.page_title is distinct from excluded.page_title
+                      or jobs.meta_description is distinct from excluded.meta_description
+                      or jobs.location is distinct from excluded.location
+                      or jobs.cities is distinct from excluded.cities
+                      or jobs.location_places is distinct from excluded.location_places
+                      or jobs.closing_date is distinct from excluded.closing_date
+                      or jobs.posted_date is distinct from least(jobs.posted_date, excluded.posted_date)
+                      or jobs.employment_type is distinct from excluded.employment_type
+                      or jobs.job_types is distinct from excluded.job_types
+                      or jobs.work_mode is distinct from excluded.work_mode
+                      or jobs.fully_remote is distinct from excluded.fully_remote
+                      or jobs.salary is distinct from excluded.salary
+                      or jobs.salary_annual_min is distinct from excluded.salary_annual_min
+                      or jobs.salary_annual_max is distinct from excluded.salary_annual_max
+                      or jobs.salary_currency is distinct from excluded.salary_currency
+                      or jobs.salary_unit is distinct from excluded.salary_unit
+                      or jobs.department is distinct from excluded.department
+                      or jobs.description is distinct from excluded.description
+                      or jobs.paragraphs is distinct from excluded.paragraphs
+                      or jobs.description_html is distinct from excluded.description_html
+                      or jobs.apply_url is distinct from excluded.apply_url
+                      or jobs.tier is distinct from excluded.tier
+                      or jobs.source is distinct from excluded.source
+                      or jobs.external_id is distinct from excluded.external_id
+                      or jobs.category is distinct from excluded.category
+                      or jobs.search_alias is distinct from excluded.search_alias
+                      or jobs.jobposting is distinct from excluded.jobposting
+                      or jobs.home_hidden is distinct from excluded.home_hidden
+                      or jobs.removed_at is not null
+                    then now()
+                    else jobs.updated_at
+                  end
                 """,
                 (
                     employer_ids[job["_employer_slug"]],

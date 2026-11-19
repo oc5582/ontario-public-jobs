@@ -122,6 +122,19 @@ export function jobPostingJsonLd(job: JobDetail): unknown | null {
   return data;
 }
 
+export function faqPageJsonLd(url: string, faqs: { question: string; answer: string }[]): unknown {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    url,
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: { "@type": "Answer", text: faq.answer },
+    })),
+  };
+}
+
 export function breadcrumbJsonLd(items: { name: string; url: string }[]): unknown {
   return {
     "@context": "https://schema.org",
