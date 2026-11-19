@@ -32,10 +32,6 @@
     "to": "/jobs/canada-infrastructure-bank/vice-president-enterprise-legal/"
   },
   {
-    "from": "/jobs/cppib-director-data-enablement-data-platforms.html",
-    "to": "/jobs/canada-pension-plan-investment-board-cppib/director-data-enablement-data-platforms/"
-  },
-  {
     "from": "/jobs/cppib-director-security-operations-information-and-corporate-security.html",
     "to": "/jobs/canada-pension-plan-investment-board-cppib/director-security-operations-information-corporate-security/"
   },
@@ -140,10 +136,6 @@
     "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/candidature-spontan-e/"
   },
   {
-    "from": "/jobs/tfo-conseiller-re-ventes-publicitaires.html",
-    "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/conseiller-re-ventes-publicitaires/"
-  },
-  {
     "from": "/jobs/toronto-hydro-engineer-toronto-on-ca.html",
     "to": "/jobs/toronto-hydro-corporation/engineer-toronto-on-ca-574239717/"
   },
@@ -184,10 +176,6 @@
     "to": "/jobs/canadian-broadcasting-corporation-cbc-radio-canada/brand-ambassador-radio-canada-on-call-french-services/"
   },
   {
-    "from": "/jobs/workday-cxs-director-data-enablement-data-platforms.html",
-    "to": "/jobs/canada-pension-plan-investment-board-cppib/director-data-enablement-data-platforms/"
-  },
-  {
     "from": "/jobs/workday-cxs-director-security-operations-information-corporate-security.html",
     "to": "/jobs/canada-pension-plan-investment-board-cppib/director-security-operations-information-corporate-security/"
   },
@@ -220,6 +208,10 @@
     "to": "/jobs/canada-pension-plan-investment-board-cppib/senior-engineer-data-enablement-data-platforms/"
   },
   {
+    "from": "/rom-contact-centre-representative-french-english.html",
+    "to": "/jobs/royal-ontario-museum/contact-centre-representative-french-english/"
+  },
+  {
     "from": "/rom-future-career-opportunities-at-royal-ontario-museum-rom.html",
     "to": "/jobs/royal-ontario-museum/future-career-opportunities-at-royal-ontario-museum-rom/"
   },
@@ -238,10 +230,6 @@
   {
     "from": "/tfo-candidature-spontan-e.html",
     "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/candidature-spontan-e/"
-  },
-  {
-    "from": "/tfo-conseiller-re-ventes-publicitaires.html",
-    "to": "/jobs/ontario-french-language-educational-communications-authority-tfo/conseiller-re-ventes-publicitaires/"
   },
   {
     "from": "/toronto-hydro-engineer-toronto-on-ca.html",
