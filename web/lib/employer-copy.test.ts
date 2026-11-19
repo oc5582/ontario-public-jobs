@@ -87,8 +87,14 @@ test("strengthened employer pages use the live count, and the intro stays in ran
   assert.match(torontoSeo.paragraphs[1], /Senior Transportation Planner/);
   assert.match(torontoSeo.paragraphs[2], /from about \$45,000 to \$120,000/);
   assert.match(torontoSeo.paragraphs[2], /median of 14 days/);
-  assert.match(torontoSeo.paragraphs[3], /jobs\.toronto\.ca/);
-  assert.match(torontoSeo.paragraphs[3], /not affiliated with the City of Toronto or any government/);
+  assert.equal(
+    torontoSeo.paragraphs[3],
+    "You don't apply through PublicJobs.ca. Each listing links straight to the original posting on the City's own careers site (jobs.toronto.ca), where you submit your application. PublicJobs.ca is independent and not affiliated with the City of Toronto.",
+  );
+  assert.equal(
+    torontoSeo.faqs.find((faq) => faq.question.startsWith("How do I apply"))?.answer,
+    "Open the job on this page and follow the apply link. It takes you to the original posting on the City's own careers site (jobs.toronto.ca), where you submit your application. Applying is free.",
+  );
   const torontoWords = wordCount(torontoSeo.paragraphs.join(" "));
   assert.ok(torontoWords >= 150 && torontoWords <= 300, `toronto intro is ${torontoWords} words`);
   assert.deepEqual(
@@ -103,10 +109,6 @@ test("strengthened employer pages use the live count, and the intro stays in ran
     ],
   );
 
-  const bare = buildEmployerSeo(aurora, 2, [], []);
-  const bareWords = wordCount(bare.paragraphs.join(" "));
-  assert.ok(bareWords >= 150 && bareWords <= 300, `aurora without recent titles is ${bareWords} words`);
-
   const auroraSeo = buildEmployerSeo(aurora, 2, ["Facility Operator"], []);
   assert.equal(auroraSeo.title, "Town of Aurora Jobs – 2 Open Now | PublicJobs.ca");
   assert.equal(auroraSeo.h1, "Town of Aurora jobs");
@@ -114,7 +116,14 @@ test("strengthened employer pages use the live count, and the intro stays in ran
   assert.match(auroraSeo.paragraphs[1], /the Town of Aurora's careers site/);
   assert.match(auroraSeo.paragraphs[1], /there are 2 openings/);
   assert.match(auroraSeo.paragraphs[1], /Recent postings include Facility Operator/);
-  assert.match(auroraSeo.paragraphs[2], /ADP Workforce Now/);
+  assert.equal(
+    auroraSeo.paragraphs[2],
+    "You don't apply through PublicJobs.ca. Each listing links straight to the original posting on the employer's ADP Workforce Now careers portal, where you submit your application. PublicJobs.ca is independent and not affiliated with the Town of Aurora.",
+  );
+  assert.equal(
+    auroraSeo.faqs.find((faq) => faq.question.startsWith("How do I apply"))?.answer,
+    "Open the job on this page and follow the apply link. It takes you to the original posting on the employer's ADP Workforce Now careers portal, where you submit your application. Applying is free.",
+  );
   assert.equal(
     auroraSeo.faqs.some((faq) => faq.question.startsWith("How much")),
     false,

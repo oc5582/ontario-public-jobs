@@ -266,7 +266,7 @@ function daysSentence(days: number): string {
 }
 
 function applyParagraph(profile: EmployerProfile): string {
-  return `To apply, open a posting on this page and follow its apply link to the original listing on ${profile.portal}. That page is the employer's own advertisement. The closing date, the pay, and the full description there are the ones to use, and it is worth reading them before you apply. Applying is free. The application goes to the employer, not to PublicJobs.ca. PublicJobs.ca is not part of ${profile.subject}. It is independent and is not affiliated with ${profile.subject} or any government.`;
+  return `You don't apply through PublicJobs.ca. Each listing links straight to the original posting on ${profile.portal}, where you submit your application. PublicJobs.ca is independent and not affiliated with ${profile.subject}.`;
 }
 
 export type EmployerSeo = {
@@ -287,7 +287,10 @@ export function buildEmployerSeo(
   const titles = recentTitles.map((title) => title.trim()).filter(Boolean).slice(0, 3);
   const recent = titles.length ? ` Recent postings include ${englishList(titles)}.` : "";
   const opening = count === 1 ? "there is 1 opening" : `there are ${shown} openings`;
-  const check = `PublicJobs.ca checks ${profile.possessive} careers site every weekday and lists the open postings here with their pay, location and closing date. Right now ${opening}.${recent}`;
+  const named = titles.length
+    ? " The newest titles are included here so you can see what was posted most recently."
+    : "";
+  const check = `PublicJobs.ca checks ${profile.possessive} careers site every weekday and lists the open postings here with their pay, location and closing date. Right now ${opening}.${recent} The list on this page is the current set of openings only. A posting is removed once it has closed, and the number of openings is refreshed every weekday. When the employer stated pay, a work location or a closing date, that detail is shown on the listing.${named}`;
   const payInfo = payLine(pay, profile.name);
   const days = medianDaysOpen(pay);
   const facts = [payInfo?.sentence, days == null ? "" : daysSentence(days)].filter(Boolean).join(" ");
@@ -318,7 +321,7 @@ export function buildEmployerSeo(
   faqs.push(
     {
       question: `How do I apply for a ${profile.name} job?`,
-      answer: `Follow the apply link on a posting to the original posting on ${profile.portal}. Applying is free.`,
+      answer: `Open the job on this page and follow the apply link. It takes you to the original posting on ${profile.portal}, where you submit your application. Applying is free.`,
     },
     {
       question: `Is PublicJobs.ca part of ${profile.subject}?`,

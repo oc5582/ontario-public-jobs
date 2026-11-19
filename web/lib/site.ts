@@ -12,7 +12,7 @@ export const META_DESCRIPTION =
   "Current openings at the City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and 90+ other GTA public employers, collected every weekday. Apply free on each employer's site.";
 export const H1 = PAGE_TITLE;
 export const SUBHEAD =
-  "City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 50 other public employers in Toronto and the GTA.";
+  "City of Toronto, TTC, Metrolinx, Toronto Hydro, OLG and more than 90 other public employers in Toronto and the GTA.";
 export const FOOTER = "PublicJobs.ca is independent and not affiliated with any government.";
 
 export const PLANS = [
