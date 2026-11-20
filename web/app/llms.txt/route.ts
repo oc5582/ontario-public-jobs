@@ -1,45 +1,11 @@
-import { englishList } from "@/lib/format";
 import { listingFacts } from "@/lib/jobs";
-import { LEGIT_PATH } from "@/lib/legit";
-import { LEGAL } from "@/lib/legal-config";
-import { SITE_URL } from "@/lib/site";
+import { renderLlmsTxt } from "@/lib/llms-txt";
 
 export const revalidate = 900;
 
 export async function GET() {
   const facts = await listingFacts();
-  const sources = englishList(facts.sources);
-  const body = `# PublicJobs.ca
-
-> Independent job board for government and public-sector openings in Toronto and the GTA. Run by Osama Chaudhary. Not affiliated with any government or listed employer.
-
-PublicJobs.ca lists current openings collected from employers' public career sites. The listings file records the system each posting came from: ${sources}. The site does not take applications. Each job page links to the employer's posting, and you apply there. Job pages are free and need no account.
-
-Lists on the homepage, /jobs/, and employer pages show the newest 10 openings to visitors who are not members, plus the total. The rest of a filtered list is a membership: CA$14.99 a month, CA$29.99 every 3 months (about CA$10 a month), or CA$59 a year (about CA$4.92 a month), plus applicable GST/HST. Memberships are sold in Canada only. A full refund is available within 5 days of the first purchase and of each renewal, once per account in any 12 months. Daily email alerts stay free. Match your resume at /match/ compares a resume with current openings and shows suggestions, which can be wrong. The resume on that page is not stored. No account is needed for the free match, only an email address. One match is free and shows the top 10 jobs. A membership includes more matches, up to 20 a day. Matching does not require the weekly email. A member can also save one resume on the account for an optional Saturday email. That text is deleted when they remove it or delete the account.
-
-A posting whose closing date has passed stays on its own page, marked no longer available, and is left off the homepage, /jobs/, and the employer pages. Closed jobs are not in the sitemap.
-
-Listings are refreshed every weekday. ${facts.fetched} Contact: ${LEGAL.supportEmail}.
-
-## Pages
-
-- [Home](${SITE_URL}/): Newest openings, with search by job title and employer. Visitors see 10. Members see the filtered list.
-- [All openings](${SITE_URL}/jobs/): Current openings. Visitors see the newest 10. Members see the full filtered list.
-- [Employers](${SITE_URL}/employers/): Public employers, each with a page of its current openings.
-- [Job stats](${SITE_URL}/stats/): Counts of open public-sector jobs in the GTA by employer, city, and salary band. No job titles. The same counts are at ${SITE_URL}/stats.json and ${SITE_URL}/stats.csv (CC BY 4.0).
-- [Guides](${SITE_URL}/guides/): Plain guides to applying for GTA public-sector jobs, with sources and the date facts were checked. First guide: [How to become a GO bus driver](${SITE_URL}/guides/how-to-become-a-go-bus-driver/).
-- [Match your resume](${SITE_URL}/match/): Compare a resume with current openings. The resume on that page is not stored. One free match with an email address, no account needed. It shows the top 10 jobs. Members can match up to 20 times a day. A member can save one resume on the account for an optional Saturday list.
-- [Membership](${SITE_URL}/pricing/): Prices plus applicable GST/HST, and the cancel and 5-day refund terms.
-- [About](${SITE_URL}/about/): Who runs the site, what it covers, how listings are collected, and how often they are updated.
-- [FAQ](${SITE_URL}/faq/): Answers to common questions about the site.
-- [Is PublicJobs.ca legit?](${SITE_URL}${LEGIT_PATH}): Who runs the site, where the jobs come from, what is free, what a membership costs, and how refunds work.
-- [Sitemap](${SITE_URL}/sitemap.xml): Published URLs. Job pages that are still open, employer pages, and the static pages. Not filtered list URLs.
-
-## Optional
-
-- [Privacy](${SITE_URL}/privacy/): What personal information the site collects and how email alerts and accounts work.
-- [Terms](${SITE_URL}/terms/): Terms of use.
-`;
+  const body = renderLlmsTxt({ fetched: facts.fetched });
   return new Response(body, {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",

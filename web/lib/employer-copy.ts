@@ -177,6 +177,11 @@ export function employerProfile(slug: string): EmployerProfile | null {
   return PROFILES[slug] ?? null;
 }
 
+/** The ten employer pages with a fuller intro, in display order. */
+export function strengthenedEmployers(): EmployerProfile[] {
+  return Object.values(PROFILES);
+}
+
 export function wordCount(text: string): number {
   const words = text.trim().split(/\s+/).filter(Boolean);
   return words.length;
