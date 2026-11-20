@@ -14,6 +14,9 @@ export function pageMetadata(input: {
 }): Metadata {
   const url = `${SITE_URL}${input.path}`;
   const index = input.index !== false;
+  const image = input.image
+    ? { url: `${SITE_URL}${input.image.url}`, width: 1200, height: 630, alt: input.image.alt }
+    : { url: `${SITE_URL}/og-image.png`, width: 1200, height: 630, alt: OG_ALT };
   return {
     title: { absolute: input.title },
     description: input.description,
@@ -24,11 +27,13 @@ export function pageMetadata(input: {
       url,
       type: input.type || "website",
       siteName: BRAND,
-      images: [
-        input.image
-          ? { url: `${SITE_URL}${input.image.url}`, width: 1200, height: 630, alt: input.image.alt }
-          : { url: `${SITE_URL}/og-image.png`, width: 1200, height: 630, alt: OG_ALT },
-      ],
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: input.title,
+      description: input.description,
+      images: [image.url],
     },
     ...(index ? {} : { robots: { index: false, follow: true } }),
   };

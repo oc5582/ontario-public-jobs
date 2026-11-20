@@ -1,14 +1,16 @@
+import { torontoTodayIso } from "@/lib/format";
 import { listingLastmod, sitemapEmployers, sitemapJobs } from "@/lib/jobs";
 import { LEGIT_PATH, LEGIT_PUBLISHED } from "@/lib/legit";
-import { LEGAL } from "@/lib/legal-config";
 import { SITE_URL } from "@/lib/site";
+import { sitemapLastmod, STATIC_LASTMOD } from "@/lib/sitemap-dates";
 import { GUIDES, guidePath } from "@/lib/guides";
 
 export const revalidate = 900;
 
-function urlNode(loc: string, lastmod: string): string {
+function urlNode(loc: string, lastmod: string, today: string): string {
   const locXml = `  <url><loc>${escapeXml(loc)}</loc>`;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(lastmod)) return `${locXml}<lastmod>${lastmod}</lastmod></url>`;
+  const date = sitemapLastmod(lastmod, today);
+  if (date) return `${locXml}<lastmod>${date}</lastmod></url>`;
   return `${locXml}</url>`;
 }
 
@@ -21,20 +23,22 @@ const STATIC_PATHS = ["/", "/jobs/", "/employers/", "/match/", "/pricing/", "/ab
 const LISTING_PATHS = new Set(["/", "/jobs/", "/employers/", "/stats/"]);
 
 export async function GET() {
+  const today = torontoTodayIso();
   const [jobs, employers, listing] = await Promise.all([sitemapJobs(), sitemapEmployers(), listingLastmod()]);
+  const guidesUpdated = GUIDES.reduce((latest, guide) => (guide.updated > latest ? guide.updated : latest), "");
   const lines = [
     ...STATIC_PATHS.map((path) => {
-      const lastmod = LISTING_PATHS.has(path) ? listing : path === "/privacy/" || path === "/terms/" ? LEGAL.termsVersion : "";
-      return urlNode(`${SITE_URL}${path}`, lastmod);
+      const lastmod = LISTING_PATHS.has(path) ? listing : STATIC_LASTMOD[path] || "";
+      return urlNode(`${SITE_URL}${path}`, lastmod, today);
     }),
-    urlNode(`${SITE_URL}${LEGIT_PATH}`, LEGIT_PUBLISHED),
-    ...employers.map((employer) => urlNode(`${SITE_URL}/employers/${employer.slug}/`, employer.lastmod)),
+    urlNode(`${SITE_URL}${LEGIT_PATH}`, LEGIT_PUBLISHED, today),
+    ...employers.map((employer) => urlNode(`${SITE_URL}/employers/${employer.slug}/`, employer.lastmod, today)),
     ...jobs.map((job) => {
       const path = job.path.endsWith("/") ? job.path : `${job.path}/`;
-      return urlNode(`${SITE_URL}/${path.replace(/^\//, "")}`, (job.lastmod || "").slice(0, 10));
+      return urlNode(`${SITE_URL}/${path.replace(/^\//, "")}`, (job.lastmod || "").slice(0, 10), today);
     }),
-    urlNode(`${SITE_URL}/guides/`, GUIDES[0]?.published || ""),
-    ...GUIDES.map((guide) => urlNode(`${SITE_URL}${guidePath(guide.slug)}`, guide.updated)),
+    urlNode(`${SITE_URL}/guides/`, guidesUpdated, today),
+    ...GUIDES.map((guide) => urlNode(`${SITE_URL}${guidePath(guide.slug)}`, guide.updated, today)),
   ];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${lines.join("\n")}\n</urlset>\n`;
   return new Response(xml, {
