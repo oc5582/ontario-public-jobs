@@ -1,0 +1,135 @@
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "name": "Ontario public-sector jobs: questions and answers (November 2026)",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I get a government job in Ontario?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Find an open posting, then apply on the employer's own careers site; each public-sector employer runs its own hiring. PublicJobs.ca lists the postings and links to each employer's application page. As of November 19, 2026 it tracked 3,497 open jobs from 155 employers. Step-by-step hiring guides exist for the City of Toronto (https://publicjobs.ca/guides/how-city-of-toronto-hiring-works/), GO Transit bus drivers (https://publicjobs.ca/guides/how-to-become-a-go-bus-driver/), CSIS (https://publicjobs.ca/guides/how-csis-hiring-works/) and the City of Burlington (https://publicjobs.ca/guides/how-to-get-a-job-at-the-city-of-burlington/)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How many government jobs are open in Ontario right now?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "As of November 19, 2026, PublicJobs.ca tracked 3,497 open public-sector jobs from 155 employers, concentrated in the Greater Toronto Area (GTA). By sector: hospitals 2,079 (59.5%), universities and colleges 484, Ontario agencies, boards and commissions 228, municipal governments 214, federal Crown corporations 109, transit 87, the federal public service (GC Jobs) 70 and the Ontario Public Service 37. This is the set of employers PublicJobs.ca tracks, not every public-sector job in Ontario."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How much do government jobs pay in Ontario?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The median posted salary across tracked public-sector jobs is $90,750 a year (midpoint of each posted range, hourly pay annualized at 1,950 hours). Excluding hospitals it is $92,693. By range midpoint, 33.6% of jobs with a posted salary are under $75,000, 40.1% are $75,000 to $99,999 and 26.3% are $100,000 or more. Sector medians range from $72,984 (municipal governments) to $111,993 (Utilities & energy). Based on 2,274 postings with a readable salary; posted ranges, not actual earnings."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are the highest-paying government jobs in Ontario?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The highest posted pay among tracked jobs is a $500,000 to $600,000 Associate/Full Professor - General Surgery role at University of Toronto. All of the top 10 postings are physician or academic clinician roles (surgeons, radiologists and similar) at the University of Toronto, SickKids and Sunnybrook, with ranges topping out between $400,000 and $600,000. Outside that group, the sectors with the highest median posted salary are Utilities & energy ($111,993), City of Toronto & its agencies/corporations ($111,108) and Transit ($110,641). The University of Toronto has the highest employer median among the top 15 employers ($141,731)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What percentage of Ontario public-sector jobs pay $100,000 or more?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Of the 2,274 tracked jobs with a readable posted salary, 53.4% (1,214) have a pay range that reaches $100,000 or more, and 16.4% (374) start at $100,000 or more. By sector, the share with a range reaching $100,000 is 93.7% in transit, 85.3% in utilities and energy, 65.6% in the federal public service, 27.3% in municipal governments and 10.5% in children's aid and family services. This counts posted pay ranges on open jobs; it is not the Ontario Sunshine List, which reports what people were actually paid."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which Ontario public-sector employers are hiring the most?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The employers with the most open jobs are Sunnybrook Health Sciences Centre (448), Humber River Health (287), University of Toronto (213), Michael Garron Hospital (195) and University Health Network (UHN) (177). Hospitals are 2,079 of 3,497 tracked jobs (59.5%), followed by universities and colleges (13.8%). The top 15 employers are listed in the top_employers table."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are there part-time government jobs in Ontario?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. 858 tracked postings (24.5%) are part-time: 628 permanent or with no term stated and 230 temporary or contract. Another 167 (4.8%) are casual or on-call, and 1,517 (43.4%) are full-time. 20.0% of postings do not state an employment type."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can you work from home or remotely in an Ontario government job?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Some jobs are hybrid, but few are fully remote. Among tracked postings, 254 (7.3%) are labelled hybrid, 8 (0.2%) remote and 350 (10.0%) on-site. 82.5% do not state a work mode, so check the posting."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where are most government and public-sector jobs in the GTA?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Toronto has the most: 2,545 tracked jobs (72.8%). York Region has 242 (6.9%), Peel Region 230 (6.6%), Durham Region 217 (6.2%) and Halton Region 170 (4.9%). The rest list several locations or none."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are there federal government jobs in Toronto and Ontario?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Tracked postings include 70 federal public service jobs from GC Jobs across 19 departments and agencies (most: Canada Mortgage and Housing Corporation (CMHC) 19, Transport Canada 12), with a median posted salary of $98,382. There are also 109 jobs at 11 federal Crown corporations and agencies, led by Canada Pension Plan Investment Board (CPPIB) (30), Canadian Broadcasting Corporation (CBC / Radio-Canada) (27) and Canada Post Corporation (17). Canada Post is counted among the Crown corporations."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How much do TTC and GO Transit jobs pay?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Among open postings that show pay, the TTC has 15 of 36 with a readable salary, a median of $102,502 and 86.7% with a range reaching $100,000. Metrolinx (GO Transit) has 48 of 51, a median of $110,641 and 95.8% reaching $100,000. Hourly pay is annualized at 1,950 hours; samples are small, so treat these as a snapshot, not a pay scale. For GO bus driver hiring, see https://publicjobs.ca/guides/how-to-become-a-go-bus-driver/."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How much do hospital jobs in Toronto and the GTA pay?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "PublicJobs.ca tracks 2,079 open jobs at 25 hospitals and health centres, mostly in the GTA. 75.1% show a readable salary; the median is $89,417 a year (hourly pay annualized at 1,950 hours, so part-time roles show full-time-equivalent pay) and 51.8% have a range reaching $100,000. Physician roles raise the top end."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How much do Ontario Public Service and City of Toronto jobs pay?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The Ontario Public Service has 37 open postings, 35 with a readable salary, a median of $91,879 and 57.1% reaching $100,000. The City of Toronto itself has 11 open postings and 7 show a salary, too few for a reliable median. Together the City and its agencies and corporations have 26 postings, 12 with a salary, a median of $111,108. The TTC and Toronto Hydro are counted separately. For how City of Toronto hiring works, see https://publicjobs.ca/guides/how-city-of-toronto-hiring-works/."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do government job postings list the salary?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Mostly. 2,462 of 3,497 tracked postings (70.4%) include some pay information, and 2,274 (65.0%) show a salary clear enough to read as a range or amount. It varies by sector: 94.6% for the Ontario Public Service, 91.4% for the federal public service, 75.1% for hospitals, 38.6% for universities and colleges and 7.3% for federal Crown corporations."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How long do government job postings stay open, and how many close this week?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Only 48.8% of tracked postings state a closing date. For the 1,185 that state both a posted date and a closing date, the average posting window is 33.5 days and the median is 15 days. As of November 19, 2026, 729 postings close within the next 7 days (November 19 to November 26, 2026)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How long does it take to hear back or get hired for a government job?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It depends on the employer, and most do not publish a timeline. The City of Toronto publishes none; its recreation hiring page says it could be weeks between applying and hearing back (https://publicjobs.ca/guides/how-city-of-toronto-hiring-works/). Metrolinx does not publish a total hiring time for GO bus drivers; once hired, in-house training takes 4 or 7.5 weeks (https://publicjobs.ca/guides/how-to-become-a-go-bus-driver/). CSIS takes about 6 to 18 months after the first interview (https://publicjobs.ca/guides/how-csis-hiring-works/). The posting data in this snapshot does not measure hiring time."
+      }
+    }
+  ]
+}

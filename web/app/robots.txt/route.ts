@@ -6,6 +6,7 @@ export function GET() {
   const body = [
     "User-agent: *",
     "Allow: /",
+    "Allow: /data",
     "Disallow: /account",
     "Disallow: /login",
     "Disallow: /auth",

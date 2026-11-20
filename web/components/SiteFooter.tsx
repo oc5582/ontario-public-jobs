@@ -8,7 +8,7 @@ export function SiteFooter() {
   const path = (usePathname() || "/").replace(/\/$/, "") || "/";
   if (path === "/start") return null;
   function link(label: string, href: string, key: string) {
-    const current = path === key ? "page" : undefined;
+    const current = path === key || (key === "/data" && path.startsWith("/data/")) ? "page" : undefined;
     return (
       <a href={href} aria-current={current}>
         {label}
@@ -24,6 +24,7 @@ export function SiteFooter() {
           {link("Is PublicJobs.ca legit?", "/is-publicjobs-ca-legit/", "/is-publicjobs-ca-legit")}
           {link("Frequently asked questions", "/faq/", "/faq")}
           {link("Job stats", "/stats/", "/stats")}
+          {link("Data", "/data/", "/data")}
           {link("Guides", "/guides/", "/guides")}
           {link("Privacy", "/privacy/", "/privacy")}
           {link("Terms", "/terms/", "/terms")}

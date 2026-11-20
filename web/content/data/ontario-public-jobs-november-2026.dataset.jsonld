@@ -1,0 +1,107 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "Ontario Public-Sector Jobs Snapshot, November 2026",
+  "description": "Aggregate statistics on 3,497 open public-sector job postings from 155 employers tracked by PublicJobs.ca, mostly in the Greater Toronto Area, as of November 19, 2026: counts by sector, employer and region, posted-salary statistics (share with salary, median, share paying $100K+), employment type, work mode and closing dates.",
+  "url": "https://publicjobs.ca/data/ontario-public-jobs-november-2026",
+  "identifier": "publicjobs-ca-ontario-public-sector-jobs-snapshot-2026-11",
+  "creator": {
+    "@type": "Organization",
+    "name": "PublicJobs.ca",
+    "url": "https://publicjobs.ca"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "PublicJobs.ca",
+    "url": "https://publicjobs.ca"
+  },
+  "datePublished": "2026-11-19",
+  "dateModified": "2026-11-19",
+  "temporalCoverage": "2026-11-19",
+  "spatialCoverage": {
+    "@type": "Place",
+    "name": "Greater Toronto Area, Ontario, Canada"
+  },
+  "keywords": [
+    "Ontario public sector jobs",
+    "GTA government jobs",
+    "public sector salaries Ontario",
+    "hospital jobs Toronto",
+    "job market statistics",
+    "open data"
+  ],
+  "isAccessibleForFree": true,
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "citation": "PublicJobs.ca. (2026). Ontario Public-Sector Jobs Snapshot, November 2026 (data as of November 19, 2026). https://publicjobs.ca/data/ontario-public-jobs-november-2026",
+  "measurementTechnique": "Aggregation of open job postings collected from employer career sites; salaries normalized to annual (hourly x 1,950 hours).",
+  "variableMeasured": [
+    "open jobs",
+    "employers",
+    "share with posted salary",
+    "median posted salary (annual)",
+    "share of postings with salary range reaching $100,000+",
+    "employment type",
+    "work mode",
+    "closing date"
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "application/json",
+      "contentUrl": "https://publicjobs.ca/data/snapshot-2026-11.json"
+    },
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "contentUrl": "https://publicjobs.ca/data/ontario-public-jobs-snapshot-2026-11.xlsx"
+    },
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "text/csv",
+      "name": "Sector summary",
+      "contentUrl": "https://publicjobs.ca/data/csv/sector_summary.csv"
+    },
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "text/csv",
+      "name": "Top 15 employers",
+      "contentUrl": "https://publicjobs.ca/data/csv/top_15_employers.csv"
+    },
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "text/csv",
+      "name": "Top 10 highest-paying postings",
+      "contentUrl": "https://publicjobs.ca/data/csv/top_10_highest_paying_postings.csv"
+    },
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "text/csv",
+      "name": "Region",
+      "contentUrl": "https://publicjobs.ca/data/csv/region.csv"
+    },
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "text/csv",
+      "name": "Headline metrics",
+      "contentUrl": "https://publicjobs.ca/data/csv/headline_metrics.csv"
+    },
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "text/markdown",
+      "name": "Full report (Markdown)",
+      "contentUrl": "https://publicjobs.ca/data/ontario-public-jobs-november-2026.md"
+    },
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "text/csv",
+      "name": "FAQ (CSV)",
+      "contentUrl": "https://publicjobs.ca/data/csv/faq.csv"
+    },
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "text/csv",
+      "name": "Employer spotlights",
+      "contentUrl": "https://publicjobs.ca/data/csv/employer_spotlights.csv"
+    }
+  ]
+}

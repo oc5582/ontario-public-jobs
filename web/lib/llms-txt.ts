@@ -1,3 +1,4 @@
+import { DATA_HUB_PATH, DATA_REPORTS, dataReportPath } from "./data-reports";
 import { strengthenedEmployers } from "./employer-copy";
 import { GUIDES, guidePath } from "./guides";
 import { LEGIT_PATH } from "./legit";
@@ -115,6 +116,20 @@ export function renderLlmsTxt(facts: LlmsFacts): string {
     "## Guides",
     "",
     ...guides,
+    "",
+    "## Data",
+    "",
+    "Published snapshots of open public-sector jobs. Free to reuse under CC BY 4.0 with attribution to PublicJobs.ca.",
+    "",
+    ...DATA_REPORTS.map(
+      (report) =>
+        `- [${report.title}](${SITE_URL}${dataReportPath(report.slug)}): ${report.summary} [Markdown](${SITE_URL}${report.markdownPath}). [JSON](${SITE_URL}${report.jsonPath}).`,
+    ),
+    link(
+      "Data",
+      `${SITE_URL}${DATA_HUB_PATH}`,
+      "Index of published snapshots and downloadable files.",
+    ),
     "",
     "## Optional",
     "",

@@ -1,3 +1,4 @@
+import { DATA_HUB_PATH, DATA_REPORTS, dataHubLastmod, dataReportPath } from "@/lib/data-reports";
 import { torontoTodayIso } from "@/lib/format";
 import { listingLastmod, sitemapEmployers, sitemapJobs } from "@/lib/jobs";
 import { LEGIT_PATH, LEGIT_PUBLISHED } from "@/lib/legit";
@@ -39,6 +40,8 @@ export async function GET() {
     }),
     urlNode(`${SITE_URL}/guides/`, guidesUpdated, today),
     ...GUIDES.map((guide) => urlNode(`${SITE_URL}${guidePath(guide.slug)}`, guide.updated, today)),
+    urlNode(`${SITE_URL}${DATA_HUB_PATH}`, dataHubLastmod(), today),
+    ...DATA_REPORTS.map((report) => urlNode(`${SITE_URL}${dataReportPath(report.slug)}`, report.published, today)),
   ];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${lines.join("\n")}\n</urlset>\n`;
   return new Response(xml, {

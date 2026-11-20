@@ -1,0 +1,899 @@
+{
+  "meta": {
+    "title": "Ontario Public-Sector Jobs Snapshot, November 2026",
+    "publisher": "PublicJobs.ca",
+    "url": "https://publicjobs.ca",
+    "as_of": "2026-11-19",
+    "period": "November 2026",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+    "citation": "PublicJobs.ca. (2026). Ontario Public-Sector Jobs Snapshot, November 2026 (data as of November 19, 2026). https://publicjobs.ca/data/ontario-public-jobs-november-2026",
+    "scope": "Open public-sector job postings tracked by PublicJobs.ca, concentrated in the Greater Toronto Area (GTA). Not every Ontario public-sector employer is tracked.",
+    "salary_method": "Hourly pay x 1,950 hours/year (full-time-equivalent); weekly pay x 52; annual pay as posted. Range midpoint used for medians. Ambiguous strings excluded."
+  },
+  "headline": {
+    "open_jobs": 3497,
+    "employers": 155,
+    "jobs_with_salary_text": 2462,
+    "jobs_with_parsed_salary": 2274,
+    "share_with_parsed_salary_pct": 65.0,
+    "share_top_of_range_100k_plus_pct": 53.4,
+    "share_min_100k_plus_pct": 16.4,
+    "n_top100k": 1214,
+    "n_min100k": 374,
+    "median_midpoint": 90750,
+    "median_min": 78702,
+    "median_max": 103174,
+    "median_midpoint_if_2080": 95378,
+    "hourly_n": 1676,
+    "annual_n": 583,
+    "weekly_n": 15,
+    "ambiguous_n": 188,
+    "no_salary_n": 1035,
+    "median_midpoint_excl_hospitals": 92693,
+    "n_excl_hospitals": 713,
+    "share_top_100k_excl_hospitals_pct": 56.9,
+    "feed_total": 3549,
+    "expired_excluded": 52
+  },
+  "closing": {
+    "jobs_with_closing_date": 1708,
+    "share_with_closing_date_pct": 48.8,
+    "closing_within_7_days": 729,
+    "closing_within_7_days_window": "2026-11-19 to 2026-11-26",
+    "window_n": 1185,
+    "avg_posting_window_days": 33.5,
+    "median_posting_window_days": 15
+  },
+  "sector": [
+    {
+      "sector": "Hospitals",
+      "open_jobs": 2079,
+      "share_of_jobs_pct": 59.5,
+      "employers": 25,
+      "jobs_with_parsed_salary": 1561,
+      "share_with_salary_pct": 75.1,
+      "median_salary_midpoint_annual": 89417,
+      "share_top_of_range_100k_plus_pct": 51.8
+    },
+    {
+      "sector": "Universities & colleges",
+      "open_jobs": 484,
+      "share_of_jobs_pct": 13.8,
+      "employers": 16,
+      "jobs_with_parsed_salary": 187,
+      "share_with_salary_pct": 38.6,
+      "median_salary_midpoint_annual": 97124,
+      "share_top_of_range_100k_plus_pct": 62.6
+    },
+    {
+      "sector": "Ontario agencies, boards & commissions",
+      "open_jobs": 228,
+      "share_of_jobs_pct": 6.5,
+      "employers": 31,
+      "jobs_with_parsed_salary": 132,
+      "share_with_salary_pct": 57.9,
+      "median_salary_midpoint_annual": 91821,
+      "share_top_of_range_100k_plus_pct": 62.9
+    },
+    {
+      "sector": "Municipal governments",
+      "open_jobs": 214,
+      "share_of_jobs_pct": 6.1,
+      "employers": 19,
+      "jobs_with_parsed_salary": 150,
+      "share_with_salary_pct": 70.1,
+      "median_salary_midpoint_annual": 72984,
+      "share_top_of_range_100k_plus_pct": 27.3
+    },
+    {
+      "sector": "Federal Crown corporations & agencies",
+      "open_jobs": 109,
+      "share_of_jobs_pct": 3.1,
+      "employers": 11,
+      "jobs_with_parsed_salary": 8,
+      "share_with_salary_pct": 7.3,
+      "median_salary_midpoint_annual": null,
+      "share_top_of_range_100k_plus_pct": null
+    },
+    {
+      "sector": "Transit",
+      "open_jobs": 87,
+      "share_of_jobs_pct": 2.5,
+      "employers": 2,
+      "jobs_with_parsed_salary": 63,
+      "share_with_salary_pct": 72.4,
+      "median_salary_midpoint_annual": 110641,
+      "share_top_of_range_100k_plus_pct": 93.7
+    },
+    {
+      "sector": "Federal public service (GC Jobs)",
+      "open_jobs": 70,
+      "share_of_jobs_pct": 2.0,
+      "employers": 19,
+      "jobs_with_parsed_salary": 64,
+      "share_with_salary_pct": 91.4,
+      "median_salary_midpoint_annual": 98382,
+      "share_top_of_range_100k_plus_pct": 65.6
+    },
+    {
+      "sector": "Utilities & energy",
+      "open_jobs": 64,
+      "share_of_jobs_pct": 1.8,
+      "employers": 9,
+      "jobs_with_parsed_salary": 34,
+      "share_with_salary_pct": 53.1,
+      "median_salary_midpoint_annual": 111993,
+      "share_top_of_range_100k_plus_pct": 85.3
+    },
+    {
+      "sector": "Ontario Crown corporations & regulators",
+      "open_jobs": 51,
+      "share_of_jobs_pct": 1.5,
+      "employers": 7,
+      "jobs_with_parsed_salary": 0,
+      "share_with_salary_pct": 0.0,
+      "median_salary_midpoint_annual": null,
+      "share_top_of_range_100k_plus_pct": null
+    },
+    {
+      "sector": "Ontario Public Service (provincial ministries)",
+      "open_jobs": 37,
+      "share_of_jobs_pct": 1.1,
+      "employers": 1,
+      "jobs_with_parsed_salary": 35,
+      "share_with_salary_pct": 94.6,
+      "median_salary_midpoint_annual": 91879,
+      "share_top_of_range_100k_plus_pct": 57.1
+    },
+    {
+      "sector": "City of Toronto & its agencies/corporations",
+      "open_jobs": 26,
+      "share_of_jobs_pct": 0.7,
+      "employers": 5,
+      "jobs_with_parsed_salary": 12,
+      "share_with_salary_pct": 46.2,
+      "median_salary_midpoint_annual": 111108,
+      "share_top_of_range_100k_plus_pct": 83.3
+    },
+    {
+      "sector": "Children's aid & family services",
+      "open_jobs": 21,
+      "share_of_jobs_pct": 0.6,
+      "employers": 5,
+      "jobs_with_parsed_salary": 19,
+      "share_with_salary_pct": 90.5,
+      "median_salary_midpoint_annual": 78076,
+      "share_top_of_range_100k_plus_pct": 10.5
+    },
+    {
+      "sector": "Conservation authorities",
+      "open_jobs": 15,
+      "share_of_jobs_pct": 0.4,
+      "employers": 2,
+      "jobs_with_parsed_salary": 0,
+      "share_with_salary_pct": 0.0,
+      "median_salary_midpoint_annual": null,
+      "share_top_of_range_100k_plus_pct": null
+    },
+    {
+      "sector": "Police services",
+      "open_jobs": 9,
+      "share_of_jobs_pct": 0.3,
+      "employers": 2,
+      "jobs_with_parsed_salary": 8,
+      "share_with_salary_pct": 88.9,
+      "median_salary_midpoint_annual": null,
+      "share_top_of_range_100k_plus_pct": null
+    },
+    {
+      "sector": "Public libraries",
+      "open_jobs": 3,
+      "share_of_jobs_pct": 0.1,
+      "employers": 3,
+      "jobs_with_parsed_salary": 1,
+      "share_with_salary_pct": 33.3,
+      "median_salary_midpoint_annual": null,
+      "share_top_of_range_100k_plus_pct": null
+    }
+  ],
+  "top_employers": [
+    {
+      "rank": 1,
+      "employer": "Sunnybrook Health Sciences Centre",
+      "sector": "Hospitals",
+      "open_jobs": 448,
+      "share_of_jobs_pct": 12.8,
+      "median_salary_midpoint_annual": 92500,
+      "jobs_with_parsed_salary": 412
+    },
+    {
+      "rank": 2,
+      "employer": "Humber River Health",
+      "sector": "Hospitals",
+      "open_jobs": 287,
+      "share_of_jobs_pct": 8.2,
+      "median_salary_midpoint_annual": 84903,
+      "jobs_with_parsed_salary": 284
+    },
+    {
+      "rank": 3,
+      "employer": "University of Toronto",
+      "sector": "Universities & colleges",
+      "open_jobs": 213,
+      "share_of_jobs_pct": 6.1,
+      "median_salary_midpoint_annual": 141731,
+      "jobs_with_parsed_salary": 86
+    },
+    {
+      "rank": 4,
+      "employer": "Michael Garron Hospital",
+      "sector": "Hospitals",
+      "open_jobs": 195,
+      "share_of_jobs_pct": 5.6,
+      "median_salary_midpoint_annual": null,
+      "jobs_with_parsed_salary": 4
+    },
+    {
+      "rank": 5,
+      "employer": "University Health Network (UHN)",
+      "sector": "Hospitals",
+      "open_jobs": 177,
+      "share_of_jobs_pct": 5.1,
+      "median_salary_midpoint_annual": 78751,
+      "jobs_with_parsed_salary": 170
+    },
+    {
+      "rank": 6,
+      "employer": "Scarborough Health Network",
+      "sector": "Hospitals",
+      "open_jobs": 129,
+      "share_of_jobs_pct": 3.7,
+      "median_salary_midpoint_annual": 97627,
+      "jobs_with_parsed_salary": 123
+    },
+    {
+      "rank": 7,
+      "employer": "Toronto Metropolitan University",
+      "sector": "Universities & colleges",
+      "open_jobs": 95,
+      "share_of_jobs_pct": 2.7,
+      "median_salary_midpoint_annual": 90750,
+      "jobs_with_parsed_salary": 25
+    },
+    {
+      "rank": 8,
+      "employer": "Trillium Health Partners",
+      "sector": "Hospitals",
+      "open_jobs": 92,
+      "share_of_jobs_pct": 2.6,
+      "median_salary_midpoint_annual": 89417,
+      "jobs_with_parsed_salary": 82
+    },
+    {
+      "rank": 9,
+      "employer": "Lakeridge Health",
+      "sector": "Hospitals",
+      "open_jobs": 90,
+      "share_of_jobs_pct": 2.6,
+      "median_salary_midpoint_annual": 90987,
+      "jobs_with_parsed_salary": 90
+    },
+    {
+      "rank": 10,
+      "employer": "Mackenzie Health",
+      "sector": "Hospitals",
+      "open_jobs": 85,
+      "share_of_jobs_pct": 2.4,
+      "median_salary_midpoint_annual": null,
+      "jobs_with_parsed_salary": 0
+    },
+    {
+      "rank": 11,
+      "employer": "Unity Health Toronto",
+      "sector": "Hospitals",
+      "open_jobs": 66,
+      "share_of_jobs_pct": 1.9,
+      "median_salary_midpoint_annual": 97627,
+      "jobs_with_parsed_salary": 65
+    },
+    {
+      "rank": 12,
+      "employer": "Centre for Addiction and Mental Health (CAMH)",
+      "sector": "Hospitals",
+      "open_jobs": 63,
+      "share_of_jobs_pct": 1.8,
+      "median_salary_midpoint_annual": 90855,
+      "jobs_with_parsed_salary": 62
+    },
+    {
+      "rank": 13,
+      "employer": "Oak Valley Health",
+      "sector": "Hospitals",
+      "open_jobs": 59,
+      "share_of_jobs_pct": 1.7,
+      "median_salary_midpoint_annual": 97705,
+      "jobs_with_parsed_salary": 50
+    },
+    {
+      "rank": 14,
+      "employer": "North York General Hospital",
+      "sector": "Hospitals",
+      "open_jobs": 57,
+      "share_of_jobs_pct": 1.6,
+      "median_salary_midpoint_annual": 70882,
+      "jobs_with_parsed_salary": 56
+    },
+    {
+      "rank": 15,
+      "employer": "The Hospital for Sick Children (SickKids)",
+      "sector": "Hospitals",
+      "open_jobs": 56,
+      "share_of_jobs_pct": 1.6,
+      "median_salary_midpoint_annual": null,
+      "jobs_with_parsed_salary": 6
+    }
+  ],
+  "top_paying": [
+    {
+      "rank": 1,
+      "title": "Associate/Full Professor - General Surgery",
+      "employer": "University of Toronto",
+      "sector": "Universities & colleges",
+      "posted_salary": "$500,000.00 - $600,000.00",
+      "annual_min": 500000,
+      "annual_max": 600000,
+      "unit_as_posted": "year"
+    },
+    {
+      "rank": 2,
+      "title": "Plastic & Reconstructive Surgeon",
+      "employer": "The Hospital for Sick Children (SickKids)",
+      "sector": "Hospitals",
+      "posted_salary": "$350,000 to $550,000",
+      "annual_min": 350000,
+      "annual_max": 550000,
+      "unit_as_posted": "year"
+    },
+    {
+      "rank": 3,
+      "title": "Emergency & Trauma Radiologist - Medical Imaging - Regular Full-time",
+      "employer": "Sunnybrook Health Sciences Centre",
+      "sector": "Hospitals",
+      "posted_salary": "$300,000 - $500,000 per annum",
+      "annual_min": 300000,
+      "annual_max": 500000,
+      "unit_as_posted": "year"
+    },
+    {
+      "rank": 4,
+      "title": "Division of Orthopaedic Surgery - Paediatric Spine Surgeon",
+      "employer": "The Hospital for Sick Children (SickKids)",
+      "sector": "Hospitals",
+      "posted_salary": "$300,000 - $500,000 per year",
+      "annual_min": 300000,
+      "annual_max": 500000,
+      "unit_as_posted": "year"
+    },
+    {
+      "rank": 5,
+      "title": "Assistant / Associate / Full Professor - Academic Dermatologist",
+      "employer": "University of Toronto",
+      "sector": "Universities & colleges",
+      "posted_salary": "$300,000 to $500,000 per annum",
+      "annual_min": 300000,
+      "annual_max": 500000,
+      "unit_as_posted": "year"
+    },
+    {
+      "rank": 6,
+      "title": "Lecturer / Assistant Professor - Emergency & Trauma Radiologist - Sunnybrook Health Sciences Centre",
+      "employer": "University of Toronto",
+      "sector": "Universities & colleges",
+      "posted_salary": "$300,000 - $500,000 per annum",
+      "annual_min": 300000,
+      "annual_max": 500000,
+      "unit_as_posted": "year"
+    },
+    {
+      "rank": 7,
+      "title": "Paediatric Urologist",
+      "employer": "The Hospital for Sick Children (SickKids)",
+      "sector": "Hospitals",
+      "posted_salary": "$350,000 to $475,000",
+      "annual_min": 350000,
+      "annual_max": 475000,
+      "unit_as_posted": "year"
+    },
+    {
+      "rank": 8,
+      "title": "Lecturer/Assistant/Associate Professor - Forensic Psychiatrist",
+      "employer": "University of Toronto",
+      "sector": "Universities & colleges",
+      "posted_salary": "$300,000 - $400,968 per annum",
+      "annual_min": 300000,
+      "annual_max": 400968,
+      "unit_as_posted": "year"
+    },
+    {
+      "rank": 9,
+      "title": "Associate / Full Professor - Head, Division of Cardiology",
+      "employer": "University of Toronto",
+      "sector": "Universities & colleges",
+      "posted_salary": "$350,000 to $400,000",
+      "annual_min": 350000,
+      "annual_max": 400000,
+      "unit_as_posted": "year"
+    },
+    {
+      "rank": 10,
+      "title": "Assistant / Associate Professor - Academic Respirologist",
+      "employer": "University of Toronto",
+      "sector": "Universities & colleges",
+      "posted_salary": "$350,000 - $400,000",
+      "annual_min": 350000,
+      "annual_max": 400000,
+      "unit_as_posted": "year"
+    }
+  ],
+  "salary_bands": [
+    {
+      "category": "Under $50,000",
+      "open_jobs": 104,
+      "share_pct": 4.6
+    },
+    {
+      "category": "$50,000-$74,999",
+      "open_jobs": 659,
+      "share_pct": 29.0
+    },
+    {
+      "category": "$75,000-$99,999",
+      "open_jobs": 913,
+      "share_pct": 40.1
+    },
+    {
+      "category": "$100,000-$149,999",
+      "open_jobs": 509,
+      "share_pct": 22.4
+    },
+    {
+      "category": "$150,000 and over",
+      "open_jobs": 89,
+      "share_pct": 3.9
+    }
+  ],
+  "region": [
+    {
+      "category": "Toronto",
+      "open_jobs": 2545,
+      "share_pct": 72.8
+    },
+    {
+      "category": "York",
+      "open_jobs": 242,
+      "share_pct": 6.9
+    },
+    {
+      "category": "Peel",
+      "open_jobs": 230,
+      "share_pct": 6.6
+    },
+    {
+      "category": "Durham",
+      "open_jobs": 217,
+      "share_pct": 6.2
+    },
+    {
+      "category": "Halton",
+      "open_jobs": 170,
+      "share_pct": 4.9
+    },
+    {
+      "category": "Unspecified / multiple locations",
+      "open_jobs": 48,
+      "share_pct": 1.4
+    },
+    {
+      "category": "Multiple GTA/Ottawa regions",
+      "open_jobs": 44,
+      "share_pct": 1.3
+    },
+    {
+      "category": "Outside Ontario / other",
+      "open_jobs": 1,
+      "share_pct": 0.0
+    }
+  ],
+  "employment_type": [
+    {
+      "category": "Full-time (permanent/unspecified term)",
+      "open_jobs": 1141,
+      "share_pct": 32.6
+    },
+    {
+      "category": "Not stated",
+      "open_jobs": 700,
+      "share_pct": 20.0
+    },
+    {
+      "category": "Part-time (permanent/unspecified term)",
+      "open_jobs": 628,
+      "share_pct": 18.0
+    },
+    {
+      "category": "Full-time (temporary/contract)",
+      "open_jobs": 376,
+      "share_pct": 10.8
+    },
+    {
+      "category": "Temporary / contract (hours not stated)",
+      "open_jobs": 234,
+      "share_pct": 6.7
+    },
+    {
+      "category": "Part-time (temporary/contract)",
+      "open_jobs": 230,
+      "share_pct": 6.6
+    },
+    {
+      "category": "Casual / on-call",
+      "open_jobs": 167,
+      "share_pct": 4.8
+    },
+    {
+      "category": "Other / not stated",
+      "open_jobs": 13,
+      "share_pct": 0.4
+    },
+    {
+      "category": "Student / internship",
+      "open_jobs": 8,
+      "share_pct": 0.2
+    }
+  ],
+  "work_mode": [
+    {
+      "category": "Not stated",
+      "open_jobs": 2885,
+      "share_pct": 82.5
+    },
+    {
+      "category": "On-site",
+      "open_jobs": 350,
+      "share_pct": 10.0
+    },
+    {
+      "category": "Hybrid",
+      "open_jobs": 254,
+      "share_pct": 7.3
+    },
+    {
+      "category": "Remote",
+      "open_jobs": 8,
+      "share_pct": 0.2
+    }
+  ],
+  "closing_buckets": [
+    {
+      "category": "Closing Nov 19-26",
+      "open_jobs": 729
+    },
+    {
+      "category": "Closing Nov 27-Dec 3",
+      "open_jobs": 377
+    },
+    {
+      "category": "Closing Dec 4-Dec 19 (days 15-30)",
+      "open_jobs": 176
+    },
+    {
+      "category": "Closing 31+ days out",
+      "open_jobs": 426
+    },
+    {
+      "category": "No closing date posted",
+      "open_jobs": 1789
+    }
+  ],
+  "salary_parse_status": {
+    "none": 1035,
+    "ok": 2274,
+    "ambiguous": 188
+  },
+  "notes": {
+    "ottawa_note": "27 open postings list Ottawa/Gatineau among multiple locations (mostly federal, multi-city); they are counted under \"Multiple GTA/Ottawa regions\"."
+  },
+  "employer_spotlights": [
+    {
+      "name": "Toronto Transit Commission (TTC)",
+      "open_jobs": 36,
+      "jobs_with_parsed_salary": 15,
+      "median_salary_midpoint_annual": 102502,
+      "share_top_of_range_100k_plus_pct": 86.7,
+      "note": ""
+    },
+    {
+      "name": "Metrolinx (GO Transit)",
+      "open_jobs": 51,
+      "jobs_with_parsed_salary": 48,
+      "median_salary_midpoint_annual": 110641,
+      "share_top_of_range_100k_plus_pct": 95.8,
+      "note": ""
+    },
+    {
+      "name": "Ontario Public Service",
+      "open_jobs": 37,
+      "jobs_with_parsed_salary": 35,
+      "median_salary_midpoint_annual": 91879,
+      "share_top_of_range_100k_plus_pct": 57.1,
+      "note": ""
+    },
+    {
+      "name": "City of Toronto (the City itself)",
+      "open_jobs": 11,
+      "jobs_with_parsed_salary": 7,
+      "median_salary_midpoint_annual": null,
+      "share_top_of_range_100k_plus_pct": null,
+      "note": ""
+    },
+    {
+      "name": "City of Toronto and its agencies and corporations (excl. TTC and Toronto Hydro)",
+      "open_jobs": 26,
+      "jobs_with_parsed_salary": 12,
+      "median_salary_midpoint_annual": 111108,
+      "share_top_of_range_100k_plus_pct": 83.3,
+      "note": ""
+    },
+    {
+      "name": "Hospitals and health centres (25 tracked)",
+      "open_jobs": 2079,
+      "jobs_with_parsed_salary": 1561,
+      "median_salary_midpoint_annual": 89417,
+      "share_top_of_range_100k_plus_pct": 51.8,
+      "note": ""
+    },
+    {
+      "name": "Federal public service (GC Jobs)",
+      "open_jobs": 70,
+      "jobs_with_parsed_salary": 64,
+      "median_salary_midpoint_annual": 98382,
+      "share_top_of_range_100k_plus_pct": 65.6,
+      "note": ""
+    },
+    {
+      "name": "Federal Crown corporations & agencies",
+      "open_jobs": 109,
+      "jobs_with_parsed_salary": 8,
+      "median_salary_midpoint_annual": null,
+      "share_top_of_range_100k_plus_pct": null,
+      "note": ""
+    }
+  ],
+  "federal_top_employers": {
+    "gc_jobs": [
+      {
+        "employer": "Canada Mortgage and Housing Corporation (CMHC)",
+        "open_jobs": 19
+      },
+      {
+        "employer": "Transport Canada",
+        "open_jobs": 12
+      },
+      {
+        "employer": "Department of Justice Canada",
+        "open_jobs": 6
+      },
+      {
+        "employer": "Canadian Security Intelligence Service (CSIS)",
+        "open_jobs": 5
+      },
+      {
+        "employer": "Public Services and Procurement Canada (PSPC)",
+        "open_jobs": 4
+      }
+    ],
+    "crown": [
+      {
+        "employer": "Canada Pension Plan Investment Board (CPPIB)",
+        "open_jobs": 30
+      },
+      {
+        "employer": "Canadian Broadcasting Corporation (CBC / Radio-Canada)",
+        "open_jobs": 27
+      },
+      {
+        "employer": "Canada Post Corporation",
+        "open_jobs": 17
+      },
+      {
+        "employer": "Export Development Canada (EDC)",
+        "open_jobs": 11
+      },
+      {
+        "employer": "Canada Infrastructure Bank",
+        "open_jobs": 9
+      }
+    ],
+    "gc_jobs_departments": 19,
+    "crown_employers": 11
+  },
+  "salary_text_stats": {
+    "jobs_with_salary_text": 2462
+  },
+  "faq": [
+    {
+      "question": "How do I get a government job in Ontario?",
+      "answer": "Find an open posting, then apply on the employer's own careers site; each public-sector employer runs its own hiring. PublicJobs.ca lists the postings and links to each employer's application page. As of November 19, 2026 it tracked 3,497 open jobs from 155 employers. Step-by-step hiring guides exist for the City of Toronto (https://publicjobs.ca/guides/how-city-of-toronto-hiring-works/), GO Transit bus drivers (https://publicjobs.ca/guides/how-to-become-a-go-bus-driver/), CSIS (https://publicjobs.ca/guides/how-csis-hiring-works/) and the City of Burlington (https://publicjobs.ca/guides/how-to-get-a-job-at-the-city-of-burlington/).",
+      "data_fields": [
+        "headline.open_jobs",
+        "headline.employers"
+      ],
+      "links": [
+        "https://publicjobs.ca/guides/how-city-of-toronto-hiring-works/",
+        "https://publicjobs.ca/guides/how-to-become-a-go-bus-driver/",
+        "https://publicjobs.ca/guides/how-csis-hiring-works/",
+        "https://publicjobs.ca/guides/how-to-get-a-job-at-the-city-of-burlington/"
+      ],
+      "evidence_note": ""
+    },
+    {
+      "question": "How many government jobs are open in Ontario right now?",
+      "answer": "As of November 19, 2026, PublicJobs.ca tracked 3,497 open public-sector jobs from 155 employers, concentrated in the Greater Toronto Area (GTA). By sector: hospitals 2,079 (59.5%), universities and colleges 484, Ontario agencies, boards and commissions 228, municipal governments 214, federal Crown corporations 109, transit 87, the federal public service (GC Jobs) 70 and the Ontario Public Service 37. This is the set of employers PublicJobs.ca tracks, not every public-sector job in Ontario.",
+      "data_fields": [
+        "headline.open_jobs",
+        "headline.employers",
+        "sector"
+      ],
+      "links": [],
+      "evidence_note": ""
+    },
+    {
+      "question": "How much do government jobs pay in Ontario?",
+      "answer": "The median posted salary across tracked public-sector jobs is $90,750 a year (midpoint of each posted range, hourly pay annualized at 1,950 hours). Excluding hospitals it is $92,693. By range midpoint, 33.6% of jobs with a posted salary are under $75,000, 40.1% are $75,000 to $99,999 and 26.3% are $100,000 or more. Sector medians range from $72,984 (municipal governments) to $111,993 (Utilities & energy). Based on 2,274 postings with a readable salary; posted ranges, not actual earnings.",
+      "data_fields": [
+        "headline.median_midpoint",
+        "headline.median_midpoint_excl_hospitals",
+        "salary_bands",
+        "sector"
+      ],
+      "links": [],
+      "evidence_note": ""
+    },
+    {
+      "question": "What are the highest-paying government jobs in Ontario?",
+      "answer": "The highest posted pay among tracked jobs is a $500,000 to $600,000 Associate/Full Professor - General Surgery role at University of Toronto. All of the top 10 postings are physician or academic clinician roles (surgeons, radiologists and similar) at the University of Toronto, SickKids and Sunnybrook, with ranges topping out between $400,000 and $600,000. Outside that group, the sectors with the highest median posted salary are Utilities & energy ($111,993), City of Toronto & its agencies/corporations ($111,108) and Transit ($110,641). The University of Toronto has the highest employer median among the top 15 employers ($141,731).",
+      "data_fields": [
+        "top_paying",
+        "sector",
+        "top_employers"
+      ],
+      "links": [],
+      "evidence_note": ""
+    },
+    {
+      "question": "What percentage of Ontario public-sector jobs pay $100,000 or more?",
+      "answer": "Of the 2,274 tracked jobs with a readable posted salary, 53.4% (1,214) have a pay range that reaches $100,000 or more, and 16.4% (374) start at $100,000 or more. By sector, the share with a range reaching $100,000 is 93.7% in transit, 85.3% in utilities and energy, 65.6% in the federal public service, 27.3% in municipal governments and 10.5% in children's aid and family services. This counts posted pay ranges on open jobs; it is not the Ontario Sunshine List, which reports what people were actually paid.",
+      "data_fields": [
+        "headline.share_top_of_range_100k_plus_pct",
+        "headline.share_min_100k_plus_pct",
+        "headline.n_top100k",
+        "headline.n_min100k",
+        "sector"
+      ],
+      "links": [],
+      "evidence_note": ""
+    },
+    {
+      "question": "Which Ontario public-sector employers are hiring the most?",
+      "answer": "The employers with the most open jobs are Sunnybrook Health Sciences Centre (448), Humber River Health (287), University of Toronto (213), Michael Garron Hospital (195) and University Health Network (UHN) (177). Hospitals are 2,079 of 3,497 tracked jobs (59.5%), followed by universities and colleges (13.8%). The top 15 employers are listed in the top_employers table.",
+      "data_fields": [
+        "top_employers",
+        "sector"
+      ],
+      "links": [],
+      "evidence_note": ""
+    },
+    {
+      "question": "Are there part-time government jobs in Ontario?",
+      "answer": "Yes. 858 tracked postings (24.5%) are part-time: 628 permanent or with no term stated and 230 temporary or contract. Another 167 (4.8%) are casual or on-call, and 1,517 (43.4%) are full-time. 20.0% of postings do not state an employment type.",
+      "data_fields": [
+        "employment_type"
+      ],
+      "links": [],
+      "evidence_note": ""
+    },
+    {
+      "question": "Can you work from home or remotely in an Ontario government job?",
+      "answer": "Some jobs are hybrid, but few are fully remote. Among tracked postings, 254 (7.3%) are labelled hybrid, 8 (0.2%) remote and 350 (10.0%) on-site. 82.5% do not state a work mode, so check the posting.",
+      "data_fields": [
+        "work_mode"
+      ],
+      "links": [],
+      "evidence_note": ""
+    },
+    {
+      "question": "Where are most government and public-sector jobs in the GTA?",
+      "answer": "Toronto has the most: 2,545 tracked jobs (72.8%). York Region has 242 (6.9%), Peel Region 230 (6.6%), Durham Region 217 (6.2%) and Halton Region 170 (4.9%). The rest list several locations or none.",
+      "data_fields": [
+        "region"
+      ],
+      "links": [],
+      "evidence_note": ""
+    },
+    {
+      "question": "Are there federal government jobs in Toronto and Ontario?",
+      "answer": "Yes. Tracked postings include 70 federal public service jobs from GC Jobs across 19 departments and agencies (most: Canada Mortgage and Housing Corporation (CMHC) 19, Transport Canada 12), with a median posted salary of $98,382. There are also 109 jobs at 11 federal Crown corporations and agencies, led by Canada Pension Plan Investment Board (CPPIB) (30), Canadian Broadcasting Corporation (CBC / Radio-Canada) (27) and Canada Post Corporation (17). Canada Post is counted among the Crown corporations.",
+      "data_fields": [
+        "employer_spotlights",
+        "federal_top_employers"
+      ],
+      "links": [],
+      "evidence_note": ""
+    },
+    {
+      "question": "How much do TTC and GO Transit jobs pay?",
+      "answer": "Among open postings that show pay, the TTC has 15 of 36 with a readable salary, a median of $102,502 and 86.7% with a range reaching $100,000. Metrolinx (GO Transit) has 48 of 51, a median of $110,641 and 95.8% reaching $100,000. Hourly pay is annualized at 1,950 hours; samples are small, so treat these as a snapshot, not a pay scale. For GO bus driver hiring, see https://publicjobs.ca/guides/how-to-become-a-go-bus-driver/.",
+      "data_fields": [
+        "employer_spotlights"
+      ],
+      "links": [
+        "https://publicjobs.ca/guides/how-to-become-a-go-bus-driver/"
+      ],
+      "evidence_note": ""
+    },
+    {
+      "question": "How much do hospital jobs in Toronto and the GTA pay?",
+      "answer": "PublicJobs.ca tracks 2,079 open jobs at 25 hospitals and health centres, mostly in the GTA. 75.1% show a readable salary; the median is $89,417 a year (hourly pay annualized at 1,950 hours, so part-time roles show full-time-equivalent pay) and 51.8% have a range reaching $100,000. Physician roles raise the top end.",
+      "data_fields": [
+        "sector",
+        "employer_spotlights"
+      ],
+      "links": [],
+      "evidence_note": ""
+    },
+    {
+      "question": "How much do Ontario Public Service and City of Toronto jobs pay?",
+      "answer": "The Ontario Public Service has 37 open postings, 35 with a readable salary, a median of $91,879 and 57.1% reaching $100,000. The City of Toronto itself has 11 open postings and 7 show a salary, too few for a reliable median. Together the City and its agencies and corporations have 26 postings, 12 with a salary, a median of $111,108. The TTC and Toronto Hydro are counted separately. For how City of Toronto hiring works, see https://publicjobs.ca/guides/how-city-of-toronto-hiring-works/.",
+      "data_fields": [
+        "employer_spotlights",
+        "sector"
+      ],
+      "links": [
+        "https://publicjobs.ca/guides/how-city-of-toronto-hiring-works/"
+      ],
+      "evidence_note": ""
+    },
+    {
+      "question": "Do government job postings list the salary?",
+      "answer": "Mostly. 2,462 of 3,497 tracked postings (70.4%) include some pay information, and 2,274 (65.0%) show a salary clear enough to read as a range or amount. It varies by sector: 94.6% for the Ontario Public Service, 91.4% for the federal public service, 75.1% for hospitals, 38.6% for universities and colleges and 7.3% for federal Crown corporations.",
+      "data_fields": [
+        "headline.jobs_with_salary_text",
+        "headline.jobs_with_parsed_salary",
+        "headline.share_with_parsed_salary_pct",
+        "sector"
+      ],
+      "links": [],
+      "evidence_note": ""
+    },
+    {
+      "question": "How long do government job postings stay open, and how many close this week?",
+      "answer": "Only 48.8% of tracked postings state a closing date. For the 1,185 that state both a posted date and a closing date, the average posting window is 33.5 days and the median is 15 days. As of November 19, 2026, 729 postings close within the next 7 days (November 19 to November 26, 2026).",
+      "data_fields": [
+        "closing"
+      ],
+      "links": [],
+      "evidence_note": ""
+    },
+    {
+      "question": "How long does it take to hear back or get hired for a government job?",
+      "answer": "It depends on the employer, and most do not publish a timeline. The City of Toronto publishes none; its recreation hiring page says it could be weeks between applying and hearing back (https://publicjobs.ca/guides/how-city-of-toronto-hiring-works/). Metrolinx does not publish a total hiring time for GO bus drivers; once hired, in-house training takes 4 or 7.5 weeks (https://publicjobs.ca/guides/how-to-become-a-go-bus-driver/). CSIS takes about 6 to 18 months after the first interview (https://publicjobs.ca/guides/how-csis-hiring-works/). The posting data in this snapshot does not measure hiring time.",
+      "data_fields": [],
+      "links": [
+        "https://publicjobs.ca/guides/how-city-of-toronto-hiring-works/",
+        "https://publicjobs.ca/guides/how-to-become-a-go-bus-driver/",
+        "https://publicjobs.ca/guides/how-csis-hiring-works/"
+      ],
+      "evidence_note": "answer from existing site guides; not from snapshot data"
+    }
+  ]
+}

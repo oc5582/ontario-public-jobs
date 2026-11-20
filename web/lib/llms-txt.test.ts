@@ -25,7 +25,13 @@ test("llms.txt follows the llmstxt.org outline and skips address and phone", () 
   assert.ok(body.includes("## Main pages"));
   assert.ok(body.includes("## Top employers"));
   assert.ok(body.includes("## Guides"));
+  assert.ok(body.includes("## Data"));
   assert.ok(body.includes("## Optional"));
+  assert.ok(body.includes("https://publicjobs.ca/data/ontario-public-jobs-november-2026/"));
+  assert.ok(body.includes("https://publicjobs.ca/data/ontario-public-jobs-november-2026.md"));
+  assert.ok(body.includes("https://publicjobs.ca/data/snapshot-2026-11.json"));
+  assert.equal(body.includes("pending"), false);
+  assert.equal(body.includes("TO BE CONFIRMED"), false);
   assert.ok(body.includes("https://publicjobs.ca/#signup-heading"));
   assert.ok(body.includes("https://publicjobs.ca/start/"));
   assert.ok(body.includes("https://publicjobs.ca/is-publicjobs-ca-legit/"));
