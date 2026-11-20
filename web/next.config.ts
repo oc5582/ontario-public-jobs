@@ -38,6 +38,27 @@ const nextConfig: NextConfig = {
         source: "/73ae3ce2e86e564e9a35eadf85dcb3d6.txt",
         headers: [{ key: "Content-Type", value: "text/plain; charset=utf-8" }],
       },
+      {
+        source: "/data/:file.json",
+        headers: [{ key: "Content-Type", value: "application/json; charset=utf-8" }],
+      },
+      {
+        source: "/data/csv/:file.csv",
+        headers: [{ key: "Content-Type", value: "text/csv; charset=utf-8" }],
+      },
+      {
+        source: "/data/:file.md",
+        headers: [{ key: "Content-Type", value: "text/markdown; charset=utf-8" }],
+      },
+      {
+        source: "/data/:file.xlsx",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          },
+        ],
+      },
     ];
   },
 };

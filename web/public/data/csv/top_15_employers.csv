@@ -1,0 +1,16 @@
+rank,employer,sector,open_jobs,share_of_jobs_pct,median_salary_midpoint_annual,jobs_with_parsed_salary
+1,Sunnybrook Health Sciences Centre,Hospitals,448,12.8,92500,412
+2,Humber River Health,Hospitals,287,8.2,84903,284
+3,University of Toronto,Universities & colleges,213,6.1,141731,86
+4,Michael Garron Hospital,Hospitals,195,5.6,,4
+5,University Health Network (UHN),Hospitals,177,5.1,78751,170
+6,Scarborough Health Network,Hospitals,129,3.7,97627,123
+7,Toronto Metropolitan University,Universities & colleges,95,2.7,90750,25
+8,Trillium Health Partners,Hospitals,92,2.6,89417,82
+9,Lakeridge Health,Hospitals,90,2.6,90987,90
+10,Mackenzie Health,Hospitals,85,2.4,,0
+11,Unity Health Toronto,Hospitals,66,1.9,97627,65
+12,Centre for Addiction and Mental Health (CAMH),Hospitals,63,1.8,90855,62
+13,Oak Valley Health,Hospitals,59,1.7,97705,50
+14,North York General Hospital,Hospitals,57,1.6,70882,56
+15,The Hospital for Sick Children (SickKids),Hospitals,56,1.6,,6

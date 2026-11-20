@@ -1,4 +1,4 @@
-/* Extra styles for /privacy/, /about/, /faq/, /employers/, /stats/ and /terms/ only. */
+/* Extra styles for /privacy/, /about/, /faq/, /employers/, /stats/, /data/ and /terms/ only. */
 .description a {
   color: var(--civic);
 }
@@ -247,4 +247,86 @@
   margin-top: 0.4rem;
   color: var(--muted);
   font-size: 0.875rem;
+}
+
+.data-citation {
+  max-width: 42rem;
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+}
+
+.data-citation a,
+.data-downloads a,
+.data-license a {
+  color: var(--civic);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.data-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.data-stat {
+  margin: 0;
+  padding: 0.85rem 1rem 0.95rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--civic);
+}
+
+.data-stat strong {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-stat span {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+
+.data-downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin: 0 0 1.75rem;
+}
+
+.data-report h2,
+.data-report h3 {
+  scroll-margin-top: 5.5rem;
+}
+
+.data-report h3 {
+  margin: 1.25rem 0 0.4rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+
+.data-license {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  font-weight: 600;
+}
+
+@media (max-width: 767px) {
+  .data-stats {
+    grid-template-columns: 1fr 1fr;
+  }
 }

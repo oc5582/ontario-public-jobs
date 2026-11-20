@@ -13,6 +13,7 @@ function currentKey(pathname: string): string {
   if (path === "/faq") return "faq";
   if (path === "/guides" || path.startsWith("/guides/")) return "guides";
   if (path === "/stats") return "stats";
+  if (path === "/data" || path.startsWith("/data/")) return "data";
   if (path === "/privacy") return "privacy";
   if (path === "/terms") return "terms";
   if (path === "/pricing") return "pricing";
@@ -95,6 +96,7 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
               <li>{nav("Is PublicJobs.ca legit?", "/is-publicjobs-ca-legit/", "legit")}</li>
               <li>{nav("FAQ", "/faq/", "faq")}</li>
               <li>{nav("Job stats", "/stats/", "stats")}</li>
+              <li>{nav("Data", "/data/", "data")}</li>
               <li>{nav("Guides", "/guides/", "guides")}</li>
               <li>{nav("Privacy", "/privacy/", "privacy")}</li>
               <li>{nav("Terms", "/terms/", "terms")}</li>
