@@ -19,6 +19,15 @@ export type Guide = {
 /** Newest first. Each body lives in content/guides/{slug}.html, without the H1. */
 export const GUIDES: Guide[] = [
   {
+    slug: "is-a-government-job-worth-a-pay-cut",
+    title: "Is a Government Job Worth a Pay Cut? Public vs Private Pay in Ontario",
+    seoTitle: "Is a Government Job Worth a Pay Cut? Public vs Private Pay",
+    description:
+      "Is a government job worth a pay cut in Ontario? Compare salary, pension, benefits and union coverage with real numbers, plus a checklist for weighing an offer.",
+    published: "2026-11-23",
+    updated: "2026-11-23",
+  },
+  {
     slug: "how-federal-government-hiring-works-gta",
     title: "How Federal Government Hiring Works in the GTA: GC Jobs, Pools and Language Tests",
     seoTitle: "How Federal Hiring Works in the GTA: GC Jobs and Pools",
