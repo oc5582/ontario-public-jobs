@@ -1,5 +1,6 @@
 "use client";
 
+import { TurnstileField } from "@/components/TurnstileField";
 import { trackMeta } from "@/lib/meta-pixel";
 import { SIGNUP_ENDPOINT } from "@/lib/site";
 import { weeklyAlertPayload } from "@/lib/weekly-alert";
@@ -38,6 +39,7 @@ export function SignupForm({
     const email = String(data.get("email") || "");
     const agreed = data.get("casl_consent") === "yes";
     const gotcha = String(data.get("_gotcha") || "");
+    const token = String(data.get("cf-turnstile-response") || "");
 
     if (gotcha.trim()) {
       setStatus({ message: SUCCESS, ok: true });
@@ -47,6 +49,10 @@ export function SignupForm({
       setStatus({ message: VALIDATION, ok: false });
       return;
     }
+    if (form.querySelector(".cf-turnstile") && !token.trim()) {
+      setStatus({ message: "Please wait a moment and try again.", ok: false });
+      return;
+    }
 
     const endpoint = SIGNUP_ENDPOINT.trim();
     if (!endpoint) {
@@ -54,7 +60,7 @@ export function SignupForm({
       return;
     }
 
-    const payload = weeklyAlertPayload(email);
+    const payload = weeklyAlertPayload(email, token);
     setPending(true);
     try {
       const response = await fetch(endpoint, {
@@ -68,6 +74,11 @@ export function SignupForm({
         credentials: "omit",
       });
       const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (response.status === 429 || response.status === 403) {
+        const message = typeof body.error === "string" && body.error.length < 200 ? body.error : ERROR;
+        setStatus({ message, ok: false });
+        return;
+      }
       if (!response.ok) throw new Error(body.error || "fail");
       if (body.ok === true) trackMeta("track", "Lead");
       setStatus({ message: SUCCESS, ok: true });
@@ -143,6 +154,7 @@ export function SignupForm({
             <a href="/privacy/">Privacy</a> <a href="/terms/">Terms</a>
           </span>
         </label>
+        <TurnstileField action="signup" />
         <div className="hp" aria-hidden="true">
           <label htmlFor={`${idPrefix}gotcha`}>Leave this field blank</label>
           <input type="text" id={`${idPrefix}gotcha`} name="_gotcha" tabIndex={-1} autoComplete="off" />

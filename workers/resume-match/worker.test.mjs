@@ -349,4 +349,24 @@ assert.ok(indexBodies.every((body) => body.p_limit === 500 && String(body.p_resu
   assert.ok(indexBodies.length >= before + 2);
 }
 
+// Turnstile is off until TURNSTILE_SECRET_KEY is set. Trusted callers skip it.
+{
+  const before = signups.length;
+  const blocked = await call(
+    { email: "challenge@publicjobs.test", casl_consent: "yes", resume_text: resume },
+    { ip: "203.0.113.70" },
+    { TURNSTILE_SECRET_KEY: "secret" },
+  );
+  assert.equal(blocked.status, 403);
+  assert.match(blocked.json.error, /security check/i);
+  assert.equal(signups.length, before);
+  assert.equal(runCalls, 0);
+  const trusted = await call(
+    { resume_text: resume },
+    { trusted: true, ip: "198.51.100.77" },
+    { TURNSTILE_SECRET_KEY: "secret" },
+  );
+  assert.equal(trusted.status, 200, JSON.stringify(trusted.json));
+}
+
 console.log("worker tests passed");

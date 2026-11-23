@@ -9,6 +9,7 @@ import {
   SEGMENT_ID,
   WELCOME_FROM,
   WELCOME_TEMPLATE_ID,
+  clearSignupLimits,
   handleSignup,
   originAllowed,
 } from "./signup.js";
@@ -172,6 +173,115 @@ test("blocks other websites", async () => {
   );
   assert.equal(response.status, 403);
   assert.equal(called, false);
+});
+
+test("public signups are limited per IP and per email", async () => {
+  clearSignupLimits();
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls += 1;
+    return new Response(JSON.stringify({ id: "contact_1" }), { status: 200 });
+  };
+  const ip = "203.0.113.10";
+  for (let i = 1; i <= 5; i += 1) {
+    const response = await handleSignup(
+      post({ email: `person${i}@example.com`, casl_consent: "yes" }, { "CF-Connecting-IP": ip }),
+      { RESEND_API_KEY: "test-key" }
+    );
+    assert.equal(response.status, 200, `signup ${i}`);
+  }
+  const blocked = await handleSignup(
+    post({ email: "person6@example.com", casl_consent: "yes" }, { "CF-Connecting-IP": ip }),
+    { RESEND_API_KEY: "test-key" }
+  );
+  assert.equal(blocked.status, 429);
+  assert.match((await blocked.json()).error, /wait/i);
+  assert.equal(calls, 10);
+
+  clearSignupLimits();
+  calls = 0;
+  for (let i = 1; i <= 3; i += 1) {
+    const response = await handleSignup(
+      post({ email: "same@example.com", casl_consent: "yes" }, { "CF-Connecting-IP": "203.0.113.11" }),
+      { RESEND_API_KEY: "test-key" }
+    );
+    assert.equal(response.status, 200);
+  }
+  const again = await handleSignup(
+    post({ email: "same@example.com", casl_consent: "yes" }, { "CF-Connecting-IP": "203.0.113.11" }),
+    { RESEND_API_KEY: "test-key" }
+  );
+  assert.equal(again.status, 429);
+  assert.equal(calls, 6);
+});
+
+test("Turnstile stays off until the worker secret is set", async () => {
+  clearSignupLimits();
+  let urls = [];
+  globalThis.fetch = async (url) => {
+    urls.push(String(url));
+    if (String(url).includes("siteverify")) {
+      return new Response(JSON.stringify({ success: true }), { status: 200 });
+    }
+    return new Response(JSON.stringify({ id: "contact_1" }), { status: 200 });
+  };
+
+  const open = await handleSignup(
+    post({ email: "open@example.com", casl_consent: "yes" }, { "CF-Connecting-IP": "203.0.113.20" }),
+    { RESEND_API_KEY: "test-key" }
+  );
+  assert.equal(open.status, 200);
+  assert.equal(urls.some((url) => url.includes("siteverify")), false);
+
+  const internal = await handleSignup(
+    new Request("https://signup.internal/subscribe", {
+      method: "POST",
+      headers: {
+        Origin: origin,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "CF-Connecting-IP": "203.0.113.21",
+      },
+      body: JSON.stringify({ email: "internal@example.com", casl_consent: "yes" }),
+    }),
+    { RESEND_API_KEY: "test-key", TURNSTILE_SECRET_KEY: "secret" }
+  );
+  assert.equal(internal.status, 200);
+
+  urls = [];
+  const missing = await handleSignup(
+    post({ email: "locked@example.com", casl_consent: "yes" }, { "CF-Connecting-IP": "203.0.113.22" }),
+    { RESEND_API_KEY: "test-key", TURNSTILE_SECRET_KEY: "secret" }
+  );
+  assert.equal(missing.status, 403);
+  assert.match((await missing.json()).error, /security check/i);
+  assert.equal(urls.length, 0);
+
+  const passed = await handleSignup(
+    post(
+      { email: "passed@example.com", casl_consent: "yes", turnstile_token: "ok-token" },
+      { "CF-Connecting-IP": "203.0.113.23" }
+    ),
+    { RESEND_API_KEY: "test-key", TURNSTILE_SECRET_KEY: "secret" }
+  );
+  assert.equal(passed.status, 200);
+  assert.equal(urls[0], "https://challenges.cloudflare.com/turnstile/v0/siteverify");
+});
+
+test("a very long email is rejected before the pattern matcher", async () => {
+  let called = false;
+  globalThis.fetch = async () => {
+    called = true;
+    return new Response("{}", { status: 200 });
+  };
+  const started = Date.now();
+  const response = await handleSignup(
+    post({ email: `${"a".repeat(50000)}@example.com`, casl_consent: "yes" }, { "CF-Connecting-IP": "203.0.113.40" }),
+    { RESEND_API_KEY: "test-key" }
+  );
+  assert.equal(response.status, 400);
+  assert.equal(called, false);
+  assert.ok(Date.now() - started < 200);
 });
 
 test("homepage form is email plus consent and listings stay in the HTML", () => {

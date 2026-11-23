@@ -1,5 +1,6 @@
 import { createHash, createHmac, randomUUID } from "crypto";
 import { query } from "./db";
+import { isBasicEmail } from "./email-address";
 
 /**
  * Free matches per normalised email (signed out or free account), and per browser.
@@ -303,12 +304,11 @@ function successBody(payload: WorkerPayload, isMember: boolean, consent: boolean
 // ---------------------------------------------------------------------------
 // Free-run ledger (one free match per normalised email, with or without an account)
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-/** Server-side format check. Same rule as the Worker. */
+/** Server-side format check. Same rule as the Worker. Length is rejected before the pattern. */
 export function isValidEmail(value: string): boolean {
   const email = value.trim();
-  return email.length >= 3 && email.length <= 254 && EMAIL_RE.test(email) && !/[<>,;"]/.test(email);
+  if (email.length > 254) return false;
+  return isBasicEmail(email) && !/[<>,;"]/.test(email);
 }
 
 /** Lowercase, trim, drop +tags, and treat Gmail dots as the same address. Same as the Worker. */

@@ -1,3 +1,27 @@
 name = "ontario-public-jobs-signup"
 main = "signup.js"
 compatibility_date = "2026-09-24"
+
+# Optional. Leave TURNSTILE_SECRET_KEY unset until the Turnstile widget exists.
+# Set it with: npx wrangler secret put TURNSTILE_SECRET_KEY
+# It must be the same widget secret as TURNSTILE_SECRET_KEY on Vercel.
+# Requests from the resume-match service binding use hostname signup.internal
+# and skip this check. Public requests do not.
+
+# Burst limits per Cloudflare location. The Worker also keeps a longer
+# in-memory window. Period can only be 10 or 60 seconds.
+[[ratelimits]]
+name = "SIGNUP_IP_LIMIT"
+namespace_id = "7102101"
+
+  [ratelimits.simple]
+  limit = 5
+  period = 60
+
+[[ratelimits]]
+name = "SIGNUP_EMAIL_LIMIT"
+namespace_id = "7102102"
+
+  [ratelimits.simple]
+  limit = 3
+  period = 60

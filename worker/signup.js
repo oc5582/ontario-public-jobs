@@ -21,6 +21,104 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 const MAX_BODY = 10_000;
 const SOFT_PAY = new Set(["yes", "maybe", "no"]);
+const TEN_MINUTES = 10 * 60 * 1000;
+const HOUR = 60 * 60 * 1000;
+const DAY = 24 * 60 * 60 * 1000;
+const RATE_MESSAGE = "Please wait a few minutes and try again.";
+const TURNSTILE_MESSAGE = "The security check did not pass. Please try again.";
+const buckets = new Map();
+
+export function clearSignupLimits() {
+  buckets.clear();
+}
+
+function isInternal(request) {
+  try {
+    return new URL(request.url).hostname === "signup.internal";
+  } catch {
+    return false;
+  }
+}
+
+function clientIp(request) {
+  if (isInternal(request)) return "";
+  return (request.headers.get("cf-connecting-ip") || "").trim().slice(0, 64);
+}
+
+function pruneBuckets(now) {
+  if (buckets.size < 2000) return;
+  for (const [key, times] of buckets) {
+    const fresh = times.filter((t) => now - t < DAY);
+    if (fresh.length === 0) buckets.delete(key);
+    else buckets.set(key, fresh);
+  }
+  if (buckets.size > 4000) buckets.clear();
+}
+
+function tooMany(key, limit, windowMs, now) {
+  pruneBuckets(now);
+  const fresh = (buckets.get(key) || []).filter((t) => now - t < windowMs);
+  if (fresh.length >= limit) {
+    buckets.set(key, fresh);
+    return true;
+  }
+  fresh.push(now);
+  buckets.set(key, fresh);
+  return false;
+}
+
+async function bindingBlocked(binding, key) {
+  if (!binding || typeof binding.limit !== "function") return false;
+  try {
+    const result = await binding.limit({ key: String(key).slice(0, 128) });
+    return !result || result.success === false;
+  } catch (err) {
+    console.error("signup rate limit failed", err && err.message ? err.message : "error");
+    return false;
+  }
+}
+
+async function publicLimited(request, env, email, now) {
+  const ip = clientIp(request);
+  if (!ip) return false;
+  if (
+    tooMany(`ip10:${ip}`, 5, TEN_MINUTES, now) ||
+    tooMany(`ipday:${ip}`, 20, DAY, now) ||
+    (await bindingBlocked(env && env.SIGNUP_IP_LIMIT, `ip:${ip}`))
+  ) {
+    return true;
+  }
+  if (!email) return false;
+  if (
+    tooMany(`email:${email}`, 3, HOUR, now) ||
+    tooMany(`emailday:${email}`, 8, DAY, now) ||
+    (await bindingBlocked(env && env.SIGNUP_EMAIL_LIMIT, `email:${email}`))
+  ) {
+    return true;
+  }
+  return false;
+}
+
+async function turnstilePasses(token, secret, ip) {
+  const key = String(secret || "");
+  if (!key) return true;
+  const value = String(token || "").trim();
+  if (!value || value.length > 2048) return false;
+  const body = new URLSearchParams({ secret: key, response: value });
+  if (ip) body.set("remoteip", ip);
+  try {
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body,
+    });
+    const data = await response.json();
+    return Boolean(data && data.success);
+  } catch (err) {
+    console.error("turnstile failed", err && err.message ? err.message : "error");
+    return false;
+  }
+}
 
 function isEmail(value) {
   if (typeof value !== "string") return false;
@@ -265,11 +363,15 @@ export async function handleSignup(request, env, deps = {}) {
   }
 
   const data = parsed.data;
+  const now = (deps.now || (() => new Date()))();
+  const email = String(data.email || "").trim().toLowerCase();
+  if (await publicLimited(request, env, isEmail(email) ? email : "", now.getTime())) {
+    return respond(request, origin, 429, RATE_MESSAGE);
+  }
   if (String(data._gotcha || "").trim()) {
     return respond(request, origin, 200);
   }
 
-  const email = String(data.email || "").trim().toLowerCase();
   if (!isEmail(email) || !consented(data.casl_consent)) {
     return respond(
       request,
@@ -284,7 +386,15 @@ export async function handleSignup(request, env, deps = {}) {
     return respond(request, origin, 500, "Something went wrong. Please try again.");
   }
 
-  const now = (deps.now || (() => new Date()))();
+  if (!isInternal(request)) {
+    const passed = await turnstilePasses(
+      data.turnstile_token,
+      env.TURNSTILE_SECRET_KEY,
+      clientIp(request)
+    );
+    if (!passed) return respond(request, origin, 403, TURNSTILE_MESSAGE);
+  }
+
   const properties = contactProperties(
     String(data.soft_pay || "").trim(),
     now.toISOString()

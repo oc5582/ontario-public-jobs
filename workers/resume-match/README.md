@@ -43,6 +43,7 @@ There is no hour-long cache. Each match asks for its own candidates. Job links u
 | `MATCH_DAILY_CAP` | Optional Worker var | Overrides the 300/day cap. Leave unset in production. |
 | `MATCH_MONTHLY_CAP_USD` | Optional Worker var | Estimated AI spend cap for the UTC month, in dollars. Leave unset. The code default is 10. |
 | `MATCH_CANDIDATES` | Optional Worker var | How many jobs the SQL pass sends to the model (50–800). Leave unset. The code default is 500. |
+| `TURNSTILE_SECRET_KEY` | Optional Worker secret | Same secret as Vercel `TURNSTILE_SECRET_KEY`. Leave unset until the widget exists. Direct callers then need `turnstile_token`. Trusted Next.js calls skip it. |
 
 Set the Worker secret without writing it into `wrangler.toml`:
 

@@ -255,9 +255,15 @@ function renderMatchUnlock(doc, shown, remaining) {
     var consent = document.getElementById("consent").checked;
     var emailEl = document.getElementById("email");
     var email = emailEl ? emailEl.value.trim() : "";
-    if (emailEl && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (emailEl && (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
       setStatus("Enter a valid email address.", true);
       emailEl.focus();
+      return;
+    }
+    var tokenEl = form.querySelector('[name="cf-turnstile-response"]');
+    var turnstileToken = tokenEl && tokenEl.value ? String(tokenEl.value) : "";
+    if (form.querySelector(".cf-turnstile") && !turnstileToken) {
+      setStatus("Please wait a moment and try again.", true);
       return;
     }
     var resume = (textArea.value.trim() || fileText).slice(0, MAX);
@@ -275,13 +281,13 @@ function renderMatchUnlock(doc, shown, remaining) {
       var res = await fetch(ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
+        body: JSON.stringify(Object.assign({
           email: email,
           run_id: runId,
           casl_consent: consent ? "yes" : "",
           resume_text: resume,
           _gotcha: document.getElementById("gotcha").value,
-        }),
+        }, turnstileToken ? { turnstile_token: turnstileToken } : {})),
       });
       var data = await res.json().catch(function () { return {}; });
       if (!res.ok || !data.ok) {

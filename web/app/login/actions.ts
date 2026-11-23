@@ -3,20 +3,37 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { localLoginAllowed, requestOrigin, safeNext, setLocalSession, supabaseConfigured } from "@/lib/auth";
+import { clientIpFrom } from "@/lib/client-ip";
+import { boundedEmailLower, isBasicEmail } from "@/lib/email-address";
 import { googleSignInEnabled } from "@/lib/google-sign-in";
+import { requestAllowed, RULES } from "@/lib/rate-limit";
+import { turnstileOk, turnstileToken } from "@/lib/turnstile";
 import { query } from "@/lib/db";
 import { createClient } from "@/lib/supabase";
 
 function emailOf(formData: FormData): string {
-  return String(formData.get("email") || "").trim().toLowerCase();
+  return boundedEmailLower(formData.get("email"));
 }
 
 export async function signInWithEmail(formData: FormData) {
   const email = emailOf(formData);
   const next = safeNext(String(formData.get("next") || ""), "/account/");
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!isBasicEmail(email)) {
     redirect(`/login/?error=email&next=${encodeURIComponent(next)}`);
   }
+  const h = await headers();
+  const ip = clientIpFrom(h);
+  if (!(await turnstileOk(turnstileToken(formData), ip))) {
+    redirect(`/login/?error=check&next=${encodeURIComponent(next)}`);
+  }
+  const allowed = await requestAllowed({
+    scope: "magic-link",
+    ip,
+    email,
+    ipRule: RULES.magicLink.ip,
+    emailRule: RULES.magicLink.email,
+  });
+  if (!allowed) redirect(`/login/?error=rate&next=${encodeURIComponent(next)}`);
   if (supabaseConfigured()) {
     const supabase = await createClient();
     const origin = await requestOrigin();
@@ -30,7 +47,6 @@ export async function signInWithEmail(formData: FormData) {
     if (error) redirect(`/login/?error=send&next=${encodeURIComponent(next)}`);
     redirect(`/login/?sent=1&next=${encodeURIComponent(next)}`);
   }
-  const h = await headers();
   if (!localLoginAllowed(h.get("host"))) {
     redirect(`/login/?error=config&next=${encodeURIComponent(next)}`);
   }

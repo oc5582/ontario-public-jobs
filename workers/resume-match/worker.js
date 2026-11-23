@@ -76,6 +76,27 @@ function isEmail(v) {
   return typeof v === "string" && v.length >= 3 && v.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
+async function turnstilePasses(token, secret, ip) {
+  const key = String(secret || "");
+  if (!key) return true;
+  const value = String(token || "").trim();
+  if (!value || value.length > 2048) return false;
+  const body = new URLSearchParams({ secret: key, response: value });
+  if (ip) body.set("remoteip", ip);
+  try {
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body,
+    });
+    const data = await response.json();
+    return Boolean(data && data.success);
+  } catch (err) {
+    console.error("turnstile failed", err && err.message ? err.message.slice(0, 120) : "error");
+    return false;
+  }
+}
+
 export function normalizeEmail(email) {
   let [local, domain] = email.trim().toLowerCase().split("@");
   local = local.split("+")[0];
@@ -383,6 +404,13 @@ async function handleMatch(request, env, ctx, origin) {
   if (String(data._gotcha || "").trim()) return json({ ok: true, strong: [], maybe: [] }, 200, origin);
 
   const trusted = await isTrusted(request, env);
+  if (!trusted && !(await turnstilePasses(
+    data.turnstile_token,
+    env && env.TURNSTILE_SECRET_KEY,
+    request.headers.get("cf-connecting-ip") || ""
+  ))) {
+    return fail("error", 403, origin, { error: "The security check did not pass. Please try again." });
+  }
   const email = String(data.email || "").trim().toLowerCase();
   const consent = data.casl_consent === true || ["yes", "true", "on"].includes(String(data.casl_consent || ""));
   // Direct callers (the live /match/ page) still need an email and the consent box.

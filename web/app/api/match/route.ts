@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 import { recordMatchAlertConsent } from "@/lib/alert-consent";
 import { reportEvent } from "@/lib/analytics";
 import { getViewer, requestOrigin } from "@/lib/auth";
+import { clientIpFrom } from "@/lib/client-ip";
+import { boundedEmailLower } from "@/lib/email-address";
 import {
   FREE_COOKIE,
   FREE_COOKIE_MAX_AGE,
@@ -13,6 +15,8 @@ import {
   runGuestMatch,
   runMatch,
 } from "@/lib/match";
+import { requestAllowed, RULES } from "@/lib/rate-limit";
+import { turnstileOk } from "@/lib/turnstile";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -25,9 +29,7 @@ function consentValue(value: unknown): boolean {
 
 /** Client IP as Vercel reports it. Only an HMAC of it is stored. */
 function clientIp(request: Request): string {
-  const real = request.headers.get("x-real-ip") || "";
-  const forwarded = (request.headers.get("x-forwarded-for") || "").split(",")[0] || "";
-  return (real || forwarded).trim().slice(0, 64) || "unknown";
+  return clientIpFrom(request.headers);
 }
 
 /** Browser counter of free matches, 1 to FREE_RUNS_PER_EMAIL. */
@@ -38,7 +40,14 @@ function freeCookie(request: Request, runs: number): string {
 }
 
 export async function POST(request: Request) {
-  let data: { email?: unknown; resume_text?: string; casl_consent?: unknown; _gotcha?: string; run_id?: unknown };
+  let data: {
+    email?: unknown;
+    resume_text?: string;
+    casl_consent?: unknown;
+    _gotcha?: string;
+    run_id?: unknown;
+    turnstile_token?: unknown;
+  };
   try {
     data = await request.json();
   } catch {
@@ -46,6 +55,30 @@ export async function POST(request: Request) {
   }
   const consent = consentValue(data.casl_consent);
   const gotcha = String(data._gotcha || "");
+  const postedEmail = boundedEmailLower(data.email);
+  const ip = clientIp(request);
+  if (!gotcha.trim()) {
+    const token = String(data.turnstile_token || "").trim().slice(0, 2048);
+    if (!(await turnstileOk(token, ip))) {
+      return Response.json(
+        { ok: false, code: "check", error: "The security check did not pass. Please try again." },
+        { status: 403, headers: NO_STORE },
+      );
+    }
+  }
+  const allowed = await requestAllowed({
+    scope: "match",
+    ip,
+    email: postedEmail,
+    ipRule: RULES.match.ip,
+    emailRule: postedEmail ? RULES.match.email : undefined,
+  });
+  if (!allowed) {
+    return Response.json(
+      { ok: false, code: "busy", error: "Please wait a few minutes and try again." },
+      { status: 429, headers: NO_STORE },
+    );
+  }
   const viewer = await getViewer();
 
   if (!viewer.email || !viewer.profile) {
