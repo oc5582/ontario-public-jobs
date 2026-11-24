@@ -7,6 +7,8 @@ import { weeklyAlertPayload } from "@/lib/weekly-alert";
 import { type FormEvent, useState } from "react";
 
 const SUCCESS = "You’re on the list. We’ll email new openings to this address.";
+const CONFIRM = "Check your email and click Confirm my job alerts. We won’t send job alerts until you do.";
+const ALREADY = "You’re already on the list. We’ll email new openings to this address.";
 const ERROR = "Something went wrong. Please try again.";
 const VALIDATION = "Enter your email and check the box to agree to job alert emails.";
 
@@ -73,15 +75,16 @@ export function SignupForm({
         mode: "cors",
         credentials: "omit",
       });
-      const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string; status?: string };
       if (response.status === 429 || response.status === 403) {
         const message = typeof body.error === "string" && body.error.length < 200 ? body.error : ERROR;
         setStatus({ message, ok: false });
         return;
       }
       if (!response.ok) throw new Error(body.error || "fail");
-      if (body.ok === true) trackMeta("track", "Lead");
-      setStatus({ message: SUCCESS, ok: true });
+      if (body.ok === true && body.status !== "confirm") trackMeta("track", "Lead");
+      const message = body.status === "confirm" ? CONFIRM : body.status === "subscribed" ? ALREADY : SUCCESS;
+      setStatus({ message, ok: true });
       const label = form.querySelector(`#${idPrefix}casl-label`);
       const consentText = label?.textContent || "";
       fetch("/api/alerts/consent/", {

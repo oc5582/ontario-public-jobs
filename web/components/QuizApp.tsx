@@ -417,10 +417,12 @@ export function QuizApp({
         mode: "cors",
         credentials: "omit",
       });
-      const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string; status?: string };
       if (!response.ok || body.ok === false) return body.error || "Something went wrong. Please try again.";
-      trackMeta("track", "Lead");
-      trackGoogleAdsLead();
+      if (body.status !== "confirm") {
+        trackMeta("track", "Lead");
+        trackGoogleAdsLead();
+      }
       fetch("/api/alerts/consent/", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },

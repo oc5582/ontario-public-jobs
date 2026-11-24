@@ -161,10 +161,17 @@
               if (r.status === 429 || r.status === 403) throw new Error(message);
               throw new Error(message);
             }
-            if (data && data.ok === true && typeof fbq === "function") {
+            if (data && data.ok === true && data.status !== "confirm" && typeof fbq === "function") {
               fbq("track", "Lead");
             }
-            showStatus(status, C.signup.successSent, true);
+            const pending = data && data.status === "confirm";
+            const already = data && data.status === "subscribed";
+            const message = pending
+              ? "Check your email and click Confirm my job alerts. We won't send job alerts until you do."
+              : already
+                ? "You're already on the list."
+                : C.signup.successSent;
+            showStatus(status, message, true);
             $("#email").value = "";
             $("#consent").checked = false;
           });

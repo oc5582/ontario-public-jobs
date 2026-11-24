@@ -12,6 +12,8 @@ import {
   clearSignupLimits,
   handleSignup,
   originAllowed,
+  readAlertConfirm,
+  signAlertConfirm,
 } from "./signup.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -30,11 +32,18 @@ function post(body, headers = {}) {
   });
 }
 
-test("creates a consented contact on the Ontario Public Jobs segment", async () => {
+const CONFIRM_SECRET = "confirm-secret";
+
+function env(extra = {}) {
+  return { RESEND_API_KEY: "test-key", ALERT_CONFIRM_SECRET: CONFIRM_SECRET, ...extra };
+}
+
+test("a new signup gets a confirmation email and is not added to the list yet", async () => {
   const seen = [];
-  globalThis.fetch = async (url, options) => {
+  globalThis.fetch = async (url, options = {}) => {
     seen.push({ url: String(url), options });
-    return new Response(JSON.stringify({ id: "contact_1" }), { status: 200 });
+    if (String(url).includes("/contacts/")) return new Response("{}", { status: 404 });
+    return new Response(JSON.stringify({ id: "email_1" }), { status: 200 });
   };
 
   const response = await handleSignup(
@@ -43,80 +52,143 @@ test("creates a consented contact on the Ontario Public Jobs segment", async () 
       casl_consent: "yes",
       soft_pay: "maybe",
     }),
-    { RESEND_API_KEY: "test-key" },
+    env(),
     { now: () => new Date("2026-09-24T12:00:00.000Z") }
   );
 
   assert.equal(response.status, 200);
-  const payload = JSON.parse(seen[0].options.body);
+  assert.deepEqual(await response.json(), { ok: true, status: "confirm" });
   assert.equal(seen.length, 2);
-  assert.equal(seen[0].url, "https://api.resend.com/contacts");
-  assert.equal(seen[0].options.headers.Authorization, "Bearer test-key");
-  assert.equal(payload.email, "reader@example.com");
-  assert.equal(payload.unsubscribed, false);
-  assert.deepEqual(payload.segments, [{ id: SEGMENT_ID }]);
-  assert.equal(payload.properties.casl_consent, "express");
-  assert.equal(payload.properties.consent_text, CONSENT_TEXT);
-  assert.equal(payload.properties.consent_source, CONSENT_SOURCE);
-  assert.equal(payload.properties.consented_at, "2026-09-24T12:00:00.000Z");
-  assert.equal(payload.properties.soft_pay, "maybe");
-  assert.equal(payload.properties.region, undefined);
-
-  const welcome = JSON.parse(seen[1].options.body);
+  assert.equal(seen[0].url, "https://api.resend.com/contacts/reader%40example.com");
+  assert.equal(seen[0].options.method, undefined);
+  const mail = JSON.parse(seen[1].options.body);
   assert.equal(seen[1].url, "https://api.resend.com/emails");
-  assert.equal(seen[1].options.headers["Idempotency-Key"], "welcome-email/reader@example.com");
+  assert.equal(seen[1].options.headers.Authorization, "Bearer test-key");
+  assert.equal(seen[1].options.headers["Idempotency-Key"], "alert-confirm/reader@example.com/1790424000");
+  assert.equal(mail.from, WELCOME_FROM);
+  assert.deepEqual(mail.to, ["reader@example.com"]);
+  assert.equal(mail.subject, "Confirm your PublicJobs.ca job alerts");
+  assert.match(mail.text, /Confirm my job alerts/);
+  assert.match(mail.html, /Confirm my job alerts/);
+  assert.match(mail.text, /603-65 Thorncliffe Park Drive/);
+  assert.match(mail.html, /603-65 Thorncliffe Park Drive/);
+  assert.match(mail.text, /https:\/\/publicjobs\.ca\/alerts\/confirm\/\?token=/);
+  assert.equal(mail.template, undefined);
+  const token = new URL(mail.text.split("\n").find((line) => line.startsWith("https://"))).searchParams.get("token");
+  const read = await readAlertConfirm(token, CONFIRM_SECRET, Date.parse("2026-09-24T12:00:00.000Z"));
+  assert.equal(read.ok, true);
+  assert.equal(read.email, "reader@example.com");
+  assert.equal(read.pay, "maybe");
+  assert.equal(read.at, "2026-09-24T12:00:00.000Z");
+});
+
+test("opening the confirm link adds the contact and sends the welcome email", async () => {
+  const seen = [];
+  globalThis.fetch = async (url, options = {}) => {
+    seen.push({ url: String(url), method: options.method, body: options.body });
+    if (!options.method || options.method === "GET") return new Response("{}", { status: 404 });
+    return new Response(JSON.stringify({ id: "contact_1" }), { status: 200 });
+  };
+  const issued = await handleSignup(
+    post({ email: "reader@example.com", casl_consent: "yes", soft_pay: "maybe" }),
+    env(),
+    { now: () => new Date("2026-09-24T12:00:00.000Z") }
+  );
+  const mail = JSON.parse(seen.find((call) => call.url.endsWith("/emails")).body);
+  const token = new URL(mail.text.split("\n").find((line) => line.startsWith("https://"))).searchParams.get("token");
+  seen.length = 0;
+  const confirmed = await handleSignup(
+    post({ confirm_token: token }),
+    env(),
+    { now: () => new Date("2026-09-24T13:00:00.000Z") }
+  );
+  assert.equal(issued.status, 200);
+  assert.equal(confirmed.status, 200);
+  assert.deepEqual(await confirmed.json(), { ok: true, status: "confirmed" });
+  const created = JSON.parse(seen.find((call) => call.method === "POST" && call.url.endsWith("/contacts")).body);
+  assert.equal(created.email, "reader@example.com");
+  assert.equal(created.unsubscribed, false);
+  assert.deepEqual(created.segments, [{ id: SEGMENT_ID }]);
+  assert.equal(created.properties.casl_consent, "express");
+  assert.equal(created.properties.consent_text, CONSENT_TEXT);
+  assert.equal(created.properties.consent_source, CONSENT_SOURCE);
+  assert.equal(created.properties.consented_at, "2026-09-24T12:00:00.000Z");
+  assert.equal(created.properties.soft_pay, "maybe");
+  const welcome = JSON.parse(seen.find((call) => call.url.endsWith("/emails")).body);
   assert.equal(welcome.from, WELCOME_FROM);
   assert.deepEqual(welcome.to, ["reader@example.com"]);
   assert.deepEqual(welcome.template, { id: WELCOME_TEMPLATE_ID });
-  assert.equal(welcome.html, undefined);
-});
 
-test("existing contacts are updated and added to the segment", async () => {
-  const seen = [];
-  globalThis.fetch = async (url, options) => {
-    seen.push({ url: String(url), method: options.method });
-    if (seen.length === 1) {
-      return new Response(JSON.stringify({ message: "Contact already exists" }), {
-        status: 409,
-      });
+  seen.length = 0;
+  globalThis.fetch = async (url) => {
+    seen.push(String(url));
+    if (String(url).includes("/contacts/")) {
+      return new Response(JSON.stringify({ unsubscribed: false, properties: { casl_consent: "express" } }), { status: 200 });
     }
     return new Response("{}", { status: 200 });
   };
-
-  const response = await handleSignup(
-    post({ email: "reader@example.com", casl_consent: "yes" }),
-    { RESEND_API_KEY: "test-key" }
+  const again = await handleSignup(
+    post({ confirm_token: token }),
+    env(),
+    { now: () => new Date("2026-09-24T14:00:00.000Z") }
   );
-  assert.equal(response.status, 200);
-  assert.equal(seen[1].method, "PATCH");
-  assert.equal(
-    seen[1].url,
-    "https://api.resend.com/contacts/reader%40example.com"
-  );
-  assert.equal(seen[2].method, "POST");
-  assert.equal(
-    seen[2].url,
-    `https://api.resend.com/contacts/reader%40example.com/segments/${SEGMENT_ID}`
-  );
-  assert.equal(seen[3].method, "POST");
-  assert.equal(seen[3].url, "https://api.resend.com/emails");
+  assert.equal(again.status, 200);
+  assert.equal(seen.length, 1);
+  assert.match(seen[0], /\/contacts\//);
 });
 
-test("a failed welcome email still accepts the signup", async () => {
-  globalThis.fetch = async (url) => {
-    if (String(url).endsWith("/emails")) {
-      return new Response(JSON.stringify({ message: "domain not verified" }), {
-        status: 403,
-      });
-    }
-    return new Response(JSON.stringify({ id: "contact_1" }), { status: 200 });
+test("someone already on the list is left unchanged", async () => {
+  const seen = [];
+  globalThis.fetch = async (url, options = {}) => {
+    seen.push({ url: String(url), method: options.method });
+    return new Response(
+      JSON.stringify({ unsubscribed: false, properties: { casl_consent: "express" } }),
+      { status: 200 }
+    );
   };
   const response = await handleSignup(
     post({ email: "reader@example.com", casl_consent: "yes" }),
-    { RESEND_API_KEY: "test-key" }
+    env()
   );
   assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), { ok: true });
+  assert.deepEqual(await response.json(), { ok: true, status: "subscribed" });
+  assert.equal(seen.length, 1);
+  assert.match(seen[0].url, /\/contacts\/reader%40example.com$/);
+});
+
+test("an expired confirmation link is refused", async () => {
+  let called = false;
+  globalThis.fetch = async () => {
+    called = true;
+    return new Response("{}", { status: 200 });
+  };
+  const token = await signAlertConfirm(
+    "reader@example.com",
+    "2026-09-24T12:00:00.000Z",
+    "",
+    1_000,
+    CONFIRM_SECRET
+  );
+  const response = await handleSignup(
+    post({ confirm_token: token }),
+    env(),
+    { now: () => new Date("2026-09-24T12:00:00.000Z") }
+  );
+  assert.equal(response.status, 400);
+  assert.equal((await response.json()).code, "expired");
+  assert.equal(called, false);
+});
+
+test("a failed confirmation email is not reported as accepted", async () => {
+  globalThis.fetch = async (url) => {
+    if (String(url).includes("/contacts/")) return new Response("{}", { status: 404 });
+    return new Response(JSON.stringify({ message: "domain not verified" }), { status: 403 });
+  };
+  const response = await handleSignup(
+    post({ email: "reader@example.com", casl_consent: "yes" }),
+    env()
+  );
+  assert.equal(response.status, 502);
 });
 
 test("rejects missing consent and does not call Resend", async () => {
@@ -127,7 +199,7 @@ test("rejects missing consent and does not call Resend", async () => {
   };
   const response = await handleSignup(
     post({ email: "reader@example.com", casl_consent: "" }),
-    { RESEND_API_KEY: "test-key" }
+    env()
   );
   assert.equal(response.status, 400);
   assert.equal(called, false);
@@ -143,7 +215,7 @@ test("honeypot submissions do not create a contact", async () => {
   };
   const response = await handleSignup(
     post({ email: "reader@example.com", casl_consent: "yes", _gotcha: "spam" }),
-    { RESEND_API_KEY: "test-key" }
+    env()
   );
   assert.equal(response.status, 200);
   assert.equal(called, false);
@@ -169,7 +241,7 @@ test("blocks other websites", async () => {
       { email: "reader@example.com", casl_consent: "yes" },
       { Origin: "https://evil.example" }
     ),
-    { RESEND_API_KEY: "test-key" }
+    env()
   );
   assert.equal(response.status, 403);
   assert.equal(called, false);
@@ -178,21 +250,22 @@ test("blocks other websites", async () => {
 test("public signups are limited per IP and per email", async () => {
   clearSignupLimits();
   let calls = 0;
-  globalThis.fetch = async () => {
+  globalThis.fetch = async (url) => {
     calls += 1;
-    return new Response(JSON.stringify({ id: "contact_1" }), { status: 200 });
+    if (String(url).includes("/contacts/")) return new Response("{}", { status: 404 });
+    return new Response(JSON.stringify({ id: "email_1" }), { status: 200 });
   };
   const ip = "203.0.113.10";
   for (let i = 1; i <= 5; i += 1) {
     const response = await handleSignup(
       post({ email: `person${i}@example.com`, casl_consent: "yes" }, { "CF-Connecting-IP": ip }),
-      { RESEND_API_KEY: "test-key" }
+      env()
     );
     assert.equal(response.status, 200, `signup ${i}`);
   }
   const blocked = await handleSignup(
     post({ email: "person6@example.com", casl_consent: "yes" }, { "CF-Connecting-IP": ip }),
-    { RESEND_API_KEY: "test-key" }
+    env()
   );
   assert.equal(blocked.status, 429);
   assert.match((await blocked.json()).error, /wait/i);
@@ -203,13 +276,13 @@ test("public signups are limited per IP and per email", async () => {
   for (let i = 1; i <= 3; i += 1) {
     const response = await handleSignup(
       post({ email: "same@example.com", casl_consent: "yes" }, { "CF-Connecting-IP": "203.0.113.11" }),
-      { RESEND_API_KEY: "test-key" }
+      env()
     );
     assert.equal(response.status, 200);
   }
   const again = await handleSignup(
     post({ email: "same@example.com", casl_consent: "yes" }, { "CF-Connecting-IP": "203.0.113.11" }),
-    { RESEND_API_KEY: "test-key" }
+    env()
   );
   assert.equal(again.status, 429);
   assert.equal(calls, 6);
@@ -228,7 +301,7 @@ test("Turnstile stays off until the worker secret is set", async () => {
 
   const open = await handleSignup(
     post({ email: "open@example.com", casl_consent: "yes" }, { "CF-Connecting-IP": "203.0.113.20" }),
-    { RESEND_API_KEY: "test-key" }
+    env()
   );
   assert.equal(open.status, 200);
   assert.equal(urls.some((url) => url.includes("siteverify")), false);
@@ -244,14 +317,14 @@ test("Turnstile stays off until the worker secret is set", async () => {
       },
       body: JSON.stringify({ email: "internal@example.com", casl_consent: "yes" }),
     }),
-    { RESEND_API_KEY: "test-key", TURNSTILE_SECRET_KEY: "secret" }
+    env({ TURNSTILE_SECRET_KEY: "secret" })
   );
   assert.equal(internal.status, 200);
 
   urls = [];
   const missing = await handleSignup(
     post({ email: "locked@example.com", casl_consent: "yes" }, { "CF-Connecting-IP": "203.0.113.22" }),
-    { RESEND_API_KEY: "test-key", TURNSTILE_SECRET_KEY: "secret" }
+    env({ TURNSTILE_SECRET_KEY: "secret" })
   );
   assert.equal(missing.status, 403);
   assert.match((await missing.json()).error, /security check/i);
@@ -262,7 +335,7 @@ test("Turnstile stays off until the worker secret is set", async () => {
       { email: "passed@example.com", casl_consent: "yes", turnstile_token: "ok-token" },
       { "CF-Connecting-IP": "203.0.113.23" }
     ),
-    { RESEND_API_KEY: "test-key", TURNSTILE_SECRET_KEY: "secret" }
+    env({ TURNSTILE_SECRET_KEY: "secret" })
   );
   assert.equal(passed.status, 200);
   assert.equal(urls[0], "https://challenges.cloudflare.com/turnstile/v0/siteverify");
@@ -277,7 +350,7 @@ test("a very long email is rejected before the pattern matcher", async () => {
   const started = Date.now();
   const response = await handleSignup(
     post({ email: `${"a".repeat(50000)}@example.com`, casl_consent: "yes" }, { "CF-Connecting-IP": "203.0.113.40" }),
-    { RESEND_API_KEY: "test-key" }
+    env()
   );
   assert.equal(response.status, 400);
   assert.equal(called, false);
