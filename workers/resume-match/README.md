@@ -52,9 +52,13 @@ cd workers/resume-match
 npx wrangler secret put MATCH_TRUSTED_SECRET
 ```
 
-## Deploy (when you mean to)
+## Deploy
 
-Apply the migration first, then deploy this Worker. The other order makes every match fail, because this source calls `match_candidates`, which does not exist until the migration runs. Applying only the migration leaves the live Worker on `match_index`.
+A push to `main` that changes `workers/resume-match/` or `.github/workflows/deploy-resume-match-worker.yml` deploys this Worker with the same `CLOUDFLARE_API_TOKEN` as the signup Worker. You can also run **Deploy resume-match worker** from the Actions tab (`workflow_dispatch`) once, without another code change.
+
+That workflow does not set `TURNSTILE_SECRET_KEY`. It does not replace `MATCH_TRUSTED_SECRET`; the secret already stored on the Worker stays there.
+
+A manual deploy still works when you are logged in with Wrangler. Apply the migration first, then deploy this Worker. The other order makes every match fail, because this source calls `match_candidates`, which does not exist until the migration runs. Applying only the migration leaves the live Worker on `match_index`.
 
 Do not set `MATCH_MONTHLY_CAP_USD`. Unset means the cap stays $10.
 
