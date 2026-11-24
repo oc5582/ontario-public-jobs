@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { TurnstileField } from "@/components/TurnstileField";
 import { getViewer, localLoginAllowed, safeNext, supabaseConfigured } from "@/lib/auth";
 import { googleSignInEnabled } from "@/lib/google-sign-in";
 import { pageMetadata } from "@/lib/seo";
@@ -18,6 +19,8 @@ const ERRORS: Record<string, string> = {
   config: "Sign-in is not configured on this server yet.",
   local: "That email is not a local test account. On this computer, use test@example.com or free-match@example.com. No email is sent.",
   google: "Google sign-in needs a Supabase project with the Google provider turned on.",
+  check: "The security check did not pass. Please try again.",
+  rate: "Please wait a few minutes and try again.",
 };
 
 export default async function LoginPage({
@@ -76,6 +79,7 @@ export default async function LoginPage({
               placeholder="you@example.com"
             />
             <input type="hidden" name="next" value={next} />
+            <TurnstileField action="login" />
             <div className="login-actions">
               <button className="apply-btn" type="submit">
                 {localOnly ? "Sign in" : "Email me a sign-in link"}

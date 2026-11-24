@@ -2,11 +2,13 @@ import { randomUUID } from "crypto";
 import { headers } from "next/headers";
 import { localLoginAllowed, supabaseConfigured } from "./auth";
 import { AlreadySubscribedError } from "./billing";
+import { clientIpFrom } from "./client-ip";
 import { query } from "./db";
+import { boundedEmailLower } from "./email-address";
+import { requestAllowed, RULES } from "./rate-limit";
 import {
   CheckoutProfileError,
   isCheckoutEmail,
-  normalizeCheckoutEmail,
   profileIsSubscribed,
   safeAppOrigin,
 } from "./guest-checkout";
@@ -54,8 +56,20 @@ async function deliverSignIn(email: string, origin: string): Promise<"sent" | "r
  * the return page (or from /login/ on any device).
  */
 export async function sendMembershipSignIn(email: string, origin: string): Promise<"sent" | "rate" | "failed"> {
-  const normalized = normalizeCheckoutEmail(email);
-  if (!isCheckoutEmail(normalized) || !supabaseConfigured()) return "failed";
+  const normalized = boundedEmailLower(email);
+  if (!normalized || !isCheckoutEmail(normalized) || !supabaseConfigured()) return "failed";
+  try {
+    const allowed = await requestAllowed({
+      scope: "magic-link",
+      ip: clientIpFrom(await headers()),
+      email: normalized,
+      ipRule: RULES.magicLink.ip,
+      emailRule: RULES.magicLink.email,
+    });
+    if (!allowed) return "rate";
+  } catch {
+    // Outside a request there is no client IP. Still send the link.
+  }
   const primary = safeAppOrigin(origin);
   const fallback = safeAppOrigin(process.env.NEXT_PUBLIC_SITE_URL, "https://publicjobs.ca");
   const first = await deliverSignIn(normalized, primary);

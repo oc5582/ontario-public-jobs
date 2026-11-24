@@ -81,7 +81,8 @@ const retentionLib = readFileSync(new URL("../web/lib/applied-retention.ts", imp
 const vercelJson = JSON.parse(readFileSync(new URL("../web/vercel.json", import.meta.url), "utf8")) as {
   crons: { path: string }[];
 };
-assert.match(cleanupRoute, /Bearer \$\{secret\}/, "cleanup cron requires CRON_SECRET");
+assert.match(cleanupRoute, /cronAuthorized/, "cleanup cron checks CRON_SECRET with a timing-safe compare");
+assert.match(cleanupRoute, /CRON_SECRET/, "cleanup cron requires CRON_SECRET");
 assert.ok(vercelJson.crons.some((cron) => cron.path === "/api/cron/applied-cleanup/"));
 assert.match(retentionLib, /p\.membership_status <> 'active'/, "active members are never purged");
 assert.match(retentionLib, /APPLIED_RETENTION_DAYS = 30/);

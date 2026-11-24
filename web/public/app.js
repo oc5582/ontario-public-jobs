@@ -119,14 +119,22 @@
       return;
     }
 
+    const form = $("#signup-form");
+    const tokenEl = form && form.querySelector('[name="cf-turnstile-response"]');
+    const turnstileToken = tokenEl && tokenEl.value ? tokenEl.value : "";
+    if (form && form.querySelector(".cf-turnstile") && !turnstileToken) {
+      showStatus(status, "Please wait a moment and try again.", false);
+      return;
+    }
+
     const payload = {
       email: email,
       casl_consent: "yes",
       _gotcha: "",
     };
+    if (turnstileToken) payload.turnstile_token = turnstileToken;
     if (pay && /^(yes|maybe|no)$/.test(pay.value)) payload.soft_pay = pay.value;
 
-    const form = $("#signup-form");
     form.action = endpoint;
     form.method = "post";
     btn.disabled = true;
@@ -148,7 +156,10 @@
             return {};
           })
           .then(function (data) {
-            if (!r.ok) throw new Error(data.error || "fail");
+            if (!r.ok) {
+              const message = data && typeof data.error === "string" ? data.error : "fail";
+              throw new Error(message);
+            }
             if (data && data.ok === true && typeof fbq === "function") {
               fbq("track", "Lead");
             }
@@ -170,8 +181,12 @@
           });
       })
       .catch(function (err) {
-        const known = err && err.message && err.message.indexOf("agree") !== -1;
-        showStatus(status, known ? err.message : C.signup.error, false);
+        const message = err && err.message ? err.message : "";
+        const known =
+          message.indexOf("agree") !== -1 ||
+          message.indexOf("Please wait") !== -1 ||
+          message.indexOf("security check") !== -1;
+        showStatus(status, known ? message : C.signup.error, false);
       })
       .finally(function () {
         btn.disabled = false;
@@ -186,6 +201,26 @@
       form.action = endpoint;
       form.method = "post";
     }
-    if (form) form.addEventListener("submit", onSubmit);
+    if (form) {
+      mountTurnstile(form);
+      form.addEventListener("submit", onSubmit);
+    }
   });
+
+  function mountTurnstile(form) {
+    const siteKey = typeof window.TURNSTILE_SITE_KEY === "string" ? window.TURNSTILE_SITE_KEY.trim() : "";
+    if (!siteKey || form.querySelector(".cf-turnstile")) return;
+    const box = document.createElement("div");
+    box.className = "cf-turnstile";
+    box.setAttribute("data-sitekey", siteKey);
+    box.setAttribute("data-appearance", "interaction-only");
+    form.appendChild(box);
+    if (document.querySelector("script[data-turnstile]")) return;
+    const script = document.createElement("script");
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    script.async = true;
+    script.defer = true;
+    script.setAttribute("data-turnstile", "1");
+    document.head.appendChild(script);
+  }
 })();

@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { TurnstileField } from "@/components/TurnstileField";
 import { getViewer } from "@/lib/auth";
 import { FREE_COOKIE, FREE_RESULTS, FREE_RUNS_PER_EMAIL, cookieRuns } from "@/lib/match";
 import { alertConsentLabel, alertConsentSender } from "@/lib/legal-copy";
@@ -81,6 +82,7 @@ export default async function MatchPage() {
             <input type="text" id="gotcha" name="_gotcha" tabIndex={-1} autoComplete="off" />
           </div>
 
+          <TurnstileField action="match" />
           <button type="submit" id="submit-btn">
             Find my jobs
           </button>
@@ -139,6 +141,7 @@ export default async function MatchPage() {
             <input type="text" id="gotcha" name="_gotcha" tabIndex={-1} autoComplete="off" />
           </div>
 
+          <TurnstileField action="match" />
           <button type="submit" id="submit-btn">
             Find my jobs
           </button>

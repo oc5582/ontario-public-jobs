@@ -16,12 +16,12 @@ export const CONTENT_SECURITY_POLICY = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self' https://ontario-public-jobs-signup.publicjobs.workers.dev",
-  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://static.cloudflareinsights.com https://connect.facebook.net https://cdn.jsdelivr.net https://js.stripe.com https://www.clarity.ms https://*.clarity.ms https://c.bing.com https://www.googletagmanager.com https://www.googleadservices.com https://www.google.com https://www.google.ca https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com",
+  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://connect.facebook.net https://cdn.jsdelivr.net https://js.stripe.com https://www.clarity.ms https://*.clarity.ms https://c.bing.com https://www.googletagmanager.com https://www.googleadservices.com https://www.google.com https://www.google.ca https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://www.facebook.com https://*.facebook.com https://*.stripe.com https://www.clarity.ms https://*.clarity.ms https://c.bing.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.google.com https://www.google.ca",
   "font-src 'self'",
-  "connect-src 'self' https://*.supabase.co https://ontario-public-jobs-signup.publicjobs.workers.dev https://cdn.jsdelivr.net https://www.facebook.com https://*.facebook.com https://connect.facebook.net https://static.cloudflareinsights.com https://cloudflareinsights.com https://api.stripe.com https://*.stripe.com https://www.clarity.ms https://*.clarity.ms https://c.bing.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://ad.doubleclick.net https://www.google.com https://www.google.ca",
-  "frame-src https://www.googletagmanager.com https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://billing.stripe.com https://*.stripe.com",
+  "connect-src 'self' https://*.supabase.co https://ontario-public-jobs-signup.publicjobs.workers.dev https://challenges.cloudflare.com https://cdn.jsdelivr.net https://www.facebook.com https://*.facebook.com https://connect.facebook.net https://static.cloudflareinsights.com https://cloudflareinsights.com https://api.stripe.com https://*.stripe.com https://www.clarity.ms https://*.clarity.ms https://c.bing.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://ad.doubleclick.net https://www.google.com https://www.google.ca",
+  "frame-src https://challenges.cloudflare.com https://www.googletagmanager.com https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://billing.stripe.com https://*.stripe.com",
   "worker-src 'self' blob: https://cdn.jsdelivr.net",
 ].join("; ");
 

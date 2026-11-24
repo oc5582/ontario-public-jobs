@@ -1,4 +1,5 @@
 import { submitFraudReport } from "@/app/report/actions";
+import { TurnstileField } from "@/components/TurnstileField";
 import { pageMetadata } from "@/lib/seo";
 import { BRAND } from "@/lib/site";
 
@@ -47,6 +48,7 @@ export default async function ReportPage({
             <input id="email" name="email" type="email" autoComplete="email" maxLength={254} />
             <label htmlFor="details">What you noticed</label>
             <textarea id="details" name="details" required minLength={10} maxLength={4000} rows={6} />
+            <TurnstileField action="report" />
             <button className="apply-btn" type="submit">
               Send report
             </button>

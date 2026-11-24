@@ -74,6 +74,7 @@ for (const host of [
   "www.google.com",
   "www.google.ca",
   "static.cloudflareinsights.com",
+  "challenges.cloudflare.com",
   "va.vercel-scripts.com",
   "supabase.co",
   "cdn.jsdelivr.net",

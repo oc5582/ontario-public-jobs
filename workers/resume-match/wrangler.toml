@@ -1,5 +1,7 @@
 # Reference config for the resume match Worker. Deployed manually (not by CI).
 # Do not put MATCH_TRUSTED_SECRET here. Set it with `npx wrangler secret put MATCH_TRUSTED_SECRET`.
+# Optional TURNSTILE_SECRET_KEY (same widget secret as Vercel). Leave it unset until the widget exists.
+# Untrusted callers must send turnstile_token once it is set. The Next.js app is trusted and skips it.
 name = "publicjobs-resume-match"
 main = "worker.js"
 compatibility_date = "2026-09-01"

@@ -16,7 +16,8 @@ export function normalizeCheckoutEmail(value: string): string {
 }
 
 export function isCheckoutEmail(value: string): boolean {
-  return value.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  if (value.length > 254) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
 export function profileIsSubscribed(profile: {
