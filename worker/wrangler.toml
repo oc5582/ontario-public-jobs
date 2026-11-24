@@ -2,6 +2,11 @@ name = "ontario-public-jobs-signup"
 main = "signup.js"
 compatibility_date = "2026-09-24"
 
+# Required for new alert signups. A long random string.
+# npx wrangler secret put ALERT_CONFIRM_SECRET
+# Optional. Defaults to https://publicjobs.ca.
+# ALERT_CONFIRM_SITE_URL = "https://publicjobs.ca"
+
 # Optional. Leave TURNSTILE_SECRET_KEY unset until the Turnstile widget exists.
 # Set it with: npx wrangler secret put TURNSTILE_SECRET_KEY
 # It must be the same widget secret as TURNSTILE_SECRET_KEY on Vercel.
