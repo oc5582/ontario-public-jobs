@@ -19,6 +19,15 @@ export type Guide = {
 /** Newest first. Each body lives in content/guides/{slug}.html, without the H1. */
 export const GUIDES: Guide[] = [
   {
+    slug: "how-to-get-a-job-at-cmhc",
+    title: "How to Get a Job at CMHC: Hiring Steps, Pay and Language Tests",
+    seoTitle: "How to Get a Job at CMHC: Hiring Steps and Pay",
+    description:
+      "How CMHC hiring works: the online application, the 30-minute call, language testing, the panel interview, security checks, pay ranges and the pension.",
+    published: "2026-11-25",
+    updated: "2026-11-25",
+  },
+  {
     slug: "is-a-government-job-worth-a-pay-cut",
     title: "Is a Government Job Worth a Pay Cut? Public vs Private Pay in Ontario",
     seoTitle: "Is a Government Job Worth a Pay Cut? Public vs Private Pay",
