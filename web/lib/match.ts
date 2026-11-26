@@ -1,7 +1,8 @@
 import { createHash, createHmac, randomUUID } from "crypto";
 import { query } from "./db";
 import { isBasicEmail } from "./email-address";
-import { requestTightMatch, selectTightMatches } from "./tight-match";
+import { loadCandidateScores, rankQualifyingQuizHits } from "./quiz-rank";
+import { requestTightMatch } from "./tight-match";
 
 /**
  * Free matches per normalised email (signed out or free account), and per browser.
@@ -49,6 +50,8 @@ export type MatchHit = {
   location: string;
   closing_date: string;
   reason: string;
+  /** Quiz only. Lexical relevance from match_candidate_scores. Omitted everywhere else. */
+  score?: number;
 };
 
 export type MatchBody = {
@@ -157,6 +160,9 @@ function hits(value: unknown): MatchHit[] {
         location: String(row.location || ""),
         closing_date: String(row.closing_date || ""),
         reason: String(row.reason || "").slice(0, 200),
+        ...(typeof row.score === "number" && Number.isFinite(row.score)
+          ? { score: Math.round(row.score * 1000) / 1000 }
+          : {}),
       };
     })
     .filter((row) => row.url && row.title);
@@ -299,12 +305,16 @@ async function callForMatch(
 ): Promise<WorkerCall> {
   if (!tight) return callWorker(input, deps, who);
   const { secret, workerUrl } = workerConfig(deps);
-  const result = await requestTightMatch(input.resume, MATCH_CALL_TIMEOUT_MS, deps.fetchImpl || fetch, {
-    workerUrl,
-    trustedSecret: secret,
-    logEvent: "resume_match_failed",
-    who,
-  });
+  const fetchImpl = deps.fetchImpl || fetch;
+  const [result, scores] = await Promise.all([
+    requestTightMatch(input.resume, MATCH_CALL_TIMEOUT_MS, fetchImpl, {
+      workerUrl,
+      trustedSecret: secret,
+      logEvent: "resume_match_failed",
+      who,
+    }),
+    loadCandidateScores(input.resume, fetchImpl, { secret }),
+  ]);
   if (!result.ok) {
     const mapped = workerFailure(result.code, result.error);
     if (mapped.limit) console.log(JSON.stringify({ event: "resume_match_limit", limit: mapped.limit, ...who }));
@@ -315,10 +325,10 @@ async function callForMatch(
       body: { ok: false, code: result.code || "error", error: mapped.error },
     };
   }
-  const kept = selectTightMatches(result.strong, result.maybe);
+  const ranked = rankQualifyingQuizHits(result.strong, result.maybe, input.resume, scores);
   return {
     ok: true,
-    payload: { ok: true, strong: kept, maybe: [], jobs_checked: result.jobsChecked },
+    payload: { ok: true, strong: ranked, maybe: [], jobs_checked: result.jobsChecked },
   };
 }
 

@@ -37,8 +37,8 @@ export function reasonWordCount(reason: string): number {
   return reason.trim().split(/\s+/).filter(Boolean).length;
 }
 
-/** Strong fits only, with a reason that meets the 8-word bar, capped. */
-export function selectTightMatches(strong: TightHit[], maybe: TightHit[]): TightHit[] {
+/** Strong fits only, with a reason that meets the 8-word bar, in Worker order. */
+export function qualifyingTightHits(strong: TightHit[], maybe: TightHit[]): TightHit[] {
   void maybe;
   const kept: TightHit[] = [];
   for (const hit of strong) {
@@ -52,9 +52,13 @@ export function selectTightMatches(strong: TightHit[], maybe: TightHit[]): Tight
       closing_date: hit.closing_date,
       reason: hit.reason.slice(0, 200),
     });
-    if (kept.length >= WEEKLY_RESULT_CAP) break;
   }
   return kept;
+}
+
+/** Saturday list: the first WEEKLY_RESULT_CAP qualifying hits, still in Worker order. */
+export function selectTightMatches(strong: TightHit[], maybe: TightHit[]): TightHit[] {
+  return qualifyingTightHits(strong, maybe).slice(0, WEEKLY_RESULT_CAP);
 }
 
 function workerHits(value: unknown): TightHit[] {

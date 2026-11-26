@@ -317,9 +317,10 @@ const matchSrc = readFileSync(new URL("../web/lib/match.ts", import.meta.url), "
 const routeSrc = readFileSync(new URL("../web/app/api/match/route.ts", import.meta.url), "utf8");
 const quizSrc = readFileSync(new URL("../web/components/QuizApp.tsx", import.meta.url), "utf8");
 assert.match(weeklyData, /requestTightMatch/);
+assert.match(weeklyData, /selectTightMatches/);
 assert.equal(weeklyData.includes("match_mode"), false);
 assert.match(matchSrc, /requestTightMatch/);
-assert.match(matchSrc, /selectTightMatches/);
+assert.match(matchSrc, /rankQualifyingQuizHits/);
 assert.equal(matchSrc.includes("saved_resumes"), false);
 assert.match(routeSrc, /source === "start"/);
 assert.match(routeSrc, /tight: fromQuiz/);
