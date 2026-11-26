@@ -21,6 +21,7 @@ import {
   type TightHit,
   type WeeklyCandidate,
 } from "../web/lib/weekly-match.ts";
+import { requestTightMatch } from "../web/lib/tight-match.ts";
 
 function hit(title: string, reason: string, fitNote = ""): TightHit {
   return {
@@ -251,5 +252,79 @@ const weekday = await runWeeklyQueue({
 });
 assert.equal(weekday.skipped, "not_saturday");
 assert.equal(weekday.calls, 0);
+
+const tightBodies: { mode?: string; email?: string; consent?: string }[] = [];
+const tightCall = await requestTightMatch(
+  "Customer service lead at a public counter for eight years, handling cash and training new staff in Toronto.",
+  1000,
+  async (_url, init) => {
+    const body = JSON.parse(String(init?.body || "{}")) as { match_mode?: string; email?: string; casl_consent?: string };
+    tightBodies.push({ mode: body.match_mode, email: body.email, consent: body.casl_consent });
+    return Response.json({
+      ok: true,
+      partial: false,
+      jobs_checked: 400,
+      meta: { est_cost_usd: 0.04 },
+      strong: [
+        {
+          title: "Registered Nurse",
+          employer: "Unity Health",
+          location: "Toronto",
+          closing_date: "2026-12-01",
+          url: "https://publicjobs.ca/jobs/unity-health/registered-nurse/",
+          reason: "Your eight years of bedside nursing fit this registered nurse role.",
+        },
+        {
+          title: "Generic clerk",
+          employer: "City of Toronto",
+          location: "Toronto",
+          closing_date: "",
+          url: "https://publicjobs.ca/jobs/city-of-toronto/generic-clerk/",
+          reason: "Your experience matches this role.",
+        },
+      ],
+      maybe: [
+        {
+          title: "Stretch coordinator",
+          employer: "City of Toronto",
+          location: "Toronto",
+          closing_date: "",
+          url: "https://publicjobs.ca/jobs/city-of-toronto/stretch-coordinator/",
+          reason: "Your transferable skills might fit this different kind of work later.",
+        },
+      ],
+    });
+  },
+  { workerUrl: "http://match.test/match", trustedSecret: "local-secret" },
+);
+assert.equal(tightCall.ok, true);
+assert.equal(tightBodies[0]?.mode, "tight");
+assert.equal(tightBodies[0]?.email, "");
+assert.equal(tightBodies[0]?.consent, "");
+if (tightCall.ok) {
+  assert.equal(tightCall.jobsChecked, 400);
+  assert.equal(tightCall.estCostUsd, 0.04);
+  assert.equal(tightCall.maybe.length, 1);
+  const kept = selectTightMatches(tightCall.strong, tightCall.maybe);
+  assert.deepEqual(kept.map((row) => row.title), ["Registered Nurse"]);
+}
+const unconfigured = await requestTightMatch("x".repeat(80), 1000, fetch, { workerUrl: "", trustedSecret: "" });
+assert.equal(unconfigured.ok, false);
+if (!unconfigured.ok) assert.equal(unconfigured.code, "unconfigured");
+
+const weeklyData = readFileSync(new URL("../web/lib/weekly-match-data.ts", import.meta.url), "utf8");
+const matchSrc = readFileSync(new URL("../web/lib/match.ts", import.meta.url), "utf8");
+const routeSrc = readFileSync(new URL("../web/app/api/match/route.ts", import.meta.url), "utf8");
+const quizSrc = readFileSync(new URL("../web/components/QuizApp.tsx", import.meta.url), "utf8");
+assert.match(weeklyData, /requestTightMatch/);
+assert.equal(weeklyData.includes("match_mode"), false);
+assert.match(matchSrc, /requestTightMatch/);
+assert.match(matchSrc, /selectTightMatches/);
+assert.equal(matchSrc.includes("saved_resumes"), false);
+assert.match(routeSrc, /source === "start"/);
+assert.match(routeSrc, /tight: fromQuiz/);
+assert.match(quizSrc, /source: "start"/);
+assert.match(quizSrc, /quizResumeView/);
+assert.equal(quizSrc.includes("saved_resumes"), false);
 
 console.log("weekly match tests passed");

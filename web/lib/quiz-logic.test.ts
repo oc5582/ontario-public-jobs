@@ -1,7 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { annualAmount, areasFor, jobTypesForTitle, levelForTitle } from "./quiz-tag";
-import { quizBroad, quizResults, type QuizJob } from "./quiz-logic";
+import {
+  QUIZ_RESUME_SHOW,
+  quizBroad,
+  quizNoTightMatchNote,
+  quizResumeView,
+  quizResults,
+  quizTightNote,
+  type QuizJob,
+} from "./quiz-logic";
 
 test("hourly and weekly pay become yearly, and an already yearly figure stays put", () => {
   assert.equal(annualAmount(40, "HOUR"), 78000);
@@ -60,4 +68,20 @@ test("the headline count pads with related roles until it passes 100", () => {
   assert.match(broad.extra, /related roles in office and admin/);
   assert.ok(broad.list.slice(0, 5).every((item) => item.c.includes("it")));
   assert.ok(broad.list.some((item) => item._why === "Related role"));
+});
+
+test("a tight quiz match is not padded with answer-based jobs", () => {
+  assert.equal(QUIZ_RESUME_SHOW, 5);
+  assert.equal(quizResumeView({ uploaded: false, failed: false, hits: 0 }), "answers");
+  assert.equal(quizResumeView({ uploaded: true, failed: true, hits: 0 }), "answers");
+  assert.equal(quizResumeView({ uploaded: true, failed: false, hits: 0 }), "none");
+  assert.equal(quizResumeView({ uploaded: true, failed: false, hits: 2 }), "tight");
+  assert.equal(quizResumeView({ uploaded: true, failed: false, hits: 5 }), "tight");
+  assert.equal(quizTightNote(0), "");
+  assert.equal(quizTightNote(5), "");
+  assert.match(quizTightNote(1), /1 strong match/);
+  assert.match(quizTightNote(2), /Saturday/);
+  assert.match(quizNoTightMatchNote("ada@example.com"), /ada@example.com/);
+  assert.match(quizNoTightMatchNote("ada@example.com"), /weekly job alerts/);
+  assert.doesNotMatch(quizNoTightMatchNote(""), / at /);
 });

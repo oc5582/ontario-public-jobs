@@ -14,7 +14,10 @@ import {
   daysLeft,
   openQuizJobs,
   quizBroad,
+  quizNoTightMatchNote,
+  quizResumeView,
   quizResults,
+  quizTightNote,
   type QuizAnswers,
   type QuizCatalog,
   type QuizJob,
@@ -237,6 +240,8 @@ export function QuizApp({
   const [loadReady, setLoadReady] = useState(false);
   const [resumeHits, setResumeHits] = useState<ResumeHit[]>([]);
   const [resumeNote, setResumeNote] = useState("");
+  const [resumeUploaded, setResumeUploaded] = useState(false);
+  const [resumeFailed, setResumeFailed] = useState(false);
   const [plan, setPlan] = useState<PlanId>("quarter");
   const [booted, setBooted] = useState(false);
   const resumeText = useRef("");
@@ -440,6 +445,7 @@ export function QuizApp({
     const text = resumeText.current.trim();
     resumeText.current = "";
     if (text.length < 80) return;
+    setResumeUploaded(true);
     try {
       const response = await fetch("/api/match/", {
         method: "POST",
@@ -449,6 +455,7 @@ export function QuizApp({
           run_id: crypto.randomUUID(),
           casl_consent: "",
           resume_text: text,
+          source: "start",
           _gotcha: "",
         }),
       });
@@ -459,13 +466,17 @@ export function QuizApp({
         maybe?: ResumeHit[];
       };
       if (!response.ok || !data.ok) {
+        setResumeFailed(true);
         setResumeHits([]);
         setResumeNote(data.error || "We could not compare your resume, so these are matches from your answers.");
         return;
       }
-      setResumeHits([...(data.strong || []), ...(data.maybe || [])].slice(0, 5));
-      setResumeNote("");
+      const hits = [...(data.strong || []), ...(data.maybe || [])].slice(0, 5);
+      setResumeFailed(false);
+      setResumeHits(hits);
+      setResumeNote(quizTightNote(hits.length));
     } catch {
+      setResumeFailed(true);
       setResumeHits([]);
       setResumeNote("We could not compare your resume, so these are matches from your answers.");
     }
@@ -619,6 +630,12 @@ export function QuizApp({
                 broad={broad}
                 resumeHits={resumeHits}
                 resumeNote={resumeNote}
+                resumeView={quizResumeView({
+                  uploaded: resumeUploaded,
+                  failed: resumeFailed,
+                  hits: resumeHits.length,
+                })}
+                email={email}
                 today={catalog.today}
                 newSince={stats.newSince}
               />
@@ -1028,6 +1045,8 @@ function Matches({
   broad,
   resumeHits,
   resumeNote,
+  resumeView,
+  email,
   today,
   newSince,
 }: {
@@ -1038,10 +1057,28 @@ function Matches({
   broad: { n: number; fresh: number; closing: number };
   resumeHits: ResumeHit[];
   resumeNote: string;
+  resumeView: "answers" | "tight" | "none";
+  email: string;
   today: string;
   newSince: string;
 }) {
   const top = broadList.slice(0, 5);
+  if (resumeView === "none") {
+    return (
+      <>
+        <h2>No strong match today</h2>
+        <p className="quiz-lead">{quizNoTightMatchNote(email)}</p>
+        <div className="quiz-callout">
+          <p>{alertConsentLabel()}</p>
+          <p className="quiz-small">{alertConsentSender()}</p>
+        </div>
+        <p className="quiz-small">
+          A membership runs this same match every Saturday and emails you the jobs that fit.
+        </p>
+      </>
+    );
+  }
+  const fromResume = resumeView === "tight";
   return (
     <>
       <h2>
@@ -1065,10 +1102,14 @@ function Matches({
           <span>close in the next 7 days</span>
         </div>
       </div>
-      <p className="quiz-eyebrow">Your top 5 {found.total >= 5 ? "matches" : ""}</p>
+      <p className="quiz-eyebrow">
+        {fromResume
+          ? `${resumeHits.length} strong ${resumeHits.length === 1 ? "match" : "matches"} from your resume`
+          : `Your top 5 ${found.total >= 5 ? "matches" : ""}`}
+      </p>
       {resumeNote ? <p className="quiz-small">{resumeNote}</p> : null}
       <div className="quiz-jobs">
-        {resumeHits.length
+        {fromResume
           ? resumeHits.map((hit) => {
               const job = jobs.find((item) => sameJob(hit.url, item.u));
               if (!job) {

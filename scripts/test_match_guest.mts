@@ -43,12 +43,52 @@ const strong = hits("Strong", 8);
 const maybe = hits("Maybe", 6);
 
 let mode = "ok";
-const calls: { email: string; casl_consent: string }[] = [];
+const calls: { email: string; casl_consent: string; match_mode: string }[] = [];
 async function fetchImpl(_url: string, init: RequestInit): Promise<Response> {
   const headers = new Headers(init?.headers);
-  const body = JSON.parse(String(init?.body || "{}")) as { email?: string; casl_consent?: string; resume_text?: string };
+  const body = JSON.parse(String(init?.body || "{}")) as {
+    email?: string;
+    casl_consent?: string;
+    resume_text?: string;
+    match_mode?: string;
+  };
   assert.equal(headers.get("x-publicjobs-trusted"), SECRET);
-  calls.push({ email: body.email || "", casl_consent: body.casl_consent || "" });
+  calls.push({ email: body.email || "", casl_consent: body.casl_consent || "", match_mode: body.match_mode || "" });
+  if (body.match_mode === "tight") {
+    return Response.json({
+      ok: true,
+      partial: false,
+      jobs_checked: 400,
+      strong: [
+        {
+          title: "Registered Nurse",
+          employer: "Unity Health",
+          location: "Toronto",
+          closing_date: "2026-12-01",
+          url: "https://publicjobs.ca/jobs/unity-health/registered-nurse/",
+          reason: "Your eight years of bedside nursing fit this registered nurse role.",
+        },
+        {
+          title: "Generic clerk",
+          employer: "City of Toronto",
+          location: "Toronto",
+          closing_date: "",
+          url: "https://publicjobs.ca/jobs/city-of-toronto/generic-clerk/",
+          reason: "Your experience matches this role.",
+        },
+      ],
+      maybe: [
+        {
+          title: "Stretch coordinator",
+          employer: "City of Toronto",
+          location: "Toronto",
+          closing_date: "",
+          url: "https://publicjobs.ca/jobs/city-of-toronto/stretch-coordinator/",
+          reason: "Your transferable skills might fit this different kind of work later.",
+        },
+      ],
+    });
+  }
   if (mode === "throw") throw new Error("socket hang up");
   if (mode === "partial") return Response.json({ ok: true, partial: true, strong, maybe, jobs_checked: 100 });
   if (mode === "error") return Response.json({ ok: false, code: "error", error: "nope" }, { status: 502 });
@@ -115,6 +155,7 @@ try {
   }
   assert.equal(calls.at(-1)?.email, "");
   assert.equal(calls.at(-1)?.casl_consent, "");
+  assert.equal(calls.at(-1)?.match_mode, "");
   const row1 = await ledger("guest.one@example.com");
   assert.equal(row1?.email, "guest.one@example.com");
   assert.equal(row1?.alerts_consent, false);
@@ -451,6 +492,23 @@ try {
   } finally {
     await query("alter table match_free_runs_hidden rename to match_free_runs");
   }
+
+  // 14. Quiz tight match: strong fits with an 8-word reason only. No resume row. No loose padding.
+  const quiz = await runGuestMatch(guest({ email: "quiz-tight@example.com", tight: true }), deps);
+  assert.equal(quiz.status, 200, JSON.stringify(quiz.body));
+  assert.equal(calls.at(-1)?.match_mode, "tight");
+  assert.equal(calls.at(-1)?.email, "");
+  assert.deepEqual((quiz.body.strong || []).map((row) => row.title), ["Registered Nurse"]);
+  assert.equal(quiz.body.maybe?.length, 0);
+  assert.equal(quiz.body.shown, 1);
+  assert.equal(quiz.body.locked, 0);
+  const quizRow = await ledger("quiz-tight@example.com");
+  assert.equal(quizRow?.runs, 1);
+  assert.equal(quizRow?.source, "guest");
+  const saved = await query<{ n: number }>(
+    "select count(*)::int as n from saved_resumes where resume_text like '%bedside nursing%'",
+  );
+  assert.equal(Number(saved[0]?.n || 0), 0);
 
   console.log("guest match tests passed");
 } finally {

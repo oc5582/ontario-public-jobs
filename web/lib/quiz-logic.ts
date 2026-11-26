@@ -34,6 +34,34 @@ export type QuizAnswers = {
 };
 
 export const QUIZ_TARGET = 100;
+/** Resume hits the quiz shows. Same cap as before the tight match. */
+export const QUIZ_RESUME_SHOW = 5;
+
+export type QuizResumeView = "answers" | "tight" | "none";
+
+/**
+ * A failed compare, or no resume, keeps the answer-based list.
+ * A finished tight match shows only those hits, including one or two.
+ * Zero tight hits do not fall back to that list.
+ */
+export function quizResumeView(input: { uploaded: boolean; failed: boolean; hits: number }): QuizResumeView {
+  if (!input.uploaded || input.failed) return "answers";
+  if (input.hits <= 0) return "none";
+  return "tight";
+}
+
+/** Nudge when the tight list is shorter than the usual five. Empty when it is not. */
+export function quizTightNote(hits: number): string {
+  if (hits <= 0 || hits >= QUIZ_RESUME_SHOW) return "";
+  const noun = hits === 1 ? "match" : "matches";
+  return `We found ${hits} strong ${noun}. These are close fits only. We'll email you when another one is posted, and a membership runs this same match every Saturday.`;
+}
+
+/** Zero strong fits. The email step already signed them up for alerts. */
+export function quizNoTightMatchNote(email: string): string {
+  const where = email.trim() ? ` at ${email.trim()}` : "";
+  return `No strong match in the current openings. We only list a job when your resume already lines up with the work. You're signed up for weekly job alerts${where}, and we'll email you when a close fit is posted.`;
+}
 
 export const QUIZ_RELATED: Record<string, string[]> = {
   it: ["office", "finance", "eng", "policy"],

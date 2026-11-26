@@ -2,6 +2,7 @@ import { randomBytes } from "crypto";
 import { query } from "./db";
 import { sendTransactional } from "./transactional-email";
 import { isValidEmail, torontoDate } from "./match";
+import { requestTightMatch } from "./tight-match";
 import {
   WEEKLY_CANDIDATE_SQL,
   WEEKLY_MAX_PER_RUN,
@@ -19,7 +20,6 @@ import {
   type TightHit,
   type WeeklyCandidate,
   type WeeklyRunReport,
-  type WeeklyWorkerCall,
 } from "./weekly-match";
 
 function logEvent(event: string, extra: Record<string, unknown>) {
@@ -239,83 +239,6 @@ export async function unsubscribeWeeklyMatch(token: string): Promise<boolean> {
   }
 }
 
-type WorkerPayload = {
-  ok?: boolean;
-  code?: string;
-  partial?: boolean;
-  strong?: unknown;
-  maybe?: unknown;
-  jobs_checked?: number;
-  meta?: { est_cost_usd?: number };
-};
-
-function hits(value: unknown): TightHit[] {
-  if (!Array.isArray(value)) return [];
-  return value
-    .filter((item) => item && typeof item === "object")
-    .map((item) => {
-      const row = item as Record<string, unknown>;
-      return {
-        url: String(row.url || ""),
-        title: String(row.title || ""),
-        employer: String(row.employer || ""),
-        location: String(row.location || ""),
-        closing_date: String(row.closing_date || ""),
-        reason: String(row.reason || "").slice(0, 200),
-      };
-    })
-    .filter((row) => row.url && row.title);
-}
-
-async function callTightWorker(
-  resumeText: string,
-  timeoutMs: number,
-  fetchImpl: typeof fetch,
-): Promise<WeeklyWorkerCall> {
-  const secret = process.env.MATCH_TRUSTED_SECRET || "";
-  const workerUrl = process.env.MATCH_WORKER_URL || "";
-  if (!secret || !workerUrl) return { ok: false, code: "unconfigured" };
-  let resume = resumeText;
-  try {
-    const res = await fetchImpl(workerUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Origin: "https://publicjobs.ca",
-        "X-PublicJobs-Trusted": secret,
-      },
-      body: JSON.stringify({
-        email: "",
-        casl_consent: "",
-        resume_text: resume,
-        match_mode: "tight",
-      }),
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-    resume = "";
-    const payload = (await res.json().catch(() => ({}))) as WorkerPayload;
-    if (!res.ok || !payload.ok || payload.partial) {
-      return { ok: false, code: String(payload.code || "error") };
-    }
-    const reported = payload.meta && typeof payload.meta.est_cost_usd === "number" ? payload.meta.est_cost_usd : null;
-    return {
-      ok: true,
-      strong: hits(payload.strong),
-      maybe: hits(payload.maybe),
-      jobsChecked: Number(payload.jobs_checked || 0),
-      estCostUsd: reported,
-    };
-  } catch (error) {
-    resume = "";
-    logEvent("weekly_match_failed", {
-      reason: "crash",
-      message: error instanceof Error ? error.message.slice(0, 120) : "error",
-    });
-    return { ok: false, code: "error" };
-  }
-}
-
 async function loadCandidates(day: string): Promise<WeeklyCandidate[]> {
   const rows = await query<{
     id: string;
@@ -407,7 +330,7 @@ export async function runWeeklyMatches(options: {
     candidates,
     spentUsd,
     blockedReason,
-    callWorker: (resume, timeoutMs) => callTightWorker(resume, timeoutMs, fetchImpl),
+    callWorker: (resume, timeoutMs) => requestTightMatch(resume, timeoutMs, fetchImpl),
     saveResult: async (profileId, jobs, jobsChecked, weekLabel) => {
       await query(
         `insert into weekly_match_results
