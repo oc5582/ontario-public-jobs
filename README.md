@@ -31,7 +31,7 @@ GitHub Pages cannot call Resend from the browser (the API blocks browser CORS, a
 
 Formspree was not wired (there is no form id in the repo). Its free plan can store a submission, but adding the address to Resend needs the paid submissions API or a paid webhook. The Worker is the free path that lands the contact on the segment.
 
-After the contact is saved, the Worker sends the published Resend template `job-alerts-welcome` from `Public Jobs <alerts@publicjobs.ca>`. A failed welcome send does not undo the signup.
+After the contact is saved, the Worker emits the Resend event `job_alerts.subscribed`. That starts an automation which sends the published template `job-alerts-welcome-v2` from `PublicJobs.ca <alerts@publicjobs.ca>`. The template copy is `worker/welcome-email.js`. Resend fills `{{{RESEND_UNSUBSCRIBE_URL}}}` on that send and adds the List-Unsubscribe headers, the same way the job-alert broadcasts do. A failed welcome send does not undo the signup.
 
 The live signup endpoint is `https://ontario-public-jobs-signup.publicjobs.workers.dev`.
 

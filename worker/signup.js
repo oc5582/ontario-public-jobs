@@ -11,7 +11,7 @@ export const CONSENT_TEXT =
 
 export const CONSENT_SOURCE = "https://publicjobs.ca/";
 
-export const WELCOME_TEMPLATE_ID = "job-alerts-welcome";
+export const WELCOME_EVENT = "job_alerts.subscribed";
 export const WELCOME_FROM = "PublicJobs.ca <alerts@publicjobs.ca>";
 
 const SITE_URL = CONSENT_SOURCE;
@@ -300,7 +300,10 @@ async function saveContact(email, properties, env) {
 
 async function sendWelcome(email, env) {
   try {
-    const response = await fetch("https://api.resend.com/emails", {
+    // The automation sends the published welcome template. Resend fills
+    // {{{RESEND_UNSUBSCRIBE_URL}}} and adds List-Unsubscribe headers there,
+    // the same way job-alert broadcasts do. A direct template send does not.
+    const response = await fetch("https://api.resend.com/events/send", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${env.RESEND_API_KEY}`,
@@ -308,9 +311,8 @@ async function sendWelcome(email, env) {
         "Idempotency-Key": `welcome-email/${email}`,
       },
       body: JSON.stringify({
-        from: WELCOME_FROM,
-        to: [email],
-        template: { id: WELCOME_TEMPLATE_ID },
+        event: WELCOME_EVENT,
+        email,
       }),
     });
     if (!response.ok) {
