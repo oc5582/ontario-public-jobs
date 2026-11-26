@@ -7,8 +7,8 @@ import {
   CONSENT_SOURCE,
   CONSENT_TEXT,
   SEGMENT_ID,
+  WELCOME_EVENT,
   WELCOME_FROM,
-  WELCOME_TEMPLATE_ID,
   clearSignupLimits,
   handleSignup,
   originAllowed,
@@ -63,12 +63,13 @@ test("creates a consented contact on the Ontario Public Jobs segment", async () 
   assert.equal(payload.properties.region, undefined);
 
   const welcome = JSON.parse(seen[1].options.body);
-  assert.equal(seen[1].url, "https://api.resend.com/emails");
+  assert.equal(seen[1].url, "https://api.resend.com/events/send");
   assert.equal(seen[1].options.headers["Idempotency-Key"], "welcome-email/reader@example.com");
-  assert.equal(welcome.from, WELCOME_FROM);
-  assert.deepEqual(welcome.to, ["reader@example.com"]);
-  assert.deepEqual(welcome.template, { id: WELCOME_TEMPLATE_ID });
+  assert.equal(welcome.event, WELCOME_EVENT);
+  assert.equal(welcome.email, "reader@example.com");
   assert.equal(welcome.html, undefined);
+  assert.equal(welcome.template, undefined);
+  assert.equal(WELCOME_FROM, "PublicJobs.ca <alerts@publicjobs.ca>");
 });
 
 test("existing contacts are updated and added to the segment", async () => {
@@ -99,12 +100,12 @@ test("existing contacts are updated and added to the segment", async () => {
     `https://api.resend.com/contacts/reader%40example.com/segments/${SEGMENT_ID}`
   );
   assert.equal(seen[3].method, "POST");
-  assert.equal(seen[3].url, "https://api.resend.com/emails");
+  assert.equal(seen[3].url, "https://api.resend.com/events/send");
 });
 
 test("a failed welcome email still accepts the signup", async () => {
   globalThis.fetch = async (url) => {
-    if (String(url).endsWith("/emails")) {
+    if (String(url).endsWith("/events/send")) {
       return new Response(JSON.stringify({ message: "domain not verified" }), {
         status: 403,
       });
