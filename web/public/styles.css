@@ -1093,6 +1093,19 @@ button[type="submit"]:disabled {
   margin: 0 0 1.5rem;
 }
 
+.match-focus {
+  margin: -0.75rem 0 1.5rem;
+  font-size: 0.9375rem;
+}
+
+.match ol.results li.match-focus-hit {
+  background: var(--hover);
+  margin-left: -0.5rem;
+  margin-right: -0.5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
 .match a {
   color: var(--civic);
 }
@@ -1482,6 +1495,64 @@ button[type="submit"]:disabled {
   flex: 1 1 100%;
 }
 
+.job-apply .apply-row {
+  margin-bottom: 0.85rem;
+}
+
+.job-followup {
+  max-width: 40rem;
+  margin: 0 0 1.75rem;
+}
+
+.signup.signup-compact.signup-job {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.signup.signup-job .signup-compact-heading {
+  flex: 1 1 100%;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.signup.signup-job .signup-compact-fields {
+  flex: 1 1 auto;
+  min-width: 16rem;
+  max-width: 28rem;
+}
+
+.signup.signup-job .signup-compact-fields button[type="submit"] {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  font-weight: 600;
+}
+
+.signup.signup-job .signup-compact-fields button[type="submit"]:hover {
+  background: var(--hover);
+}
+
+.resume-fit {
+  margin: 0.55rem 0 0;
+  font-size: 0.875rem;
+}
+
+.resume-fit a {
+  color: var(--civic);
+  font-weight: 400;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.closing-soon {
+  color: var(--muted);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
 .signup-compact-row {
   display: flex;
   align-items: center;
@@ -1596,6 +1667,11 @@ button[type="submit"]:disabled {
 
   .signup-compact-fields {
     min-width: 100%;
+  }
+
+  .signup.signup-job .signup-compact-fields {
+    min-width: 0;
+    max-width: none;
   }
 
   .signup-compact-fields button[type="submit"] {

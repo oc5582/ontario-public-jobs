@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { TurnstileField } from "@/components/TurnstileField";
 import { getViewer } from "@/lib/auth";
+import { jobForMatch } from "@/lib/jobs";
 import { FREE_COOKIE, FREE_RESULTS, FREE_RUNS_PER_EMAIL, cookieRuns } from "@/lib/match";
 import { alertConsentLabel, alertConsentSender } from "@/lib/legal-copy";
 import { pageMetadata } from "@/lib/seo";
@@ -14,10 +15,19 @@ export const metadata: Metadata = pageMetadata({
   path: "/match/",
 });
 
-export default async function MatchPage() {
-  const viewer = await getViewer();
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
+function oneParam(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) return value[0] || "";
+  return value || "";
+}
+
+export default async function MatchPage({ searchParams }: Props) {
+  const [params, viewer, cookieStore] = await Promise.all([searchParams, getViewer(), cookies()]);
   const signedIn = Boolean(viewer.email && viewer.profile);
-  const guestUsed = !signedIn && cookieRuns((await cookies()).get(FREE_COOKIE)?.value) >= FREE_RUNS_PER_EMAIL;
+  const guestUsed = !signedIn && cookieRuns(cookieStore.get(FREE_COOKIE)?.value) >= FREE_RUNS_PER_EMAIL;
+  const focus = await jobForMatch(oneParam(params.job));
+  const focusPath = focus?.path || undefined;
 
   const resumeFields = (
     <fieldset>
@@ -54,9 +64,15 @@ export default async function MatchPage() {
           ? " Matching does not require job alerts."
           : ` One match is free and shows the top ${FREE_RESULTS}. No account needed, just your email. Matching does not require job alerts.`}
       </p>
+      {focus ? (
+        <p className="match-focus">
+          Checking how your resume fits <a href={focus.href}>{focus.title}</a>
+          {focus.employer ? ` at ${focus.employer}` : ""}. It is compared with the other current openings too.
+        </p>
+      ) : null}
 
       {signedIn ? (
-        <form id="match-form" noValidate>
+        <form id="match-form" noValidate data-focus-path={focusPath}>
           <fieldset>
             <legend>1. Job alerts, optional</legend>
             <p className="hint">Signed in as {viewer.email}.</p>
@@ -106,7 +122,7 @@ export default async function MatchPage() {
           </p>
         </section>
       ) : (
-        <form id="match-form" noValidate>
+        <form id="match-form" noValidate data-focus-path={focusPath}>
           <fieldset>
             <legend>1. Your email</legend>
             <label htmlFor="email">Email</label>
