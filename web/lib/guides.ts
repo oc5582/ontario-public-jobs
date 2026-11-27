@@ -19,6 +19,15 @@ export type Guide = {
 /** Newest first. Each body lives in content/guides/{slug}.html, without the H1. */
 export const GUIDES: Guide[] = [
   {
+    slug: "how-to-become-a-bylaw-enforcement-officer-ontario",
+    title: "How to Become a By-law Enforcement Officer in Ontario: Training, Pay and Hiring Steps",
+    seoTitle: "How to Become a By-law Officer in Ontario: Training and Pay",
+    description:
+      "What by-law officers in Ontario do, the training and certification employers ask for, what two Brampton postings paid in November 2026, and the hiring steps.",
+    published: "2026-11-27",
+    updated: "2026-11-27",
+  },
+  {
     slug: "how-to-get-a-job-at-cmhc",
     title: "How to Get a Job at CMHC: Hiring Steps, Pay and Language Tests",
     seoTitle: "How to Get a Job at CMHC: Hiring Steps and Pay",
