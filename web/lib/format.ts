@@ -69,6 +69,30 @@ export function closingLabel(iso: string, todayIso = torontoTodayIso()): { text:
   return { text: formatLongDate(raw), urgent: false };
 }
 
+/** Calendar days from a Toronto today until the closing date. Null when either date is missing. */
+export function daysUntilClosing(iso: string, todayIso: string): number | null {
+  const raw = parseIsoDate(iso);
+  const today = parseIsoDate(todayIso);
+  if (!raw || !today) return null;
+  const close = Date.parse(`${raw}T00:00:00Z`);
+  const start = Date.parse(`${today}T00:00:00Z`);
+  if (!Number.isFinite(close) || !Number.isFinite(start)) return null;
+  return Math.round((close - start) / 86400000);
+}
+
+/**
+ * Honest relative closing line for a job page.
+ * Empty when there is no date, the date is past, or it is more than 14 days away.
+ * "Closes tomorrow" is day 1. Day 0 is "Closes today".
+ */
+export function closingSoonPhrase(iso: string, todayIso: string): string {
+  const diff = daysUntilClosing(iso, todayIso);
+  if (diff == null || diff < 0 || diff > 14) return "";
+  if (diff === 0) return "Closes today";
+  if (diff === 1) return "Closes tomorrow";
+  return `Closes in ${diff} days`;
+}
+
 export function pillLabel(value: string): string {
   return value.replace(/-/g, " ").replace(/\s+/g, " ").trim();
 }

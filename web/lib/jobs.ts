@@ -10,6 +10,7 @@ import {
   parsePaywallTeasers,
   type PaywallPreview,
 } from "./paywall";
+import { parseMatchJobParam, type MatchJobRef } from "./match-focus";
 import { EXCLUDED_SOURCE_KEYS, OPEN_JOB_SQL as OPEN } from "./open-job";
 import { FREE_LIST_LIMIT } from "./site";
 import type { Facets, JobDetail, ListJob } from "./types";
@@ -388,6 +389,47 @@ async function getJobUncached(employer: string, slug: string): Promise<JobDetail
 
 export function getJob(employer: string, slug: string): Promise<JobDetail | null> {
   return publicCache(["job", employer, slug], () => getJobUncached(employer, slug));
+}
+
+export type MatchJobFocus = {
+  title: string;
+  employer: string;
+  href: string;
+  /** `jobs/{employer}/{slug}` with no leading or trailing slash. Used to pin this job in match results. */
+  path: string;
+};
+
+async function jobForMatchUncached(ref: MatchJobRef): Promise<MatchJobFocus | null> {
+  const rows = await query<{ title: string; employer_name: string; path: string }>(
+    "id" in ref
+      ? `select j.title, e.name as employer_name, j.path
+         from jobs j
+         join employers e on e.id = j.employer_id
+         where j.id = $1::uuid
+         limit 1`
+      : `select j.title, e.name as employer_name, j.path
+         from jobs j
+         join employers e on e.id = j.employer_id
+         where j.employer_slug = $1 and j.job_slug = $2
+         limit 1`,
+    "id" in ref ? [ref.id] : [ref.employer, ref.slug],
+  );
+  const row = rows[0];
+  if (!row?.title || !row.path) return null;
+  return {
+    title: row.title,
+    employer: row.employer_name || "",
+    href: jobHref(row.path),
+    path: row.path.replace(/^\/+|\/+$/g, ""),
+  };
+}
+
+/** The job named by /match/?job=, or null when the value is not a real id or employer/slug. */
+export function jobForMatch(param: string): Promise<MatchJobFocus | null> {
+  const ref = parseMatchJobParam(param);
+  if (!ref) return Promise.resolve(null);
+  const key = "id" in ref ? ["match-job", "id", ref.id] : ["match-job", ref.employer, ref.slug];
+  return publicCache(key, () => jobForMatchUncached(ref));
 }
 
 type SimilarRow = {

@@ -1,11 +1,16 @@
 import { ApplyRow } from "@/components/ApplyRow";
+import { ClosingSoon } from "@/components/ClosingSoon";
 import { JobList } from "@/components/JobList";
 import { JsonLd } from "@/components/JsonLd";
+import { ResumeFitLink } from "@/components/ResumeFitLink";
+import { SignupForm } from "@/components/SignupForm";
 import type { ReactNode } from "react";
 import { formatDescription } from "@/lib/description";
 import { displayLocation } from "@/lib/display-location";
-import { formatLongDate } from "@/lib/format";
+import { employerHeading } from "@/lib/employer-page";
+import { formatLongDate, parseIsoDate } from "@/lib/format";
 import { breadcrumbJsonLd, jobPostingJsonLd } from "@/lib/jsonld";
+import { alertConsentLabel, alertConsentSender } from "@/lib/legal-copy";
 import { hasDescription } from "@/lib/has-description";
 import { isFrench } from "@/lib/language";
 import { elsewhereJobs, employerOpenJobs, getJob, neighbourJobs } from "@/lib/jobs";
@@ -18,20 +23,27 @@ import { notFound } from "next/navigation";
 const UNAVAILABLE =
   "A job description is not available for this posting. Use the Apply button to view details on the employer site.";
 
-function metaRows(job: JobDetail): { label: string; value: string; href?: string }[] {
-  const rows: { label: string; value: string; href?: string }[] = [
+function metaRows(job: JobDetail): { label: string; value: string; href?: string; closingIso?: string }[] {
+  const closing = formatLongDate(job.closing);
+  const rows: { label: string; value: string; href?: string; closingIso?: string }[] = [
     { label: "Employer", value: job.employer, href: `/employers/${job.employer_slug}/` },
     { label: "Location", value: displayLocation(job.location, job.location_places) },
     job.posted
       ? { label: "Posted", value: formatLongDate(job.posted) }
       : { label: "Listed on PublicJobs.ca", value: formatLongDate(job.first_seen) },
-    { label: "Closes", value: formatLongDate(job.closing) },
+    { label: "Closes", value: closing, closingIso: closing ? parseIsoDate(job.closing) : "" },
     { label: "Employment type", value: job.employment_type },
     { label: "Work mode", value: job.work_mode },
     { label: "Salary", value: job.salary },
     { label: "Department", value: job.department },
   ];
   return rows.filter((row) => row.value);
+}
+
+function alertHeading(employer: string): string {
+  const name = employer ? employerHeading(employer).alertName : "";
+  if (!name) return "Get new similar public jobs by email";
+  return `Get new ${name} and similar public jobs by email`;
 }
 
 export async function jobMetadata(employer: string, slug: string): Promise<Metadata> {
@@ -104,16 +116,47 @@ export async function JobView({
           {rows.map((row) => (
             <div className="meta-row" key={row.label}>
               <dt>{row.label}</dt>
-              <dd>{row.href ? <a href={row.href}>{row.value}</a> : row.value}</dd>
+              <dd>
+                {row.href ? <a href={row.href}>{row.value}</a> : row.value}
+                {row.closingIso ? <ClosingSoon iso={row.closingIso} /> : null}
+              </dd>
             </div>
           ))}
         </dl>
-        <ApplyRow url={job.apply_url} extra={toggle} />
+        <div className="job-apply">
+          <ApplyRow
+            url={job.apply_url}
+            extra={toggle}
+            track={{ employer: job.employer_slug, job: job.id, position: "top" }}
+          />
+          {job.apply_url ? (
+            <div className="job-followup">
+              <SignupForm
+                consent={alertConsentLabel()}
+                sender={alertConsentSender()}
+                heading={alertHeading(job.employer)}
+                note="Free, once a week. Unsubscribe anytime."
+                submitLabel="Sign up"
+                idPrefix="job-"
+                placement="job"
+                lazyTurnstile
+                analytics={{
+                  name: "job_alert_signup",
+                  properties: { source: "job_page", employer: job.employer_slug },
+                }}
+              />
+              <ResumeFitLink jobId={job.id} employer={job.employer_slug} />
+            </div>
+          ) : null}
+        </div>
         <section className="description" aria-labelledby="desc-heading">
           <h2 id="desc-heading">Job description</h2>
           {descriptionHtml ? <div dangerouslySetInnerHTML={{ __html: descriptionHtml }} /> : <p>{UNAVAILABLE}</p>}
         </section>
-        <ApplyRow url={job.apply_url} />
+        <ApplyRow
+          url={job.apply_url}
+          track={{ employer: job.employer_slug, job: job.id, position: "bottom" }}
+        />
         <p className="source-note">
           Collected from {job.employer ? `${job.employer}'s` : "the employer's"} public careers site
           {job.fetched ? ` on ${formatLongDate(job.fetched)}` : ""}. PublicJobs.ca is not affiliated with this

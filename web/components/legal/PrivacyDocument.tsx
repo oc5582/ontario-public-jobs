@@ -207,9 +207,12 @@ export function PrivacyDocument() {
         sign-in, and whether it was email or Google), paywall_view (which page showed the membership card),
         pricing_view, checkout_start (which plan), purchase (which plan), match_email (an email was entered for a free
         match, and whether the alert box was checked), match_run (no account, free account or membership),
-        mark_applied (whether a member marked a job applied or undid it), and see_similar_click (the See Similar
-        button on a job page). Those events do not include your name, email
-        address, resume, card, or which job you marked.
+        mark_applied (whether a member marked a job applied or undid it), job_apply_click (the employer and the
+        job when someone opens the employer site to apply, and whether that button was at the top or the bottom of
+        the job page), job_alert_signup (a weekly email signup from a job page, and which employer), and
+        job_resume_fit_click (the job someone opened the resume check for). Those events do not include your name,
+        email address, resume, or card. job_apply_click and job_resume_fit_click include the job id. mark_applied
+        records which job a member marked.
       </p>
       <p>Our fonts are hosted on PublicJobs.ca itself, so loading them does not send your information to a font service.</p>
       <h2>How long we keep it</h2>

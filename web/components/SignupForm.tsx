@@ -1,5 +1,6 @@
 "use client";
 
+import { trackEvent } from "@/components/AnalyticsEvents";
 import { TurnstileField } from "@/components/TurnstileField";
 import { trackMeta } from "@/lib/meta-pixel";
 import { SIGNUP_ENDPOINT } from "@/lib/site";
@@ -19,18 +20,31 @@ export function SignupForm({
   consent,
   sender,
   heading,
+  note,
+  submitLabel,
   idPrefix = "",
   placement = "home",
+  lazyTurnstile = false,
+  analytics,
 }: {
   consent: string;
   sender: string;
   /** Replaces the homepage heading. The CASL checkbox stays the weekly-alert wording. */
   heading?: string;
+  /** One quiet line under the heading. Homepage and employer pages leave this off. */
+  note?: string;
+  /** Replaces the default submit label. */
+  submitLabel?: string;
   idPrefix?: string;
-  placement?: "home" | "employer";
+  placement?: "home" | "employer" | "job";
+  /** Load the Turnstile script only after the email field is focused or tapped. */
+  lazyTurnstile?: boolean;
+  /** Fired after a successful signup. Does not include the email address. */
+  analytics?: { name: string; properties: Record<string, string> };
 }) {
   const [status, setStatus] = useState<{ message: string; ok: boolean } | null>(null);
   const [pending, setPending] = useState(false);
+  const [turnstileOn, setTurnstileOn] = useState(!lazyTurnstile);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,7 +94,10 @@ export function SignupForm({
         return;
       }
       if (!response.ok) throw new Error(body.error || "fail");
-      if (body.ok === true) trackMeta("track", "Lead");
+      if (body.ok === true) {
+        trackMeta("track", "Lead");
+        if (analytics) trackEvent(analytics.name, analytics.properties);
+      }
       setStatus({ message: SUCCESS, ok: true });
       const label = form.querySelector(`#${idPrefix}casl-label`);
       const consentText = label?.textContent || "";
@@ -103,11 +120,16 @@ export function SignupForm({
     }
   }
 
+  const sectionClass =
+    placement === "employer"
+      ? "signup signup-compact signup-employer"
+      : placement === "job"
+        ? "signup signup-compact signup-job"
+        : "signup signup-compact";
+  const armTurnstile = lazyTurnstile ? () => setTurnstileOn(true) : undefined;
+
   return (
-    <section
-      className={placement === "employer" ? "signup signup-compact signup-employer" : "signup signup-compact"}
-      aria-labelledby={`${idPrefix}signup-heading`}
-    >
+    <section className={sectionClass} aria-labelledby={`${idPrefix}signup-heading`}>
       <form id={`${idPrefix}signup-form`} method="post" action={SIGNUP_ENDPOINT} noValidate onSubmit={onSubmit}>
         <div className="signup-compact-row">
           <h2 id={`${idPrefix}signup-heading`} className="signup-compact-heading">
@@ -120,6 +142,7 @@ export function SignupForm({
               </>
             )}
           </h2>
+          {note ? <p className="signup-job-note">{note}</p> : null}
           <div className="signup-compact-fields">
             <label id={`${idPrefix}email-label`} htmlFor={`${idPrefix}email`} className="visually-hidden">
               Email
@@ -133,10 +156,18 @@ export function SignupForm({
               inputMode="email"
               maxLength={254}
               placeholder="you@example.com"
+              onFocus={armTurnstile}
+              onPointerDown={armTurnstile}
             />
             <button type="submit" id={`${idPrefix}submit-btn`} disabled={pending}>
-              <span className="b2-desktop">Email me new openings</span>
-              <span className="b2-phone">Sign up</span>
+              {submitLabel ? (
+                submitLabel
+              ) : (
+                <>
+                  <span className="b2-desktop">Email me new openings</span>
+                  <span className="b2-phone">Sign up</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -154,7 +185,7 @@ export function SignupForm({
             <a href="/privacy/">Privacy</a> <a href="/terms/">Terms</a>
           </span>
         </label>
-        <TurnstileField action="signup" />
+        {turnstileOn ? <TurnstileField action="signup" /> : null}
         <div className="hp" aria-hidden="true">
           <label htmlFor={`${idPrefix}gotcha`}>Leave this field blank</label>
           <input type="text" id={`${idPrefix}gotcha`} name="_gotcha" tabIndex={-1} autoComplete="off" />

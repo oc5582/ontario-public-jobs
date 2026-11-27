@@ -94,6 +94,7 @@ function renderMatchUnlock(doc, shown, remaining) {
   var MAX = 15000;
   var form = document.getElementById("match-form");
   if (!form) return;
+  var focusPath = String(form.getAttribute("data-focus-path") || "").replace(/^\/+|\/+$/g, "");
   var fileInput = document.getElementById("resume-file");
   var fileStatus = document.getElementById("file-status");
   var textArea = document.getElementById("resume-text");
@@ -192,11 +193,24 @@ function renderMatchUnlock(doc, shown, remaining) {
     path = path.split("?")[0].split("#")[0].replace(/^\/+|\/+$/g, "");
     return /^jobs\/[^/]+\/[^/]+$/.test(path) ? path : "";
   }
+  function withFocusFirst(items) {
+    if (!focusPath) return items;
+    var first = [];
+    var rest = [];
+    items.forEach(function (item) {
+      if (jobKey(item.url) === focusPath) first.push(item);
+      else rest.push(item);
+    });
+    return first.concat(rest);
+  }
   function render(listId, wrapId, items) {
     var list = document.getElementById(listId);
     list.innerHTML = "";
     items.forEach(function (j) {
       var li = document.createElement("li");
+      var key = jobKey(j.url);
+      var focused = Boolean(focusPath) && key === focusPath;
+      if (focused) li.className = "match-focus-hit";
       var a = document.createElement("a");
       a.href = j.url;
       a.textContent = j.title;
@@ -204,7 +218,13 @@ function renderMatchUnlock(doc, shown, remaining) {
       meta.className = "meta";
       var bits = [j.employer, j.location, j.closing_date ? "Closes " + j.closing_date : ""].filter(Boolean);
       meta.appendChild(document.createTextNode(bits.join(" · ")));
-      var key = jobKey(j.url);
+      if (focused) {
+        if (bits.length) meta.appendChild(document.createTextNode(" "));
+        var mark = document.createElement("span");
+        mark.className = "pill";
+        mark.textContent = "This job";
+        meta.appendChild(mark);
+      }
       if (key && appliedKeys && appliedKeys[key]) {
         if (bits.length) meta.appendChild(document.createTextNode(" "));
         var tag = document.createElement("span");
@@ -230,8 +250,8 @@ function renderMatchUnlock(doc, shown, remaining) {
     if (!lastData) return;
     var hideEl = document.getElementById("hide-applied");
     var hide = Boolean(hideEl && hideEl.checked);
-    var strong = shownHits(lastData.strong || [], hide);
-    var maybe = shownHits(lastData.maybe || [], hide);
+    var strong = withFocusFirst(shownHits(lastData.strong || [], hide));
+    var maybe = withFocusFirst(shownHits(lastData.maybe || [], hide));
     render("strong-list", "strong-wrap", strong);
     render("maybe-list", "maybe-wrap", maybe);
     var empty = document.getElementById("applied-empty");
