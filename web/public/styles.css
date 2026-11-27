@@ -1511,22 +1511,11 @@ button[type="submit"]:disabled {
   background: transparent;
 }
 
-.signup.signup-job .signup-compact-heading,
-.signup.signup-job .signup-job-note {
-  flex: 1 1 100%;
-}
-
 .signup.signup-job .signup-compact-heading {
+  flex: 1 1 100%;
   font-size: 0.9375rem;
   font-weight: 600;
   line-height: 1.35;
-}
-
-.signup-job-note {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.8125rem;
-  line-height: 1.4;
 }
 
 .signup.signup-job .signup-compact-fields {

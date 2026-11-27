@@ -20,7 +20,6 @@ export function SignupForm({
   consent,
   sender,
   heading,
-  note,
   submitLabel,
   idPrefix = "",
   placement = "home",
@@ -31,8 +30,6 @@ export function SignupForm({
   sender: string;
   /** Replaces the homepage heading. The CASL checkbox stays the weekly-alert wording. */
   heading?: string;
-  /** One quiet line under the heading. Homepage and employer pages leave this off. */
-  note?: string;
   /** Replaces the default submit label. */
   submitLabel?: string;
   idPrefix?: string;
@@ -142,7 +139,6 @@ export function SignupForm({
               </>
             )}
           </h2>
-          {note ? <p className="signup-job-note">{note}</p> : null}
           <div className="signup-compact-fields">
             <label id={`${idPrefix}email-label`} htmlFor={`${idPrefix}email`} className="visually-hidden">
               Email
@@ -175,11 +171,11 @@ export function SignupForm({
           <input type="checkbox" id={`${idPrefix}consent`} name="casl_consent" value="yes" required />
           <span className="casl-label" id={`${idPrefix}casl-label`}>
             {consent}
-            <span className="consent-sender">{sender}</span>
+            {placement === "job" ? null : <span className="consent-sender">{sender}</span>}
           </span>
           <span className="b2-phone b2-consent">
             {consent} <a href="/privacy/">Privacy</a>
-            <span className="consent-sender">{sender}</span>
+            {placement === "job" ? null : <span className="consent-sender">{sender}</span>}
           </span>
           <span className="signup-compact-links">
             <a href="/privacy/">Privacy</a> <a href="/terms/">Terms</a>

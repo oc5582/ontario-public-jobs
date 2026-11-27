@@ -10,7 +10,7 @@ import { displayLocation } from "@/lib/display-location";
 import { employerHeading } from "@/lib/employer-page";
 import { formatLongDate, parseIsoDate } from "@/lib/format";
 import { breadcrumbJsonLd, jobPostingJsonLd } from "@/lib/jsonld";
-import { alertConsentLabel, alertConsentSender } from "@/lib/legal-copy";
+import { alertConsentLabel } from "@/lib/legal-copy";
 import { hasDescription } from "@/lib/has-description";
 import { isFrench } from "@/lib/language";
 import { elsewhereJobs, employerOpenJobs, getJob, neighbourJobs } from "@/lib/jobs";
@@ -42,8 +42,8 @@ function metaRows(job: JobDetail): { label: string; value: string; href?: string
 
 function alertHeading(employer: string): string {
   const name = employer ? employerHeading(employer).alertName : "";
-  if (!name) return "Get new similar public jobs by email";
-  return `Get new ${name} and similar public jobs by email`;
+  if (!name) return "Get new similar public jobs by email, free";
+  return `Get new ${name} and similar public jobs by email, free`;
 }
 
 export async function jobMetadata(employer: string, slug: string): Promise<Metadata> {
@@ -133,9 +133,8 @@ export async function JobView({
             <div className="job-followup">
               <SignupForm
                 consent={alertConsentLabel()}
-                sender={alertConsentSender()}
+                sender=""
                 heading={alertHeading(job.employer)}
-                note="Free, once a week. Unsubscribe anytime."
                 submitLabel="Sign up"
                 idPrefix="job-"
                 placement="job"
