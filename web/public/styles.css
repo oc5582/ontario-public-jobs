@@ -1547,6 +1547,76 @@ button[type="submit"]:disabled {
   text-underline-offset: 0.15em;
 }
 
+/* Desktop only. The reading column is 40rem; this card sits in the space beside it.
+   display:none below 1024px so phones and tablets keep the current job page. */
+.resume-match-card {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .job-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 40rem) minmax(0, 1fr);
+    column-gap: 2rem;
+    align-items: start;
+  }
+
+  .job-detail-copy {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .resume-match-card {
+    display: block;
+    position: sticky;
+    top: 4.75rem;
+    z-index: 1;
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    justify-self: start;
+    width: min(100%, 17.5rem);
+    margin: 0;
+    padding: 1rem 1.05rem 1.05rem;
+    border: 1px solid var(--rule);
+    background: var(--surface);
+  }
+
+  .resume-match-card h2 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.35;
+  }
+
+  .resume-match-card p {
+    margin: 0.45rem 0 0;
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
+
+  .resume-match-card-btn {
+    display: inline-block;
+    margin-top: 0.85rem;
+    padding: 0.55rem 0.9rem;
+    border: 1px solid var(--civic);
+    border-radius: 0;
+    background: var(--surface);
+    color: var(--civic);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-decoration: none;
+  }
+
+  .resume-match-card-btn:hover {
+    background: var(--hover);
+  }
+}
+
 .closing-soon {
   color: var(--muted);
   font-weight: 400;
