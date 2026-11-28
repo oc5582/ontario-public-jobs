@@ -3,6 +3,7 @@ import { ClosingSoon } from "@/components/ClosingSoon";
 import { JobList } from "@/components/JobList";
 import { JsonLd } from "@/components/JsonLd";
 import { ResumeFitLink } from "@/components/ResumeFitLink";
+import { ResumeMatchCard } from "@/components/ResumeMatchCard";
 import { SignupForm } from "@/components/SignupForm";
 import type { ReactNode } from "react";
 import { formatDescription } from "@/lib/description";
@@ -89,79 +90,84 @@ export async function JobView({
     <main>
       {posting ? <JsonLd data={posting} /> : null}
       <JsonLd data={breadcrumbJsonLd(crumbs)} />
-      <article className="job-page content" {...(isFrench(job) ? { lang: "fr" } : {})}>
-        <p className="crumb">
-          <a href="/">All openings</a>
-          {" / "}
-          <a href="/employers/">Employers</a>
-          {job.employer ? (
-            <>
+      <article className="job-page content job-detail" {...(isFrench(job) ? { lang: "fr" } : {})}>
+        <div className="job-detail-layout">
+          <div className="job-detail-copy">
+            <p className="crumb">
+              <a href="/">All openings</a>
               {" / "}
-              <a href={employerHref}>{job.employer}</a>
-            </>
-          ) : null}
-        </p>
-        {job.closed ? (
-          <p className="closed-banner" role="status">
-            This job is no longer available.
-          </p>
-        ) : null}
-        <h1>{job.title}</h1>
-        {job.employer ? (
-          <p className="employer">
-            <a href={`/employers/${job.employer_slug}/`}>{job.employer}</a>
-          </p>
-        ) : null}
-        <dl className="job-meta">
-          {rows.map((row) => (
-            <div className="meta-row" key={row.label}>
-              <dt>{row.label}</dt>
-              <dd>
-                {row.href ? <a href={row.href}>{row.value}</a> : row.value}
-                {row.closingIso ? <ClosingSoon iso={row.closingIso} /> : null}
-              </dd>
-            </div>
-          ))}
-        </dl>
-        <div className="job-apply">
-          <ApplyRow
-            url={job.apply_url}
-            extra={toggle}
-            track={{ employer: job.employer_slug, job: job.id, position: "top" }}
-          />
-          {job.apply_url ? (
-            <div className="job-followup">
-              <SignupForm
-                consent={alertConsentLabel()}
-                sender=""
-                heading={alertHeading(job.employer)}
-                submitLabel="Sign up"
-                idPrefix="job-"
-                placement="job"
-                lazyTurnstile
-                analytics={{
-                  name: "job_alert_signup",
-                  properties: { source: "job_page", employer: job.employer_slug },
-                }}
+              <a href="/employers/">Employers</a>
+              {job.employer ? (
+                <>
+                  {" / "}
+                  <a href={employerHref}>{job.employer}</a>
+                </>
+              ) : null}
+            </p>
+            {job.closed ? (
+              <p className="closed-banner" role="status">
+                This job is no longer available.
+              </p>
+            ) : null}
+            <h1>{job.title}</h1>
+            {job.employer ? (
+              <p className="employer">
+                <a href={`/employers/${job.employer_slug}/`}>{job.employer}</a>
+              </p>
+            ) : null}
+            <dl className="job-meta">
+              {rows.map((row) => (
+                <div className="meta-row" key={row.label}>
+                  <dt>{row.label}</dt>
+                  <dd>
+                    {row.href ? <a href={row.href}>{row.value}</a> : row.value}
+                    {row.closingIso ? <ClosingSoon iso={row.closingIso} /> : null}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <div className="job-apply">
+              <ApplyRow
+                url={job.apply_url}
+                extra={toggle}
+                track={{ employer: job.employer_slug, job: job.id, position: "top" }}
               />
-              <ResumeFitLink jobId={job.id} employer={job.employer_slug} />
+              {job.apply_url ? (
+                <div className="job-followup">
+                  <SignupForm
+                    consent={alertConsentLabel()}
+                    sender=""
+                    heading={alertHeading(job.employer)}
+                    submitLabel="Sign up"
+                    idPrefix="job-"
+                    placement="job"
+                    lazyTurnstile
+                    analytics={{
+                      name: "job_alert_signup",
+                      properties: { source: "job_page", employer: job.employer_slug },
+                    }}
+                  />
+                  <ResumeFitLink jobId={job.id} employer={job.employer_slug} />
+                </div>
+              ) : null}
             </div>
-          ) : null}
+            <section className="description" aria-labelledby="desc-heading">
+              <h2 id="desc-heading">Job description</h2>
+              {descriptionHtml ? <div dangerouslySetInnerHTML={{ __html: descriptionHtml }} /> : <p>{UNAVAILABLE}</p>}
+            </section>
+            <ApplyRow
+              url={job.apply_url}
+              track={{ employer: job.employer_slug, job: job.id, position: "bottom" }}
+            />
+            <p className="source-note">
+              Collected from {job.employer ? `${job.employer}'s` : "the employer's"} public careers site
+              {job.fetched ? ` on ${formatLongDate(job.fetched)}` : ""}. PublicJobs.ca is not affiliated with this
+              employer. The employer can ask us to correct or remove a listing.{" "}
+              <a href={`/report/?job=${encodeURIComponent(job.path)}`}>Report a fake or suspicious job</a>
+            </p>
+          </div>
+          <ResumeMatchCard jobId={job.id} employer={job.employer_slug} focusPath={job.path} />
         </div>
-        <section className="description" aria-labelledby="desc-heading">
-          <h2 id="desc-heading">Job description</h2>
-          {descriptionHtml ? <div dangerouslySetInnerHTML={{ __html: descriptionHtml }} /> : <p>{UNAVAILABLE}</p>}
-        </section>
-        <ApplyRow
-          url={job.apply_url}
-          track={{ employer: job.employer_slug, job: job.id, position: "bottom" }}
-        />
-        <p className="source-note">
-          Collected from {job.employer ? `${job.employer}'s` : "the employer's"} public careers site
-          {job.fetched ? ` on ${formatLongDate(job.fetched)}` : ""}. PublicJobs.ca is not affiliated with this
-          employer. The employer can ask us to correct or remove a listing.{" "}
-          <a href={`/report/?job=${encodeURIComponent(job.path)}`}>Report a fake or suspicious job</a>
-        </p>
         {job.closed ? (
           <section className="similar-jobs" aria-labelledby="openings-heading">
             <h2 id="openings-heading">Current openings at {job.employer || "this employer"}</h2>

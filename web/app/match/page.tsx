@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
+import { MatchForm } from "@/components/MatchForm";
 import { TurnstileField } from "@/components/TurnstileField";
 import { getViewer } from "@/lib/auth";
 import { jobForMatch } from "@/lib/jobs";
 import { FREE_COOKIE, FREE_RESULTS, FREE_RUNS_PER_EMAIL, cookieRuns } from "@/lib/match";
-import { alertConsentLabel, alertConsentSender } from "@/lib/legal-copy";
 import { pageMetadata } from "@/lib/seo";
 import { BRAND } from "@/lib/site";
 import type { Metadata } from "next";
@@ -28,31 +28,7 @@ export default async function MatchPage({ searchParams }: Props) {
   const guestUsed = !signedIn && cookieRuns(cookieStore.get(FREE_COOKIE)?.value) >= FREE_RUNS_PER_EMAIL;
   const focus = await jobForMatch(oneParam(params.job));
   const focusPath = focus?.path || undefined;
-
-  const resumeFields = (
-    <fieldset>
-      <legend>2. Your resume</legend>
-      <p className="hint">
-        We use your resume only to find matching jobs. <a href="/privacy/">Privacy policy</a>
-      </p>
-      <label htmlFor="resume-file">Upload a PDF or Word file</label>
-      <input
-        type="file"
-        id="resume-file"
-        accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      />
-      <p className="hint" id="file-status" aria-live="polite">
-        Your file stays on your device. Only the text is read.
-      </p>
-      <p className="or">Or paste your resume text</p>
-      <label htmlFor="resume-text">Resume text</label>
-      <textarea
-        id="resume-text"
-        maxLength={15000}
-        placeholder="Paste your work experience, education and skills"
-      />
-    </fieldset>
-  );
+  const turnstile = <TurnstileField action="match" />;
 
   return (
     <main className="match">
@@ -72,41 +48,13 @@ export default async function MatchPage({ searchParams }: Props) {
       ) : null}
 
       {signedIn ? (
-        <form id="match-form" noValidate data-focus-path={focusPath}>
-          <fieldset>
-            <legend>1. Job alerts, optional</legend>
-            <p className="hint">Signed in as {viewer.email}.</p>
-            {viewer.isMember ? (
-              <p className="hint">A membership includes matches every day, up to 20 a day.</p>
-            ) : (
-              <p className="hint">Your account includes 1 free match. It shows the top {FREE_RESULTS} jobs.</p>
-            )}
-            <label className="checkbox" htmlFor="consent">
-              <input type="checkbox" id="consent" name="casl_consent" value="yes" />
-              <span>
-                {alertConsentLabel()}
-                <span className="consent-sender">{alertConsentSender()}</span>
-              </span>
-            </label>
-            <p className="hint">Optional. Matching does not add you to the weekly email unless you check this.</p>
-          </fieldset>
-
-          {resumeFields}
-
-          <div className="hp" aria-hidden="true">
-            <label htmlFor="gotcha">Leave this field blank</label>
-            <input type="text" id="gotcha" name="_gotcha" tabIndex={-1} autoComplete="off" />
-          </div>
-
-          <TurnstileField action="match" />
-          <button type="submit" id="submit-btn">
-            Find my jobs
-          </button>
-          <p className="hint">
-            Your resume is read to find matches and is not stored. <a href="/privacy/">Privacy policy</a>
-          </p>
-          <div id="status" className="status" role="status" aria-live="polite" hidden />
-        </form>
+        <MatchForm
+          signedIn
+          email={viewer.email}
+          isMember={viewer.isMember}
+          focusPath={focusPath}
+          turnstile={turnstile}
+        />
       ) : guestUsed ? (
         <section className="unlock" id="free-used" aria-label="Free match used">
           <h2>You&apos;ve used your free match</h2>
@@ -122,50 +70,7 @@ export default async function MatchPage({ searchParams }: Props) {
           </p>
         </section>
       ) : (
-        <form id="match-form" noValidate data-focus-path={focusPath}>
-          <fieldset>
-            <legend>1. Your email</legend>
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              required
-              autoComplete="email"
-              inputMode="email"
-              maxLength={254}
-              placeholder="you@example.com"
-            />
-            <p className="hint">
-              Needed for your free match. It shows the top {FREE_RESULTS} jobs. Already a member?{" "}
-              <a href="/login/?next=/match/">Sign in</a>
-            </p>
-            <label className="checkbox" htmlFor="consent">
-              <input type="checkbox" id="consent" name="casl_consent" value="yes" />
-              <span>
-                {alertConsentLabel()}
-                <span className="consent-sender">{alertConsentSender()}</span>
-              </span>
-            </label>
-            <p className="hint">Optional. We only send the weekly email if you check this.</p>
-          </fieldset>
-
-          {resumeFields}
-
-          <div className="hp" aria-hidden="true">
-            <label htmlFor="gotcha">Leave this field blank</label>
-            <input type="text" id="gotcha" name="_gotcha" tabIndex={-1} autoComplete="off" />
-          </div>
-
-          <TurnstileField action="match" />
-          <button type="submit" id="submit-btn">
-            Find my jobs
-          </button>
-          <p className="hint">
-            Your resume is read to find matches and is not stored. <a href="/privacy/">Privacy policy</a>
-          </p>
-          <div id="status" className="status" role="status" aria-live="polite" hidden />
-        </form>
+        <MatchForm focusPath={focusPath} turnstile={turnstile} />
       )}
 
       <section id="results" hidden aria-labelledby="results-title">
