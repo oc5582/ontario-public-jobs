@@ -47,6 +47,7 @@ export async function POST(request: Request) {
     _gotcha?: string;
     run_id?: unknown;
     turnstile_token?: unknown;
+    source?: unknown;
   };
   try {
     data = await request.json();
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, code: "resume", error: MSG.resume }, { status: 400, headers: NO_STORE });
   }
   const consent = consentValue(data.casl_consent);
+  const fromQuiz = data.source === "start";
   const gotcha = String(data._gotcha || "");
   const postedEmail = boundedEmailLower(data.email);
   const ip = clientIp(request);
@@ -96,6 +98,7 @@ export async function POST(request: Request) {
       browserRuns,
       runId: data.run_id,
       ip: clientIp(request),
+      tight: fromQuiz,
       // Same as the signed-in path: the consent record is written before the Worker subscribes the address.
       beforeWorker: consent
         ? async () => {
@@ -125,6 +128,7 @@ export async function POST(request: Request) {
     resumeText: String(data.resume_text || ""),
     consent,
     gotcha,
+    tight: fromQuiz,
   });
   if (result.status === 200 && result.body.ok && !gotcha.trim()) {
     reportEvent("match_run", { tier: viewer.isMember ? "member" : "free" }, request);

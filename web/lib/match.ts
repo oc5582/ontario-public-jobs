@@ -1,6 +1,8 @@
 import { createHash, createHmac, randomUUID } from "crypto";
 import { query } from "./db";
 import { isBasicEmail } from "./email-address";
+import { loadCandidateScores, rankQualifyingQuizHits } from "./quiz-rank";
+import { requestTightMatch } from "./tight-match";
 
 /**
  * Free matches per normalised email (signed out or free account), and per browser.
@@ -22,6 +24,8 @@ export const FREE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 export const MEMBER_DAILY_LIMIT = 20;
 export const MAX_RESUME_CHARS = 15000;
 export const MIN_RESUME_CHARS = 80;
+/** On-demand and quiz Worker calls. Saturday uses its own remaining-time cap. */
+const MATCH_CALL_TIMEOUT_MS = 110_000;
 
 export const MSG = {
   auth: "Sign in to match your resume.",
@@ -46,6 +50,8 @@ export type MatchHit = {
   location: string;
   closing_date: string;
   reason: string;
+  /** Quiz only. Lexical relevance from match_candidate_scores. Omitted everywhere else. */
+  score?: number;
 };
 
 export type MatchBody = {
@@ -84,6 +90,8 @@ export type MatchInput = {
   resumeText: string;
   consent: boolean;
   gotcha?: string;
+  /** /start quiz only. Same tight cut as the Saturday member match. */
+  tight?: boolean;
 };
 
 export type MatchDeps = {
@@ -152,6 +160,9 @@ function hits(value: unknown): MatchHit[] {
         location: String(row.location || ""),
         closing_date: String(row.closing_date || ""),
         reason: String(row.reason || "").slice(0, 200),
+        ...(typeof row.score === "number" && Number.isFinite(row.score)
+          ? { score: Math.round(row.score * 1000) / 1000 }
+          : {}),
       };
     })
     .filter((row) => row.url && row.title);
@@ -260,7 +271,7 @@ async function callWorker(
         casl_consent: input.consent ? "yes" : "",
         resume_text: input.resume,
       }),
-      signal: AbortSignal.timeout(110000),
+      signal: AbortSignal.timeout(MATCH_CALL_TIMEOUT_MS),
     });
     const payload = (await res.json().catch(() => ({}))) as WorkerPayload;
     if (!res.ok || !payload.ok || payload.partial) {
@@ -283,6 +294,42 @@ async function callWorker(
     }));
     return { ok: false, status: 502, body: { ok: false, code: "error", error: MSG.error } };
   }
+}
+
+/** Loose /match/ call, or the shared tight call when the quiz asks for it. */
+async function callForMatch(
+  input: { email: string; consent: boolean; resume: string },
+  deps: MatchDeps,
+  who: Record<string, string>,
+  tight: boolean,
+): Promise<WorkerCall> {
+  if (!tight) return callWorker(input, deps, who);
+  const { secret, workerUrl } = workerConfig(deps);
+  const fetchImpl = deps.fetchImpl || fetch;
+  const [result, scores] = await Promise.all([
+    requestTightMatch(input.resume, MATCH_CALL_TIMEOUT_MS, fetchImpl, {
+      workerUrl,
+      trustedSecret: secret,
+      logEvent: "resume_match_failed",
+      who,
+    }),
+    loadCandidateScores(input.resume, fetchImpl, { secret }),
+  ]);
+  if (!result.ok) {
+    const mapped = workerFailure(result.code, result.error);
+    if (mapped.limit) console.log(JSON.stringify({ event: "resume_match_limit", limit: mapped.limit, ...who }));
+    else console.log(JSON.stringify({ event: "resume_match_failed", reason: result.partial ? "partial" : result.code || "error", ...who }));
+    return {
+      ok: false,
+      status: result.status,
+      body: { ok: false, code: result.code || "error", error: mapped.error },
+    };
+  }
+  const ranked = rankQualifyingQuizHits(result.strong, result.maybe, input.resume, scores);
+  return {
+    ok: true,
+    payload: { ok: true, strong: ranked, maybe: [], jobs_checked: result.jobsChecked },
+  };
 }
 
 function successBody(payload: WorkerPayload, isMember: boolean, consent: boolean): MatchBody {
@@ -510,7 +557,12 @@ export async function runMatch(input: MatchInput, deps: MatchDeps = {}): Promise
   const { secret, workerUrl } = workerConfig(deps);
   if (!secret || !workerUrl) return unconfigured();
 
-  const call = await callWorker({ email: input.email, consent: input.consent, resume }, deps, { profile_id: input.profileId });
+  const call = await callForMatch(
+    { email: input.email, consent: input.consent, resume },
+    deps,
+    { profile_id: input.profileId },
+    input.tight === true,
+  );
   resume = "";
   if (!call.ok) return { status: call.status, body: call.body };
 
@@ -540,6 +592,8 @@ export type GuestInput = {
   ip: string;
   /** Runs only when alerts are checked, once the free run is reserved and right before the Worker call (records the consent). */
   beforeWorker?: () => Promise<void>;
+  /** /start quiz only. Same tight cut as the Saturday member match. */
+  tight?: boolean;
 };
 
 export async function runGuestMatch(input: GuestInput, deps: MatchDeps = {}): Promise<{ status: number; body: MatchBody }> {
@@ -611,7 +665,12 @@ export async function runGuestMatch(input: GuestInput, deps: MatchDeps = {}): Pr
   if (Math.random() < 0.05) pruneNetworks(day).catch(quiet("guest_prune"));
   if (input.consent && input.beforeWorker) await input.beforeWorker().catch(quiet("guest_before_worker"));
 
-  const call = await callWorker({ email, consent: input.consent, resume }, deps, { who: "guest" });
+  const call = await callForMatch(
+    { email, consent: input.consent, resume },
+    deps,
+    { who: "guest" },
+    input.tight === true,
+  );
   resume = "";
   if (!call.ok) {
     // A repeat never counted anything, so there is nothing to give back.

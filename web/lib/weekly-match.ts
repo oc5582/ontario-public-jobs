@@ -1,25 +1,36 @@
 import { timingSafeEqual } from "crypto";
 import { alertConsentSender, emailFooterText } from "./legal-copy";
-import { MAX_RESUME_CHARS, MIN_RESUME_CHARS, MSG, torontoDate, type MatchHit } from "./match";
+import { MAX_RESUME_CHARS, MIN_RESUME_CHARS, MSG, torontoDate } from "./match";
 import { SITE_URL } from "./site";
+import { selectTightMatches, type TightHit } from "./tight-match";
+
+export {
+  WEEKLY_MIN_REASON_WORDS,
+  WEEKLY_RESULT_CAP,
+  reasonWordCount,
+  selectTightMatches,
+} from "./tight-match";
+export type { TightHit } from "./tight-match";
 
 /**
  * Weekly matches are a tighter cut than /match/.
  *
- * On-demand (workers/resume-match SYSTEM prompt) is generous on purpose. It
- * returns two lists:
+ * On-demand /match/ (workers/resume-match SYSTEM prompt) is generous on purpose.
+ * It returns two lists:
  * - strong: the person has done this work, or their credentials point at it
  * - maybe: transferable skills, entry-level roles, or a stretch
  * Free matches show the top 10 of that combined list. Members see both lists.
  *
- * Saturday matches ask the Worker for match_mode "tight" (stricter prompt: no
- * stretch, no maybe, leave it out when unsure). The app then applies this bar
- * even if the published Worker still runs the generous prompt:
+ * Saturday matches and the /start quiz call requestTightMatch (match_mode
+ * "tight": no stretch, no maybe, leave it out when unsure). The app then
+ * applies selectTightMatches even if the published Worker still runs the
+ * generous prompt:
  * 1. Keep fit "strong" only. Drop every "maybe".
  * 2. Drop a strong hit whose reason has fewer than WEEKLY_MIN_REASON_WORDS
  *    words. The Worker already asks for 8 to 20 words; shorter reasons are the
  *    generic ones ("Your experience matches this role.").
  * 3. Keep at most WEEKLY_RESULT_CAP hits, in the order the Worker returned them.
+ * The quiz still caps what a free visitor sees, and it does not store the resume.
  *
  * Cost: the Worker still enforces its monthly AI spend cap (default $10 USD) and its daily cap.
  * This job also stops for the rest of the Toronto Saturday once estimated
@@ -29,8 +40,6 @@ import { SITE_URL } from "./site";
  * so it does not use the member's 20 matches a day.
  */
 
-export const WEEKLY_RESULT_CAP = 15;
-export const WEEKLY_MIN_REASON_WORDS = 8;
 export const WEEKLY_SPEND_SLICE_USD = 4;
 export const WEEKLY_ASSUMED_CALL_USD = 0.25;
 export const WEEKLY_MAX_PER_RUN = 8;
@@ -56,8 +65,6 @@ where w.opted_in = true
 order by p.id
 limit $2
 `;
-
-export type TightHit = MatchHit;
 
 export type WeeklyCandidate = {
   profileId: string;
@@ -134,10 +141,6 @@ export function weeklyWeekLabel(now: Date): string {
   }).format(now);
 }
 
-export function reasonWordCount(reason: string): number {
-  return reason.trim().split(/\s+/).filter(Boolean).length;
-}
-
 export function weeklyCallTimeout(elapsedMs: number): number | null {
   const remaining = WEEKLY_DEADLINE_MS - elapsedMs;
   if (remaining < WEEKLY_MIN_CALL_MS) return null;
@@ -147,26 +150,6 @@ export function weeklyCallTimeout(elapsedMs: number): number | null {
 export function assumedCostUsd(reported: number | null | undefined): number {
   if (typeof reported === "number" && Number.isFinite(reported) && reported >= 0) return reported;
   return WEEKLY_ASSUMED_CALL_USD;
-}
-
-/** Strong fits only, with a reason that meets the 8-word bar, capped. */
-export function selectTightMatches(strong: TightHit[], maybe: TightHit[]): TightHit[] {
-  void maybe;
-  const kept: TightHit[] = [];
-  for (const hit of strong) {
-    if (!hit.url || !hit.title) continue;
-    if (reasonWordCount(hit.reason) < WEEKLY_MIN_REASON_WORDS) continue;
-    kept.push({
-      url: hit.url,
-      title: hit.title,
-      employer: hit.employer,
-      location: hit.location,
-      closing_date: hit.closing_date,
-      reason: hit.reason.slice(0, 200),
-    });
-    if (kept.length >= WEEKLY_RESULT_CAP) break;
-  }
-  return kept;
 }
 
 export function prepareResumeText(value: string): { ok: true; text: string } | { ok: false; error: string } {
