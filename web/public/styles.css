@@ -1575,10 +1575,10 @@ button[type="submit"]:disabled {
     grid-column: 2;
     grid-row: 1;
     align-self: start;
-    justify-self: start;
-    width: min(100%, 17.5rem);
+    justify-self: stretch;
+    width: 100%;
     margin: 0;
-    padding: 1rem 1.05rem 1.05rem;
+    padding: 0.85rem 0.9rem 0.95rem;
     border: 1px solid var(--rule);
     background: var(--surface);
   }
@@ -1591,29 +1591,63 @@ button[type="submit"]:disabled {
     line-height: 1.35;
   }
 
-  .resume-match-card p {
-    margin: 0.45rem 0 0;
-    color: var(--muted);
+  .resume-match-card .match {
+    max-width: none;
+    margin: 0.65rem 0 0;
+    padding: 0;
+    font-size: 0.8125rem;
+  }
+
+  .resume-match-card .match fieldset {
+    padding: 0.55rem 0.65rem 0.65rem;
+    margin: 0 0 0.55rem;
+  }
+
+  .resume-match-card .match legend,
+  .resume-match-card .match label {
+    font-size: 0.8125rem;
+  }
+
+  .resume-match-card .match input[type="email"],
+  .resume-match-card .match textarea {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  .resume-match-card .match textarea {
+    min-height: 4.5rem;
+  }
+
+  .resume-match-card .match .hint,
+  .resume-match-card .match .or {
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .resume-match-card .match .or {
+    margin: 0.55rem 0 0.3rem;
+  }
+
+  .resume-match-card .match .checkbox {
+    margin-top: 0.45rem;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+  }
+
+  .resume-match-card .match .checkbox input {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .resume-match-card .match input[type="file"] {
+    font-size: 0.75rem;
+  }
+
+  .resume-match-card .match button[type="submit"] {
+    margin-top: 0.15rem;
+    padding: 0.5rem 0.75rem;
+    min-height: 0;
     font-size: 0.875rem;
-    line-height: 1.45;
-  }
-
-  .resume-match-card-btn {
-    display: inline-block;
-    margin-top: 0.85rem;
-    padding: 0.55rem 0.9rem;
-    border: 1px solid var(--civic);
-    border-radius: 0;
-    background: var(--surface);
-    color: var(--civic);
-    font-size: 0.9375rem;
-    font-weight: 600;
-    line-height: 1.3;
-    text-decoration: none;
-  }
-
-  .resume-match-card-btn:hover {
-    background: var(--hover);
   }
 }
 

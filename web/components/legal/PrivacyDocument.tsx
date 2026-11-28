@@ -210,10 +210,11 @@ export function PrivacyDocument() {
         mark_applied (whether a member marked a job applied or undid it), job_apply_click (the employer and the
         job when someone opens the employer site to apply, and whether that button was at the top or the bottom of
         the job page), job_alert_signup (a weekly email signup from a job page, and which employer),
-        job_resume_fit_click (the job someone opened the resume check for), and job_resume_card_click (the
-        job someone opened the resume check from the side card for). Those events do not include your name,
-        email address, resume, or card. job_apply_click, job_resume_fit_click, and job_resume_card_click include
-        the job id. mark_applied records which job a member marked.
+        job_resume_fit_click (the job someone opened the resume check for), job_resume_card_click (the
+        job someone started the resume check from the side card for), and job_resume_card_submit (the job
+        someone submitted that side card for). Those events do not include your name, email address, resume,
+        or card. job_apply_click, job_resume_fit_click, job_resume_card_click, and job_resume_card_submit
+        include the job id. mark_applied records which job a member marked.
       </p>
       <p>Our fonts are hosted on PublicJobs.ca itself, so loading them does not send your information to a font service.</p>
       <h2>How long we keep it</h2>

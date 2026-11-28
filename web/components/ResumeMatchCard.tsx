@@ -1,12 +1,22 @@
-import { ResumeMatchCardLink } from "@/components/ResumeMatchCardLink";
+import { MatchCardLoader } from "@/components/MatchCardLoader";
+import { MatchForm } from "@/components/MatchForm";
 
-/** Quiet desktop sidebar. Hidden in CSS below 1024px so mobile markup does not show. */
-export function ResumeMatchCard({ jobId, employer }: { jobId: string; employer: string }) {
+/** Desktop job sidebar. Hidden in CSS below 1024px. */
+export function ResumeMatchCard({
+  jobId,
+  employer,
+  focusPath,
+}: {
+  jobId: string;
+  employer: string;
+  focusPath?: string;
+}) {
+  const handoffTo = `/match/?job=${encodeURIComponent(jobId)}`;
   return (
-    <aside className="resume-match-card" aria-labelledby="resume-match-heading" lang="en">
+    <aside id="resume-match-card" className="resume-match-card" aria-labelledby="resume-match-heading" lang="en">
       <h2 id="resume-match-heading">Match your resume to thousands of public jobs in the GTA</h2>
-      <p>Upload once, see which jobs fit you best.</p>
-      <ResumeMatchCardLink jobId={jobId} employer={employer} />
+      <MatchForm variant="compact" focusPath={focusPath} handoffTo={handoffTo} />
+      <MatchCardLoader jobId={jobId} employer={employer} />
     </aside>
   );
 }

@@ -166,7 +166,7 @@ export async function JobView({
               <a href={`/report/?job=${encodeURIComponent(job.path)}`}>Report a fake or suspicious job</a>
             </p>
           </div>
-          <ResumeMatchCard jobId={job.id} employer={job.employer_slug} />
+          <ResumeMatchCard jobId={job.id} employer={job.employer_slug} focusPath={job.path} />
         </div>
         {job.closed ? (
           <section className="similar-jobs" aria-labelledby="openings-heading">

@@ -93,7 +93,14 @@ function renderMatchUnlock(doc, shown, remaining) {
   var ENDPOINT = "/api/match/";
   var MAX = 15000;
   var form = document.getElementById("match-form");
-  if (!form) return;
+  if (!form) {
+    try {
+      sessionStorage.removeItem("pj-match-handoff");
+    } catch (ignore) {
+      /* private mode */
+    }
+    return;
+  }
   var focusPath = String(form.getAttribute("data-focus-path") || "").replace(/^\/+|\/+$/g, "");
   var fileInput = document.getElementById("resume-file");
   var fileStatus = document.getElementById("file-status");
@@ -291,6 +298,29 @@ function renderMatchUnlock(doc, shown, remaining) {
       setStatus("Add your resume. Upload a PDF or Word file, or paste the text.", true);
       return;
     }
+    if (form.getAttribute("data-match-handoff") === "1") {
+      if (inFlight) return;
+      inFlight = true;
+      var next = form.getAttribute("data-match-next") || "/match/";
+      var gotchaInput = document.getElementById("gotcha");
+      try {
+        sessionStorage.setItem(
+          "pj-match-handoff",
+          JSON.stringify({
+            email: email,
+            consent: consent,
+            resume: resume,
+            gotcha: gotchaInput ? gotchaInput.value : "",
+          }),
+        );
+      } catch (storeErr) {
+        inFlight = false;
+        setStatus("Something went wrong. Please try again.", true);
+        return;
+      }
+      window.location.assign(next);
+      return;
+    }
     inFlight = true;
     btn.disabled = true;
     btn.textContent = "Checking jobs...";
@@ -348,4 +378,51 @@ function renderMatchUnlock(doc, shown, remaining) {
       btn.textContent = "Find my jobs";
     }
   });
+  window.__pjMatch = true;
+
+  // The desktop job card stores the same fields, then this page runs the real submit.
+  if (form.getAttribute("data-match-handoff") === "1") return;
+  var pending;
+  try {
+    pending = sessionStorage.getItem("pj-match-handoff");
+    if (pending) sessionStorage.removeItem("pj-match-handoff");
+  } catch (ignoreHandoff) {
+    pending = null;
+  }
+  if (!pending) return;
+  var saved;
+  try {
+    saved = JSON.parse(pending);
+  } catch (ignoreParse) {
+    return;
+  }
+  if (!saved || typeof saved.resume !== "string" || saved.resume.length < 80) return;
+  if (emailEl && typeof saved.email === "string") emailEl.value = saved.email;
+  var consentEl = document.getElementById("consent");
+  if (consentEl) consentEl.checked = saved.consent === true || saved.consent === "yes";
+  textArea.value = saved.resume;
+  var gotchaEl = document.getElementById("gotcha");
+  if (gotchaEl && typeof saved.gotcha === "string") gotchaEl.value = saved.gotcha;
+  function sendHandoff() {
+    if (typeof form.requestSubmit === "function") form.requestSubmit();
+    else form.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+  }
+  var widget = form.querySelector(".cf-turnstile");
+  if (!widget) {
+    sendHandoff();
+    return;
+  }
+  var tries = 0;
+  var timer = setInterval(function () {
+    var tokenEl = form.querySelector('[name="cf-turnstile-response"]');
+    if (tokenEl && tokenEl.value) {
+      clearInterval(timer);
+      sendHandoff();
+      return;
+    }
+    if (++tries > 50) {
+      clearInterval(timer);
+      setStatus("Please wait a moment and try again.", true);
+    }
+  }, 200);
 })();
